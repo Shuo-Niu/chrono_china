@@ -36,6 +36,7 @@ export const MODERN_REFERENCE_SOURCE_ID = "chronochina-modern-reference";
 export const MODERN_REFERENCE_SOURCE_URL = "https://tiles.openfreemap.org/planet";
 export const MODERN_REFERENCE_GLYPHS_URL =
   "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
+const MODERN_REFERENCE_HOSTNAME = new URL(MODERN_REFERENCE_SOURCE_URL).hostname;
 
 const WATER_LAYER_ID = "reference-water";
 const WATERWAY_LAYER_ID = "reference-major-waterway";
@@ -473,5 +474,13 @@ export function isModernReferenceMapError(event: unknown): boolean {
     error?: { message?: unknown };
   };
   if (candidate.sourceId === MODERN_REFERENCE_SOURCE_ID) return true;
-  return String(candidate.error?.message ?? "").includes("tiles.openfreemap.org");
+  const urls =
+    String(candidate.error?.message ?? "").match(/https?:\/\/[^\s"'<>]+/g) ?? [];
+  return urls.some((url) => {
+    try {
+      return new URL(url).hostname === MODERN_REFERENCE_HOSTNAME;
+    } catch {
+      return false;
+    }
+  });
 }

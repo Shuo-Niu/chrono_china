@@ -91,6 +91,34 @@ test("reference source failure is contained and classified", () => {
   expect(
     isModernReferenceMapError({ error: { message: "unrelated source failed" } }),
   ).toBe(false);
+  expect(
+    isModernReferenceMapError({
+      error: {
+        message: "Failed to fetch https://tiles.openfreemap.org/planet/0/0/0.pbf",
+      },
+    }),
+  ).toBe(true);
+  expect(
+    isModernReferenceMapError({
+      error: {
+        message: "Failed to fetch https://tiles.openfreemap.org.evil.example/planet",
+      },
+    }),
+  ).toBe(false);
+  expect(
+    isModernReferenceMapError({
+      error: {
+        message: "Failed to fetch https://evil.example/tiles.openfreemap.org",
+      },
+    }),
+  ).toBe(false);
+  expect(
+    isModernReferenceMapError({
+      error: {
+        message: "Failed to fetch https://tiles.openfreemap.org@evil.example/planet",
+      },
+    }),
+  ).toBe(false);
 });
 
 test("R2 completeness contract protects inland orientation and Qingdao water context", () => {
