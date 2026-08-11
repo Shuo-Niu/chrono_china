@@ -19,7 +19,7 @@ classifiers = [
 dependencies = [
   "httpx>=0.28,<0.29",
   "mapbox-vector-tile>=2.2,<3",
-  "pyshp>=2.3,<3",
+  "pyshp>=2.3,<4",
   "shapely>=2.1,<3",
 ]
 
