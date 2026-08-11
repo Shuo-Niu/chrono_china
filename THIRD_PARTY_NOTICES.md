@@ -32,6 +32,11 @@ in this repository:
 - Chinese Civilization in Time and Space (CCTS), Academia Sinica. Published
   terms restrict transfer and redistribution.
 
+Some regression tests mention a small number of upstream record identifiers
+and short factual fields needed to reproduce historical-data edge cases. Those
+references remain subject to upstream terms and are not relicensed under
+Apache-2.0. No bulk historical dataset or API-response cache is bundled.
+
 See `docs/data_sources.md` and `docs/data_redistribution_policy.md` before
 downloading, using, publishing, or redistributing any generated dataset.
 

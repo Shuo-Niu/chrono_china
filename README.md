@@ -1,45 +1,47 @@
 # ChronoChina
 
-ChronoChina（中国历史地理时间地图）是一个开源的历史地理研究原型。它把可追溯的 TGAZ/CHGIS 历史地点数据转换为可由 MapLibre 浏览的逐年地图，并明确区分空间邻近与历史谱系。
+[English](README.md) | [简体中文](README.zh-CN.md)
 
-> 当前状态：Phase 1.4 前的产品与交互版本已冻结。仓库公开的是软件、测试和数据管道，不附带第三方历史数据或本地生成的数据集。
+ChronoChina is an open-source research prototype for exploring Chinese historical geography over time. It transforms provenance-preserving TGAZ/CHGIS records into exact-year point maps rendered with MapLibre, while keeping spatial proximity separate from historical lineage.
 
-## 能做什么
+> Current status: the product and interaction work before Phase 1.4 is frozen. This repository publishes software, tests, and the data pipeline. It does **not** bundle third-party historical datasets or locally generated map datasets.
 
-- 在当前视口中按精确年份查询历史地点；
-- 手动开关历史单位层级，不由缩放级别替用户决定；
-- 在“点 + 标签”和“仅点”之间切换；
-- 查看同坐标记录、来源、有效年代和基本详情；
-- 切换现代参考底图；远程底图失败时历史图层仍可工作；
-- 用可复现的 Python 管道下载、标准化、验证并生成 Web 数据。
+## What it does
 
-## 数据语义底线
+- Queries historical places by exact year in the current viewport.
+- Lets users explicitly control historical display families instead of changing them automatically with zoom.
+- Switches between Point + Label and Point Only display modes.
+- Shows co-located records, provenance, validity periods, and basic details.
+- Switches modern reference basemaps without making the historical layer depend on them.
+- Downloads, normalizes, validates, and builds Web data through a reproducible Python pipeline.
 
-- `nearby != same entity`：空间接近不表示同一实体、前身、后继或改名。
-- `entity identity != coordinate`：同一实体可以迁治；同一坐标也可对应多个实体。
-- 同名不自动合并，异名不自动拆分。
-- Historical Lineage 仅能由明确证据建立；本项目不会用最近邻自动生成谱系。
-- 数据缺失不代表历史上没有地点或没有变化。
-- 年代使用闭区间语义；公元纪年没有 0 年。
-- 离散历史切片不会被描述为连续 time series。
+## Historical-data semantics
 
-## 技术栈与目录
+- `nearby != same entity`: proximity does not prove identity, succession, or renaming.
+- `entity identity != coordinate`: one entity may move; one coordinate may contain several entities.
+- Equal names are not automatically merged, and different names are not automatically split.
+- Historical Lineage requires explicit evidence; nearest-neighbor logic never creates lineage.
+- Missing data does not mean that a place or change did not exist historically.
+- Validity periods use closed intervals, and the CE/BCE system has no year zero.
+- A historical time slice is never represented as continuous time-series coverage.
 
-- Python 3.11+：数据下载、标准化、查询、enrichment 与 QA；
-- React、TypeScript、Vite、MapLibre GL JS：浏览器端地图；
-- pytest、Vitest、Playwright：自动化验证。
+## Stack and repository layout
+
+- Python 3.11+: acquisition, normalization, querying, enrichment, and QA.
+- React, TypeScript, Vite, and MapLibre GL JS: browser map.
+- pytest, Vitest, and Playwright: automated verification.
 
 ```text
-pipeline/   Python 包和测试
-web/        Web App
-scripts/    Windows PowerShell 入口
-data/       本地第三方数据与生成结果（默认不进入 Git）
-docs/       公开工程、数据源与政策文档
+pipeline/   Python package and tests
+web/        Web application
+scripts/    Windows PowerShell entry points
+data/       Local third-party/generated data (ignored by Git)
+docs/       Public engineering and data-governance documentation
 ```
 
-## 从干净检出开始
+## Start from a clean checkout
 
-环境要求：Git、Windows PowerShell、Python 3.11+，以及 Node.js `^20.19.0` 或 `>=22.12.0`。
+Prerequisites: Git, Windows PowerShell, Python 3.11+, and Node.js `^20.19.0` or `>=22.12.0`.
 
 ```powershell
 git clone https://github.com/Shuo-Niu/chrono_china.git
@@ -47,61 +49,76 @@ Set-Location chrono_china
 powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1
 ```
 
-脚本会创建项目专属 `.venv/`，按 `pyproject.toml` 安装 Python 依赖，并通过 `web/package-lock.json` 执行 `npm.cmd ci`。项目不会向系统 Python 安装依赖。
+The script creates a project-local `.venv/`, installs Python dependencies from `pyproject.toml`, and runs `npm.cmd ci` using `web/package-lock.json`. It does not install project packages into the system Python environment.
 
-## 获取并生成真实数据
+## Acquire and build real data
 
-先阅读 [数据源说明](docs/data_sources.md)和[数据再分发政策](docs/data_redistribution_policy.md)。这些命令会访问第三方服务；使用者需要自行确认适用条款。
+Read [Data Sources](docs/data_sources.md) and the [Data Redistribution Policy](docs/data_redistribution_policy.md) first. These commands access third-party services, whose current terms remain independently applicable.
 
 ```powershell
-# Phase 0：真实数据获取与 Gate 验证
+# Phase 0: real-source acquisition and Gate verification
 powershell -ExecutionPolicy Bypass -File .\scripts\run_phase0.ps1
 
-# 后续 Web 数据
+# Web datasets
 powershell -ExecutionPolicy Bypass -File .\scripts\run_phase1.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\run_phase1_1.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\run_phase1_3_1c.ps1
 ```
 
-原始文件写入 `data/raw/`，标准化结果写入 `data/intermediate/`，Web 可消费结果写入 `data/processed/`，QA 写入 `data/qa/`。这些目录中的生成内容默认不提交。详见 [data/README.md](data/README.md)。
+The pipeline writes source files to `data/raw/`, normalized data to `data/intermediate/`, Web datasets to `data/processed/`, and QA evidence to `data/qa/`. Generated contents in those directories are excluded from Git. See [data/README.md](data/README.md).
 
-## 运行 Web App
+## Run the Web app
 
-生成 `data/processed/` 后：
+After generating `data/processed/`:
 
 ```powershell
 Set-Location web
 npm.cmd run dev
 ```
 
-终端会显示本地 URL，通常为 `http://localhost:5173/`。请注意，根目录没有 `package.json`；所有 npm 命令都应在 `web/` 中运行。
+The terminal prints the local URL, normally `http://localhost:5173/`. There is no root-level `package.json`; run npm commands inside `web/`.
 
-## 测试
+## Tests
 
-不需要第三方历史数据的公开发布测试：
+Public, data-independent release tests:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\test_public.ps1
 ```
 
-已经生成完整本地数据后，可运行全部测试和 E2E：
+After generating the complete authorized local dataset, run the full suite and E2E tests:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -E2E
 ```
 
-## 已知数据限制
+## Data rights and commercial use
 
-- 当前 canonical 数据来自 TGAZ/CHGIS 2016 snapshot；CHGIS V6 尚未迁移。
-- 村镇/聚落数据主要来自 1820、1911 两个历史切片，不能解释为跨年代连续覆盖。
-- 早期高层行政单位覆盖不均。
-- 1912–1949 数据尚未接入。
-- 当前版本不包含历史行政 polygon、王朝疆域或自动 Historical Lineage。
+Open-source code does not make upstream data open data. The project-authored code and documentation are Apache-2.0 and may be used commercially under that license. The principal data sources have separate conditions:
 
-## 参与项目
+| Source | Commercial use | Redistribution/public hosting |
+|---|---|---|
+| CHGIS/TGAZ historical content | **Not cleared.** Published CHGIS terms restrict use to non-commercial academic/educational purposes; commercial use requires a separate agreement. | Bulk or Internet redistribution requires written permission. Do not commit raw, normalized, processed, cached, or record-level QA data. |
+| GeoNames | Allowed under CC BY 4.0. | Allowed with attribution, a license link, and change notices where applicable. |
+| OpenStreetMap/OpenMapTiles/OpenFreeMap | Commercial use is supported. | ODbL, attribution, share-alike obligations for derivative databases, and hosted-service terms still apply. |
+| CHGIS V6 and other research candidates | Not cleared for this product. | Conflicting or source-specific terms require a separate rights review and often permission. |
 
-提交代码前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)、[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)和 [SECURITY.md](SECURITY.md)。数据相关修改必须保留来源、获取时间、许可信息及原始标识，且不得以 mock 历史记录填补覆盖缺口。
+Accordingly, the repository can be open source, but a public or commercial deployment containing CHGIS/TGAZ historical records is **not legally cleared by this repository**. Obtain written permission or replace the historical dataset with a commercially compatible source before commercial launch. This is an engineering rights assessment, not legal advice.
 
-## 许可
+See [Third-Party Notices](THIRD_PARTY_NOTICES.md), [Data Sources](docs/data_sources.md), and the [Data Redistribution Policy](docs/data_redistribution_policy.md).
 
-仓库中的原创软件和项目文档采用 [Apache License 2.0](LICENSE)。第三方数据、地图瓦片、API 响应和生成的数据集不因本仓库许可而被重新授权；具体归属和限制见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)与[数据再分发政策](docs/data_redistribution_policy.md)。
+## Known data limitations
+
+- The current canonical source is the TGAZ/CHGIS 2016 snapshot; CHGIS V6 has not been migrated.
+- Town/settlement data primarily comes from the 1820 and 1911 time slices, not continuous coverage.
+- Early high-level administrative coverage is uneven.
+- Data for 1912–1949 has not been integrated.
+- The current version has no historical administrative polygons, dynasty territories, or automatic Historical Lineage.
+
+## Contributing
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [SECURITY.md](SECURITY.md). Data changes must preserve provenance, retrieval time, license information, and source identifiers. Mock historical records may not be used to fill coverage gaps.
+
+## License
+
+Project-authored software and documentation are licensed under the [Apache License 2.0](LICENSE). Third-party data, hosted tiles, API responses, and generated datasets are not relicensed by this repository.
