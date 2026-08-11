@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  public-tests:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Bootstrap isolated environments
+        shell: powershell
+        run: .\scripts\bootstrap.ps1
+      - name: Audit public release boundary
+        shell: powershell
+        run: .\scripts\release_audit.ps1
+      - name: Run data-independent tests and build
+        shell: powershell
+        run: .\scripts\test_public.ps1

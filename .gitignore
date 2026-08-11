@@ -1,0 +1,51 @@
+.venv/
+web/node_modules/
+web/dist/
+node_modules/
+dist/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest_tmp/
+.pytest_tmp_*/
+.vite/
+.playwright/
+test-results/
+playwright-report/
+.coverage
+htmlcov/
+*.egg-info/
+.env
+.env.*
+!.env.example
+
+# Reproducible but potentially large source/cache files stay local.
+data/raw/**/*
+!data/raw/**/
+!data/raw/**/.gitkeep
+data/intermediate/**/*
+!data/intermediate/**/
+!data/intermediate/**/.gitkeep
+data/processed/**/*
+!data/processed/**/
+!data/processed/**/.gitkeep
+data/qa/**/*
+!data/qa/**/
+!data/qa/**/.gitkeep
+
+# Local QA evidence and internal phase material are not part of the public source release.
+artifacts/
+.codex-remote-attachments/
+docs/*.pdf
+docs/implementation_baseline.md
+docs/phase*.md
+docs/data/
+docs/design/
+docs/usability/
+
+# Local PDF review artifacts.
+tmp/
+
+# Secrets and credentials.
+*.token
+credentials.json
