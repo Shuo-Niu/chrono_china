@@ -23,7 +23,6 @@ export interface CompactHistoricalIndex {
     dataset: string;
     normalized_path: string;
     normalized_sha256: string;
-    compact_sha256?: string;
     record_count: number;
     canonical_uri_template: string;
     license: string | null;

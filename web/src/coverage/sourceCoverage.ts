@@ -17,12 +17,16 @@ export interface SourceCoverageComponent {
   snapshotYears: readonly number[];
   supportedPeriods: readonly (readonly [number, number])[];
   observedPeriods: readonly (readonly [number, number])[];
+  provenance: Readonly<Record<string, unknown>>;
+  sourceEvidence: string;
+  evidenceStrength: string;
 }
 
-interface SourceCoverageFamily {
+export interface SourceCoverageFamily {
   defaultSupport: SourceSupport;
   components: readonly SourceCoverageComponent[];
   userModeCopy: Readonly<Record<string, string>>;
+  developerModeExplanation: string;
 }
 
 export interface CoverageMetadata {
@@ -34,6 +38,7 @@ export interface CoverageMetadata {
     sha256: string;
     observedEnvelope: { minYear: number; maxYear: number };
   };
+  provenance: Readonly<Record<string, unknown>>;
   families: Readonly<Record<DisplayFamily, SourceCoverageFamily>>;
 }
 
@@ -89,14 +94,18 @@ function asPeriods(value: unknown, field: string): readonly (readonly [number, n
     if (!Array.isArray(period) || period.length !== 2) {
       throw new Error(`invalid coverage metadata schema: ${field}[${index}]`);
     }
-    return [
-      asInteger(period[0], `${field}[${index}][0]`),
-      asInteger(period[1], `${field}[${index}][1]`),
-    ] as const;
+    const start = asInteger(period[0], `${field}[${index}][0]`);
+    const end = asInteger(period[1], `${field}[${index}][1]`);
+    if (start > end) throw new Error(`invalid coverage metadata schema: ${field}[${index}] order`);
+    return [start, end] as const;
   });
 }
 
-function parseComponent(value: unknown, field: string): SourceCoverageComponent {
+function parseComponent(
+  value: unknown,
+  family: DisplayFamily,
+  field: string,
+): SourceCoverageComponent {
   if (!isRecord(value) || !Array.isArray(value.raw_types)) {
     throw new Error(`invalid coverage metadata schema: ${field}`);
   }
@@ -111,15 +120,35 @@ function parseComponent(value: unknown, field: string): SourceCoverageComponent 
     ? []
     : value.snapshot_years.map((year, index) =>
       asInteger(year, `${field}.snapshot_years[${index}]`));
+  const rawTypes = value.raw_types.map((rawType, index) =>
+    asString(rawType, `${field}.raw_types[${index}]`));
+  if (rawTypes.length === 0 || rawTypes.some((rawType) =>
+    displayFamilyFromRawType(rawType) !== family)) {
+    throw new Error(`invalid coverage metadata schema: ${field}.raw_types family`);
+  }
+  const supportedPeriods = asPeriods(value.supported_periods, `${field}.supported_periods`);
+  const observedPeriods = asPeriods(value.observed_periods, `${field}.observed_periods`);
+  if (temporalModel === "TIME_SLICE" && snapshotYears.length === 0) {
+    throw new Error(`invalid coverage metadata schema: ${field}.snapshot_years required`);
+  }
+  if (temporalModel === "TIME_SERIES" &&
+      supportedPeriods.length === 0 && observedPeriods.length === 0) {
+    throw new Error(`invalid coverage metadata schema: ${field}.periods required`);
+  }
+  if (!isRecord(value.provenance)) {
+    throw new Error(`invalid coverage metadata schema: ${field}.provenance`);
+  }
   return {
     id: asString(value.id, `${field}.id`),
-    rawTypes: value.raw_types.map((rawType, index) =>
-      asString(rawType, `${field}.raw_types[${index}]`)),
+    rawTypes,
     temporalModel: temporalModel as TemporalModel,
     support: asSupport(value.support, `${field}.support`),
     snapshotYears,
-    supportedPeriods: asPeriods(value.supported_periods, `${field}.supported_periods`),
-    observedPeriods: asPeriods(value.observed_periods, `${field}.observed_periods`),
+    supportedPeriods,
+    observedPeriods,
+    provenance: { ...value.provenance },
+    sourceEvidence: asString(value.source_evidence, `${field}.source_evidence`),
+    evidenceStrength: asString(value.evidence_strength, `${field}.evidence_strength`),
   };
 }
 
@@ -139,9 +168,14 @@ function compactEnvelope(index: CompactHistoricalIndex): { minYear: number; maxY
 export function parseCoverageMetadata(
   value: unknown,
   index: CompactHistoricalIndex,
+  verifiedCompactSha256: string,
 ): CoverageMetadata {
+  if (!/^[0-9a-f]{64}$/i.test(verifiedCompactSha256)) {
+    throw new Error("coverage metadata requires a verified SHA for the compact index response");
+  }
   if (!isRecord(value) || value.schema_version !== "1.0" ||
-      !isRecord(value.canonical_index) || !isRecord(value.families)) {
+      !isRecord(value.canonical_index) || !isRecord(value.provenance) ||
+      !isRecord(value.families)) {
     throw new Error("invalid coverage metadata schema");
   }
   const canonical = value.canonical_index;
@@ -155,13 +189,12 @@ export function parseCoverageMetadata(
   const actualEnvelope = compactEnvelope(index);
   const recordCount = asInteger(canonical.record_count, "canonical_index.record_count");
   const sha256 = asString(canonical.sha256, "canonical_index.sha256");
-  const compactSha = index.source.compact_sha256;
   if (
     recordCount !== index.records.length ||
     observedEnvelope.minYear !== actualEnvelope.minYear ||
     observedEnvelope.maxYear !== actualEnvelope.maxYear ||
     !/^[0-9a-f]{64}$/i.test(sha256) ||
-    (compactSha !== undefined && compactSha !== sha256)
+    verifiedCompactSha256.toLowerCase() !== sha256.toLowerCase()
   ) {
     throw new Error("coverage metadata identity does not match compact index");
   }
@@ -180,8 +213,12 @@ export function parseCoverageMetadata(
     families[family] = {
       defaultSupport: asSupport(rawFamily.default_support, `families.${family}.default_support`),
       components: rawFamily.components.map((component, index) =>
-        parseComponent(component, `families.${family}.components[${index}]`)),
+        parseComponent(component, family, `families.${family}.components[${index}]`)),
       userModeCopy,
+      developerModeExplanation: asString(
+        rawFamily.developer_mode_explanation,
+        `families.${family}.developer_mode_explanation`,
+      ),
     };
   }
 
@@ -194,6 +231,7 @@ export function parseCoverageMetadata(
       sha256,
       observedEnvelope,
     },
+    provenance: { ...value.provenance },
     families,
   };
 }
@@ -234,12 +272,17 @@ export function assessSourceCoverage(
   const temporalModels = TEMPORAL_MODELS.filter((model) =>
     activeComponents.some((component) => component.temporalModel === model));
   let support = sourceFamily.defaultSupport;
-  if (support !== "LIMITED" && activeComponents.length > 0) {
-    support = activeComponents.some((component) => component.support === "LIMITED")
-      ? "LIMITED"
-      : activeComponents.some((component) => component.support === "UNKNOWN")
-        ? "UNKNOWN"
-        : "SUPPORTED";
+  if (activeComponents.length > 0) {
+    if (activeComponents.some((component) => component.support === "UNSUPPORTED")) {
+      support = "UNSUPPORTED";
+    } else if (sourceFamily.defaultSupport === "LIMITED" ||
+        activeComponents.some((component) => component.support === "LIMITED")) {
+      support = "LIMITED";
+    } else if (activeComponents.some((component) => component.support === "UNKNOWN")) {
+      support = "UNKNOWN";
+    } else {
+      support = "SUPPORTED";
+    }
   }
   return {
     family,
@@ -286,17 +329,16 @@ export function userCoverageMessages(
     const copy = assessment.userModeCopy.snapshot_template?.replace("{year}", String(assessment.year));
     const item = message("snapshot", copy);
     if (item) messages.push(item);
-  } else {
-    const key = assessment.support === "UNSUPPORTED"
-      ? "unsupported"
-      : assessment.support === "LIMITED"
-        ? "limited"
-        : assessment.support === "UNKNOWN"
-          ? "unknown"
-          : null;
-    const item = key === null ? null : message(key, assessment.userModeCopy[key]);
-    if (item) messages.push(item);
   }
+  const key = assessment.support === "UNSUPPORTED"
+    ? "unsupported"
+    : assessment.support === "LIMITED"
+      ? "limited"
+      : assessment.support === "UNKNOWN"
+        ? "unknown"
+        : null;
+  const coverageItem = key === null ? null : message(key, assessment.userModeCopy[key]);
+  if (coverageItem) messages.push(coverageItem);
   if (
     viewport === "NO_RECORDS" &&
     assessment.support !== "UNSUPPORTED" &&

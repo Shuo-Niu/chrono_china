@@ -25,7 +25,6 @@ function index(): CompactHistoricalIndex {
       dataset: "test",
       normalized_path: "test",
       normalized_sha256: "normalized",
-      compact_sha256: INDEX_SHA,
       record_count: 4,
       canonical_uri_template: "https://example.test/{TGAZ_ID}",
       license: null,
@@ -153,28 +152,34 @@ function feature(id: string, rawType: string): HistoricalFeature {
 }
 
 describe("source coverage", () => {
-  test("parses metadata only when its frozen identity matches the compact index", () => {
-    expect(parseCoverageMetadata(metadata(), index()).canonicalIndex.recordCount).toBe(4);
+  test("requires a verified compact SHA and rejects every identity mismatch", () => {
+    expect(parseCoverageMetadata(metadata(), index(), INDEX_SHA).canonicalIndex.recordCount).toBe(4);
+    expect(() => parseCoverageMetadata(
+      metadata(),
+      index(),
+      undefined as unknown as string,
+    )).toThrow("verified SHA");
+    expect(() => parseCoverageMetadata(metadata(), index(), "0".repeat(64))).toThrow("identity");
     const mismatched = structuredClone(metadata()) as Record<string, any>;
     mismatched.canonical_index.sha256 = "0".repeat(64);
-    expect(() => parseCoverageMetadata(mismatched, index())).toThrow("identity");
+    expect(() => parseCoverageMetadata(mismatched, index(), INDEX_SHA)).toThrow("identity");
     const wrongCount = structuredClone(metadata()) as Record<string, any>;
     wrongCount.canonical_index.record_count = 5;
-    expect(() => parseCoverageMetadata(wrongCount, index())).toThrow("identity");
-    expect(() => parseCoverageMetadata({ schema_version: "0" }, index())).toThrow("schema");
+    expect(() => parseCoverageMetadata(wrongCount, index(), INDEX_SHA)).toThrow("identity");
+    expect(() => parseCoverageMetadata({ schema_version: "0" }, index(), INDEX_SHA)).toThrow("schema");
   });
 
   test("parses the committed metadata against the real compact index", () => {
     const compact = JSON.parse(readFileSync(resolve("../data/processed/explore/tgaz_compact.json"), "utf8"));
     const coverage = JSON.parse(readFileSync(resolve("../data/metadata/historical_layer_coverage.json"), "utf8"));
-    expect(parseCoverageMetadata(coverage, compact).canonicalIndex).toMatchObject({
+    expect(parseCoverageMetadata(coverage, compact, INDEX_SHA).canonicalIndex).toMatchObject({
       recordCount: 71_393,
       observedEnvelope: { minYear: -763, maxYear: 1912 },
     });
   });
 
   test("keeps settlement snapshot and interval components independent", () => {
-    const parsed = parseCoverageMetadata(metadata(), index());
+    const parsed = parseCoverageMetadata(metadata(), index(), INDEX_SHA);
     expect(assessSourceCoverage(parsed, "settlement", 1819).support).toBe("UNSUPPORTED");
     expect(assessSourceCoverage(parsed, "settlement", 1820).temporalModels).toEqual(["TIME_SLICE"]);
     expect(assessSourceCoverage(parsed, "settlement", 1821).support).toBe("UNSUPPORTED");
@@ -189,7 +194,7 @@ describe("source coverage", () => {
   });
 
   test("keeps limited source coverage orthogonal to viewport results", () => {
-    const parsed = parseCoverageMetadata(metadata(), index());
+    const parsed = parseCoverageMetadata(metadata(), index(), INDEX_SHA);
     const highAdmin = assessSourceCoverage(parsed, "high_admin", 750);
     expect(highAdmin.support).toBe("LIMITED");
     expect(resolveViewportResult([feature("province", "省")], "high_admin")).toBe("HAS_RECORDS");
@@ -198,7 +203,7 @@ describe("source coverage", () => {
   });
 
   test("preserves snapshot plus empty viewport and suppresses disabled-layer copy", () => {
-    const parsed = parseCoverageMetadata(metadata(), index());
+    const parsed = parseCoverageMetadata(metadata(), index(), INDEX_SHA);
     const snapshot = assessSourceCoverage(parsed, "settlement", 1820);
     expect(userCoverageMessages(snapshot, "NO_RECORDS", true).map((item) => item.text))
       .toEqual(["1820 村镇快照", "当前范围无记录"]);
@@ -213,7 +218,7 @@ describe("source coverage", () => {
   });
 
   test("normal supported time series and polity produce no special User Mode copy", () => {
-    const parsed = parseCoverageMetadata(metadata(), index());
+    const parsed = parseCoverageMetadata(metadata(), index(), INDEX_SHA);
     expect(userCoverageMessages(
       assessSourceCoverage(parsed, "county", 750),
       "HAS_RECORDS",
@@ -231,9 +236,55 @@ describe("source coverage", () => {
     const sourceIndex = index();
     const points = [feature("pavilion", "亭")];
     const before = JSON.stringify({ rawMetadata, sourceIndex, points });
-    const parsed = parseCoverageMetadata(rawMetadata, sourceIndex);
+    const parsed = parseCoverageMetadata(rawMetadata, sourceIndex, INDEX_SHA);
     assessSourceCoverage(parsed, "settlement", 626);
     resolveViewportResult(points, "settlement");
     expect(JSON.stringify({ rawMetadata, sourceIndex, points })).toBe(before);
+  });
+
+  test("rejects malformed temporal components and cross-family raw types", () => {
+    const cases = [
+      (value: Record<string, any>) => { value.families.settlement.components[0].snapshot_years = []; },
+      (value: Record<string, any>) => { delete value.families.settlement.components[1].supported_periods; },
+      (value: Record<string, any>) => { value.families.settlement.components[1].supported_periods = [[959, 623]]; },
+      (value: Record<string, any>) => { value.families.county.components[0].raw_types = ["村镇"]; },
+    ];
+    for (const mutate of cases) {
+      const malformed = structuredClone(metadata()) as Record<string, any>;
+      mutate(malformed);
+      expect(() => parseCoverageMetadata(malformed, index(), INDEX_SHA)).toThrow("schema");
+    }
+  });
+
+  test("keeps active unsupported components conservative", () => {
+    const raw = structuredClone(metadata()) as Record<string, any>;
+    raw.families.settlement.components[1].support = "UNSUPPORTED";
+    expect(assessSourceCoverage(
+      parseCoverageMetadata(raw, index(), INDEX_SHA),
+      "settlement",
+      626,
+    ).support).toBe("UNSUPPORTED");
+  });
+
+  test("preserves Developer Mode evidence and family explanation", () => {
+    const parsed = parseCoverageMetadata(metadata(), index(), INDEX_SHA);
+    expect(parsed.families.settlement.developerModeExplanation).toBe("fixture");
+    expect(parsed.families.settlement.components[0]).toMatchObject({
+      sourceEvidence: "fixture",
+      evidenceStrength: "APPROVED_SOURCE_EVIDENCE",
+      provenance: { basis: "fixture" },
+    });
+  });
+
+  test("emits snapshot and simultaneous exceptional coverage state in stable order", () => {
+    const raw = structuredClone(metadata()) as Record<string, any>;
+    raw.families.settlement.components[1].supported_periods.push([1820, 1820]);
+    const assessment = assessSourceCoverage(
+      parseCoverageMetadata(raw, index(), INDEX_SHA),
+      "settlement",
+      1820,
+    );
+    expect(userCoverageMessages(assessment, "HAS_RECORDS", true).map((item) => item.text))
+      .toEqual(["1820 村镇快照", "来源覆盖未明"]);
   });
 });
