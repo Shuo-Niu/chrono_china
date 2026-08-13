@@ -61,6 +61,7 @@ import {
   resolveViewportResult,
   userCoverageMessages,
   type CoverageMetadata,
+  type ViewportResult,
 } from "./coverage/sourceCoverage";
 import { DetailErrorBoundary } from "./detail/DetailErrorBoundary";
 import {
@@ -662,37 +663,50 @@ export default function App() {
     [],
   );
   const coverageFamilyStates = useMemo(() => {
-    return visibleLegendFamilies.map((config) => {
+    const matchingResult = exploreResult?.collection.metadata.year === exploreYear
+      ? exploreResult
+      : null;
+    return DISPLAY_FAMILY_REGISTRY.map((config) => {
       const assessment = assessSourceCoverage(coverageMetadata, config.id, exploreYear);
-      const viewportResult = resolveViewportResult(
-        exploreResult?.collection.features ?? [],
-        config.id,
-      );
+      const enabled = enabledFamilies.has(config.id);
+      const viewportResult: ViewportResult | "PENDING" = !enabled
+        ? "NO_RECORDS"
+        : matchingResult
+          ? resolveViewportResult(matchingResult.collection.features, config.id)
+          : "PENDING";
+      const viewportCount = enabled && matchingResult
+        ? matchingResult.collection.features.filter((feature) =>
+          displayFamily(feature) === config.id).length
+        : 0;
       return {
         family: config.id,
         assessment,
         viewportResult,
         messages: userCoverageMessages(
           assessment,
-          viewportResult,
-          enabledFamilies.has(config.id),
+          viewportResult === "PENDING" ? "HAS_RECORDS" : viewportResult,
+          enabled,
         ),
+        viewportCount,
         globalActiveCount: exploreIndex?.records.filter((record) =>
           record[3] <= exploreYear && exploreYear <= record[4] &&
           displayFamilyFromRawType(record[7]) === config.id).length ?? 0,
       };
     });
-  }, [coverageMetadata, enabledFamilies, exploreIndex, exploreResult, exploreYear, visibleLegendFamilies]);
+  }, [coverageMetadata, enabledFamilies, exploreIndex, exploreResult, exploreYear]);
+  const userCoverageFamilyStates = useMemo(
+    () => coverageFamilyStates.filter((state) => familyConfig(state.family).userVisible),
+    [coverageFamilyStates],
+  );
   const serializedCoverageFamilyStates = useMemo(() => JSON.stringify(
     Object.fromEntries(coverageFamilyStates.map((state) => [state.family, {
       support: state.assessment.support,
       temporalModels: state.assessment.temporalModels,
       viewportResult: state.viewportResult,
       globalActiveCount: state.globalActiveCount,
-      viewportCount: exploreResult?.collection.features.filter((feature) =>
-        displayFamily(feature) === state.family).length ?? 0,
+      viewportCount: state.viewportCount,
     }])),
-  ), [coverageFamilyStates, exploreResult]);
+  ), [coverageFamilyStates]);
 
   const toggleFamily = useCallback((family: DisplayFamily) => {
     setEnabledFamilies((current) => {
@@ -888,7 +902,11 @@ export default function App() {
           data-explore-index-status={exploreIndexStatus}
           data-coverage-metadata-status={coverageMetadataStatus}
           data-coverage-family-states={serializedCoverageFamilyStates}
-          data-explore-viewport-result={exploreResult?.viewportResult ?? "NO_RECORDS"}
+          data-explore-viewport-result={
+            exploreResult?.collection.metadata.year === exploreYear
+              ? exploreResult.viewportResult
+              : "PENDING"
+          }
           data-explore-index-record-count={exploreIndex?.source.record_count ?? 0}
           data-explore-index-load-ms={exploreIndexLoadMs?.toFixed(3) ?? ""}
           data-explore-query-sequence={exploreCommittedSequence}
@@ -1228,8 +1246,6 @@ export default function App() {
                 {coverageFamilyStates.map((state) => {
                   const displayedCount = renderedUnits.flatMap((unit) => unit.members)
                     .filter((feature) => displayFamily(feature) === state.family).length;
-                  const viewportCount = exploreResult?.collection.features
-                    .filter((feature) => displayFamily(feature) === state.family).length ?? 0;
                   return (
                     <details key={state.family}>
                       <summary>
@@ -1237,7 +1253,7 @@ export default function App() {
                         {` ${state.assessment.temporalModels.join(",") || "NONE"} · ${state.viewportResult}`}
                       </summary>
                       <p>{coverageMetadata.families[state.family].developerModeExplanation}</p>
-                      <p>global {state.globalActiveCount} · viewport {viewportCount} · displayed {displayedCount}</p>
+                      <p>global {state.globalActiveCount} · viewport {state.viewportCount} · displayed {displayedCount}</p>
                       {coverageMetadata.families[state.family].components.map((component) => (
                         <p key={component.id}>
                           {component.id} · {component.rawTypes.join(",")} · {component.temporalModel} ·
@@ -1307,7 +1323,7 @@ export default function App() {
 
         <aside className="legend" aria-label="地图图例" data-testid="layer-switcher">
           {visibleLegendFamilies.map((config) => {
-            const coverageState = coverageFamilyStates.find((state) => state.family === config.id)!;
+            const coverageState = userCoverageFamilyStates.find((state) => state.family === config.id)!;
             const coverageTitle = coverageState.messages
               .map((message) => message.explanation)
               .join("；");

@@ -108,7 +108,7 @@ const compactIndex = {
     dataset: "TGAZ / CHGIS CSV spatial index",
     normalized_path: "data/intermediate/tgaz_points.jsonl",
     normalized_sha256: "abc",
-    record_count: 7,
+    record_count: 9,
     canonical_uri_template: "http://maps.cga.harvard.edu/tgaz/placename/{TGAZ_ID}",
     license: null,
   },
@@ -120,10 +120,12 @@ const compactIndex = {
     ["hvd_88266", "\u5ba3\u5316\u5e9c", "Xuanhua Fu", 0, 1911, 116.4, 39.9, "\u5e9c", null, null, "source_point"],
     ["pavilion_14", "\u53e4\u4ead", null, 14, 22, 116.5, 39.9, TYPES.pavilion, null, null, "source_point"],
     ["pavilion_623", "\u675c\u90ae\u4ead", null, 623, 959, 116.5, 39.9, TYPES.pavilion, null, null, "source_point"],
+    ["village_1820", "\u4e00\u516b\u4e8c\u96f6\u6751\u9547", null, 1820, 1820, 116.4, 39.9, TYPES.village, null, null, "source_point"],
+    ["village_1911", "\u4e00\u4e5d\u4e00\u4e00\u6751\u9547", null, 1911, 1911, 116.4, 39.9, TYPES.village, null, null, "source_point"],
   ],
 };
 
-const compactIndexText = JSON.stringify(compactIndex);
+const compactIndexText = `\n${JSON.stringify(compactIndex, null, 2)}\n`;
 const compactIndexSha256 = createHash("sha256").update(compactIndexText, "utf8").digest("hex");
 
 function coverageMetadata(sha256 = compactIndexSha256) {
@@ -306,13 +308,26 @@ test("User Mode shows independent snapshot and limited coverage facts only for e
   const map = await renderReadyApp();
   await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"));
   expect(screen.getByTestId("coverage-settlement")).toHaveTextContent("1911 \u6751\u9547\u5feb\u7167");
-  expect(screen.getByTestId("coverage-settlement")).toHaveTextContent("\u5f53\u524d\u8303\u56f4\u65e0\u8bb0\u5f55");
   expect(screen.getByTestId("coverage-high_admin")).toHaveTextContent("\u9ad8\u5c42\u7ea7\u8d44\u6599\u6709\u9650");
   expect(map.dataset.coverageFamilyStates).toContain('"settlement"');
   expect(map).toHaveAttribute("data-explore-viewport-result", "HAS_RECORDS");
 
   await userEvent.click(screen.getByRole("button", { name: /\u6751\u9547\u3001\u4ead/ }));
   expect(screen.queryByTestId("coverage-settlement")).not.toBeInTheDocument();
+  const disabled = JSON.parse(map.dataset.coverageFamilyStates!);
+  expect(disabled.settlement).toMatchObject({ viewportResult: "NO_RECORDS", viewportCount: 0 });
+});
+
+test("a pending exact-year query never combines new source coverage with stale viewport results", async () => {
+  installFetchMock();
+  const map = await renderReadyApp();
+  await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"));
+  fireEvent.change(screen.getByTestId("timeline-range"), { target: { value: yearToOrdinal(750) } });
+  expect(map).toHaveAttribute("data-query-pending", "true");
+  expect(map).toHaveAttribute("data-explore-viewport-result", "PENDING");
+  expect(screen.getByTestId("coverage-high_admin")).not.toHaveTextContent("\u5f53\u524d\u8303\u56f4\u65e0\u8bb0\u5f55");
+  await waitFor(() => expect(map).toHaveAttribute("data-query-result-year", "750"));
+  expect(map).not.toHaveAttribute("data-explore-viewport-result", "PENDING");
 });
 
 test("settlement coverage follows exact snapshots while preserving interval pavilion records", async () => {
@@ -325,6 +340,7 @@ test("settlement coverage follows exact snapshots while preserving interval pavi
     fireEvent.change(timeline, { target: { value: yearToOrdinal(year) } });
     await waitFor(() => expect(map).toHaveAttribute("data-query-result-year", String(year)));
     expect(map.dataset.historicalPointIds).toContain(year === 14 ? "pavilion_14" : "pavilion_623");
+    expect(map.dataset.historicalPointIds).not.toContain("village_");
     expect(screen.getByTestId("coverage-settlement")).not.toHaveTextContent(
       "\u5f53\u524d\u6765\u6e90\u65e0\u8be5\u65f6\u671f\u8d44\u6599",
     );
@@ -336,8 +352,10 @@ test("settlement coverage follows exact snapshots while preserving interval pavi
     const status = screen.getByTestId("coverage-settlement");
     if (year === 1820 || year === 1911) {
       expect(status).toHaveTextContent(`${year} \u6751\u9547\u5feb\u7167`);
+      expect(map.dataset.historicalPointIds).toContain(`village_${year}`);
     } else {
       expect(status).toHaveTextContent("\u5f53\u524d\u6765\u6e90\u65e0\u8be5\u65f6\u671f\u8d44\u6599");
+      expect(map.dataset.historicalPointIds).not.toContain("village_");
     }
   }
 });
@@ -347,7 +365,7 @@ test("invalid coverage metadata fails open without removing historical interacti
   const map = await renderReadyApp();
   await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "failed"));
   expect(document.querySelectorAll("[data-coverage-family]")).toHaveLength(0);
-  expect(map).toHaveAttribute("data-historical-point-ids", "province_1911,hvd_88266,regional_1911");
+  expect(map.dataset.historicalPointIds).toContain("village_1911");
   await userEvent.click(document.querySelector<HTMLElement>(".history-marker--colocated")!);
   expect(screen.getByLabelText("\u540c\u5740\u5386\u53f2\u8bb0\u5f55")).toBeVisible();
 
@@ -360,12 +378,14 @@ test("Developer Mode exposes component evidence and both coverage axes", async (
   await renderReadyApp();
   await userEvent.click(screen.getByRole("button", { name: "\u5f00\u53d1\u8005\u6a21\u5f0f" }));
   const diagnostics = await screen.findByTestId("coverage-family-diagnostics");
-  expect(diagnostics).toHaveTextContent("settlement · SUPPORTED · TIME_SLICE · NO_RECORDS");
+  expect(diagnostics).toHaveTextContent("settlement · SUPPORTED · TIME_SLICE · HAS_RECORDS");
   expect(diagnostics).toHaveTextContent("raw_town_snapshots · \u6751\u9547 · TIME_SLICE · SUPPORTED");
   expect(diagnostics).toHaveTextContent("snapshots 1820,1911");
   expect(diagnostics).toHaveTextContent("observed 14..22;623..959");
   expect(diagnostics).toHaveTextContent("Named village snapshots.");
-  expect(diagnostics).toHaveTextContent("global 0 · viewport 0 · displayed 0");
+  expect(diagnostics).toHaveTextContent("global 1 · viewport 1 · displayed 1");
+  expect(diagnostics).toHaveTextContent("polity · UNKNOWN · TIME_SERIES · NO_RECORDS");
+  expect(document.querySelector('[data-coverage-family="polity"]')).not.toBeInTheDocument();
 });
 
 test("point-only mode removes persistent labels without changing layers or interaction", async () => {
@@ -383,6 +403,7 @@ test("point-only mode removes persistent labels without changing layers or inter
   expect(map.dataset.enabledDisplayFamilies).toBe(enabledBefore);
   expect(regionalToggle).toHaveAttribute("aria-pressed", "false");
   await userEvent.click(document.querySelector<HTMLElement>(".history-marker")!);
+  await userEvent.click(document.querySelector<HTMLElement>("[data-colocated-member-id='province_1911']")!);
   expect(screen.getByLabelText("历史地点详情")).toBeVisible();
 });
 
@@ -442,9 +463,9 @@ test("manual layer toggle updates point and co-location counts and persists acro
   expect(regionalToggle).toHaveAttribute("aria-pressed", "true");
   expect(map).toHaveAttribute("data-co-located-group-count", "1");
   await userEvent.click(regionalToggle);
-  await waitFor(() => expect(map).toHaveAttribute("data-eligible-record-count", "1"));
-  expect(map).toHaveAttribute("data-historical-point-ids", "province_1911");
-  expect(map).toHaveAttribute("data-co-located-group-count", "0");
+  await waitFor(() => expect(map).toHaveAttribute("data-eligible-record-count", "2"));
+  expect(map).toHaveAttribute("data-historical-point-ids", "province_1911,village_1911");
+  expect(map).toHaveAttribute("data-co-located-group-count", "1");
   fireEvent.change(screen.getByTestId("timeline-range"), {
     target: { value: yearToOrdinal(-201) },
   });
@@ -482,7 +503,7 @@ test("co-located groups contain only members active in the selected exact year",
   const map = await renderReadyApp();
   await waitFor(() => expect(map).toHaveAttribute("data-co-located-group-count", "1"));
   const initialGroup = document.querySelector<HTMLElement>(".history-marker--colocated")!;
-  expect(initialGroup.dataset.memberIds).toBe("province_1911,hvd_88266,regional_1911");
+  expect(initialGroup.dataset.memberIds).toBe("province_1911,hvd_88266,regional_1911,village_1911");
   fireEvent.change(screen.getByTestId("timeline-range"), {
     target: { value: yearToOrdinal(-201) },
   });

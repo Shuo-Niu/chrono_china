@@ -27,6 +27,7 @@ button, select { cursor: pointer; }
   position: relative;
   z-index: 5;
   display: flex;
+  flex-wrap: nowrap;
   align-items: end;
   justify-content: space-between;
   gap: 32px;
@@ -408,7 +409,7 @@ h1 {
 .legend > button:hover, .legend > button:focus-visible { border-color: #879596; background: #fffaf0; }
 .legend > button[aria-pressed="false"] { color: #7d8586; opacity: 0.56; }
 .legend > button[aria-pressed="false"] .legend__dot { filter: grayscale(1); box-shadow: none; }
-.legend__coverage { color: #8a4a31; font-size: 0.52rem; font-weight: 760; white-space: nowrap; }
+.legend__coverage { color: #8a4a31; font-size: clamp(0.43rem, 0.48vw, 0.52rem); font-weight: 760; letter-spacing: -0.02em; white-space: nowrap; }
 .legend__counts { margin-left: auto; color: #68777b; font-size: 0.58rem; font-weight: 700; white-space: nowrap; }
 .legend__anchor { width: 12px; height: 12px; border: 2px solid #18333f; border-radius: 2px; background: #f3cf84; transform: rotate(45deg); }
 .legend__dot { width: 10px; height: 10px; border-radius: 50%; }
