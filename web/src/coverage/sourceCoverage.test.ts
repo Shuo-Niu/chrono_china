@@ -1,6 +1,4 @@
 import { describe, expect, test } from "vitest";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 
 import type { HistoricalFeature } from "../types";
 import type { CompactHistoricalIndex } from "../explore/viewportQuery";
@@ -46,6 +44,10 @@ function metadata(): unknown {
     temporal_model: "TIME_SERIES",
     support: "UNKNOWN",
     observed_periods: periods,
+    record_count: 1,
+    period_record_counts: Object.fromEntries(
+      periods.map(([start, end]) => [`${start}..${end}`, 1]),
+    ),
     provenance: { basis: "fixture" },
     source_evidence: "fixture",
     evidence_strength: "FROZEN_INDEX_OBSERVATION",
@@ -70,6 +72,7 @@ function metadata(): unknown {
             temporal_model: "TIME_SLICE",
             support: "SUPPORTED",
             snapshot_years: [1820, 1911],
+            record_count: 48_690,
             snapshot_record_counts: { "1820": 8659, "1911": 40031 },
             provenance: { basis: "fixture" },
             source_evidence: "fixture",
@@ -81,6 +84,7 @@ function metadata(): unknown {
             temporal_model: "TIME_SERIES",
             support: "UNKNOWN",
             supported_periods: [[14, 22], [623, 959]],
+            record_count: 18,
             period_record_counts: { "14..22": 17, "623..959": 1 },
             provenance: { basis: "fixture" },
             source_evidence: "fixture",
@@ -170,15 +174,6 @@ describe("source coverage", () => {
     wrongCount.canonical_index.record_count = 5;
     expect(() => parseCoverageMetadata(wrongCount, index(), INDEX_SHA)).toThrow("identity");
     expect(() => parseCoverageMetadata({ schema_version: "0" }, index(), INDEX_SHA)).toThrow("schema");
-  });
-
-  test("parses the committed metadata against the real compact index", () => {
-    const compact = JSON.parse(readFileSync(resolve("../data/processed/explore/tgaz_compact.json"), "utf8"));
-    const coverage = JSON.parse(readFileSync(resolve("../data/metadata/historical_layer_coverage.json"), "utf8"));
-    expect(parseCoverageMetadata(coverage, compact, INDEX_SHA).canonicalIndex).toMatchObject({
-      recordCount: 71_393,
-      observedEnvelope: { minYear: -763, maxYear: 1912 },
-    });
   });
 
   test("keeps settlement snapshot and interval components independent", () => {
@@ -326,10 +321,24 @@ describe("source coverage", () => {
 
   test("rejects malformed component count evidence so App can fail open", () => {
     const cases = [
+      (value: Record<string, any>) => { delete value.families.settlement.components[0].record_count; },
+      (value: Record<string, any>) => { delete value.families.settlement.components[0].snapshot_record_counts; },
+      (value: Record<string, any>) => { value.families.settlement.components[0].record_count = 48_689; },
       (value: Record<string, any>) => { value.families.settlement.components[0].snapshot_record_counts["1820"] = -1; },
       (value: Record<string, any>) => { value.families.settlement.components[0].snapshot_record_counts["1821"] = 1; },
+      (value: Record<string, any>) => { value.families.settlement.components[0].period_record_counts = {}; },
+      (value: Record<string, any>) => { delete value.families.settlement.components[1].record_count; },
+      (value: Record<string, any>) => { delete value.families.settlement.components[1].period_record_counts; },
       (value: Record<string, any>) => { value.families.settlement.components[1].period_record_counts["14-22"] = 17; },
+      (value: Record<string, any>) => {
+        value.families.settlement.components[1].period_record_counts = {
+          "623..959": 1,
+          "14..22": 17,
+        };
+      },
+      (value: Record<string, any>) => { value.families.settlement.components[1].snapshot_record_counts = {}; },
       (value: Record<string, any>) => { value.families.high_admin.components[0].record_count = 1.5; },
+      (value: Record<string, any>) => { value.families.high_admin.components[0].record_count = -1; },
     ];
     for (const mutate of cases) {
       const malformed = structuredClone(metadata()) as Record<string, any>;

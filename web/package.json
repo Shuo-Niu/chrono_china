@@ -9,7 +9,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run --reporter=default --reporter=junit --outputFile.junit=../artifacts/vitest-results.xml",
-    "test:public": "vitest run --exclude src/display/ranking.real-data.test.ts --exclude src/explore/viewportQuery.test.ts --exclude src/coverage/sourceCoverage.test.ts",
+    "test:public": "vitest run --exclude src/display/ranking.real-data.test.ts --exclude src/explore/viewportQuery.test.ts --exclude src/coverage/sourceCoverage.real-data.test.ts",
     "e2e": "playwright test"
   },
   "dependencies": {

@@ -74,6 +74,7 @@ def test_settlement_components_preserve_snapshot_and_interval_models() -> None:
             "temporal_model",
             "support",
             "snapshot_years",
+            "record_count",
             "snapshot_record_counts",
         )
     } == {
@@ -82,6 +83,7 @@ def test_settlement_components_preserve_snapshot_and_interval_models() -> None:
         "temporal_model": "TIME_SLICE",
         "support": "SUPPORTED",
         "snapshot_years": [1820, 1911],
+        "record_count": 48_690,
         "snapshot_record_counts": {"1820": 8659, "1911": 40031},
     }
     assert {
@@ -92,6 +94,7 @@ def test_settlement_components_preserve_snapshot_and_interval_models() -> None:
             "temporal_model",
             "support",
             "supported_periods",
+            "record_count",
             "period_record_counts",
         )
     } == {
@@ -100,6 +103,7 @@ def test_settlement_components_preserve_snapshot_and_interval_models() -> None:
         "temporal_model": "TIME_SERIES",
         "support": "UNKNOWN",
         "supported_periods": [[14, 22], [623, 959]],
+        "record_count": 18,
         "period_record_counts": {"14..22": 17, "623..959": 1},
     }
 

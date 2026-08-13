@@ -17,7 +17,7 @@ export interface SourceCoverageComponent {
   snapshotYears: readonly number[];
   supportedPeriods: readonly (readonly [number, number])[];
   observedPeriods: readonly (readonly [number, number])[];
-  recordCount: number | null;
+  recordCount: number;
   snapshotRecordCounts: Readonly<Record<string, number>>;
   periodRecordCounts: Readonly<Record<string, number>>;
   provenance: Readonly<Record<string, unknown>>;
@@ -104,8 +104,7 @@ function asPeriods(value: unknown, field: string): readonly (readonly [number, n
   });
 }
 
-function asOptionalCount(value: unknown, field: string): number | null {
-  if (value === undefined) return null;
+function asCount(value: unknown, field: string): number {
   const count = asInteger(value, field);
   if (count < 0) throw new Error(`invalid coverage metadata schema: ${field}`);
   return count;
@@ -116,9 +115,8 @@ function asCountMap(
   expectedKeys: readonly string[],
   field: string,
 ): Readonly<Record<string, number>> {
-  if (value === undefined) return {};
   if (!isRecord(value) ||
-      Object.keys(value).sort().join("|") !== [...expectedKeys].sort().join("|")) {
+      JSON.stringify(Object.keys(value)) !== JSON.stringify(expectedKeys)) {
     throw new Error(`invalid coverage metadata schema: ${field}`);
   }
   return Object.fromEntries(Object.entries(value).map(([key, rawCount]) => {
@@ -157,16 +155,7 @@ function parseComponent(
   const observedPeriods = asPeriods(value.observed_periods, `${field}.observed_periods`);
   const periodKeys = [...supportedPeriods, ...observedPeriods]
     .map(([start, end]) => `${start}..${end}`);
-  const snapshotRecordCounts = asCountMap(
-    value.snapshot_record_counts,
-    snapshotYears.map(String),
-    `${field}.snapshot_record_counts`,
-  );
-  const periodRecordCounts = asCountMap(
-    value.period_record_counts,
-    periodKeys,
-    `${field}.period_record_counts`,
-  );
+  const recordCount = asCount(value.record_count, `${field}.record_count`);
   const support = asSupport(value.support, `${field}.support`);
   if (temporalModel === "TIME_SLICE" && snapshotYears.length === 0) {
     throw new Error(`invalid coverage metadata schema: ${field}.snapshot_years required`);
@@ -174,6 +163,32 @@ function parseComponent(
   if (temporalModel === "TIME_SERIES" &&
       supportedPeriods.length === 0 && observedPeriods.length === 0) {
     throw new Error(`invalid coverage metadata schema: ${field}.periods required`);
+  }
+  let snapshotRecordCounts: Readonly<Record<string, number>> = {};
+  let periodRecordCounts: Readonly<Record<string, number>> = {};
+  if (temporalModel === "TIME_SLICE") {
+    if (value.period_record_counts !== undefined) {
+      throw new Error(`invalid coverage metadata schema: ${field}.period_record_counts`);
+    }
+    snapshotRecordCounts = asCountMap(
+      value.snapshot_record_counts,
+      snapshotYears.map(String),
+      `${field}.snapshot_record_counts`,
+    );
+    const snapshotTotal = Object.values(snapshotRecordCounts)
+      .reduce((total, count) => total + count, 0);
+    if (snapshotTotal !== recordCount) {
+      throw new Error(`invalid coverage metadata schema: ${field}.record_count total`);
+    }
+  } else {
+    if (value.snapshot_record_counts !== undefined) {
+      throw new Error(`invalid coverage metadata schema: ${field}.snapshot_record_counts`);
+    }
+    periodRecordCounts = asCountMap(
+      value.period_record_counts,
+      periodKeys,
+      `${field}.period_record_counts`,
+    );
   }
   if (support === "UNSUPPORTED") {
     throw new Error(`invalid coverage metadata schema: ${field}.covered component unsupported`);
@@ -189,7 +204,7 @@ function parseComponent(
     snapshotYears,
     supportedPeriods,
     observedPeriods,
-    recordCount: asOptionalCount(value.record_count, `${field}.record_count`),
+    recordCount,
     snapshotRecordCounts,
     periodRecordCounts,
     provenance: { ...value.provenance },
@@ -200,7 +215,7 @@ function parseComponent(
 
 export interface ComponentCountEvidence {
   currentYearActiveCount: number;
-  sourceSupportedCount: number | null;
+  sourceSupportedCount: number;
   evidenceLabel: string;
 }
 
@@ -232,13 +247,7 @@ export function componentCountEvidence(
   }
   return {
     currentYearActiveCount,
-    sourceSupportedCount: component.recordCount ?? (() => {
-      const evidencedTotal = [
-        ...Object.values(component.snapshotRecordCounts),
-        ...Object.values(component.periodRecordCounts),
-      ].reduce((total, count) => total + count, 0);
-      return evidencedTotal || null;
-    })(),
+    sourceSupportedCount: component.recordCount,
     evidenceLabel: "outside evidenced periods",
   };
 }

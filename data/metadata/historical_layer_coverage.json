@@ -33,6 +33,7 @@
             1820,
             1911
           ],
+          "record_count": 48690,
           "snapshot_record_counts": {
             "1820": 8659,
             "1911": 40031
@@ -61,6 +62,7 @@
               959
             ]
           ],
+          "record_count": 18,
           "period_record_counts": {
             "14..22": 17,
             "623..959": 1
@@ -101,6 +103,10 @@
             ]
           ],
           "record_count": 4,
+          "period_record_counts": {
+            "-399..207": 2,
+            "459..463": 2
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -126,6 +132,10 @@
             ]
           ],
           "record_count": 79,
+          "period_record_counts": {
+            "1220..1373": 1,
+            "1644..1911": 78
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -147,6 +157,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "1911..1911": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -168,6 +181,9 @@
             ]
           ],
           "record_count": 81,
+          "period_record_counts": {
+            "1234..1381": 81
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -198,6 +214,9 @@
             ]
           ],
           "record_count": 2,
+          "period_record_counts": {
+            "431..577": 2
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -223,6 +242,10 @@
             ]
           ],
           "record_count": 253,
+          "period_record_counts": {
+            "-206..514": 251,
+            "1389..1911": 2
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -248,6 +271,10 @@
             ]
           ],
           "record_count": 149,
+          "period_record_counts": {
+            "436..583": 2,
+            "636..1367": 147
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -289,6 +316,14 @@
             ]
           ],
           "record_count": 27,
+          "period_record_counts": {
+            "386..548": 14,
+            "581..596": 1,
+            "624..737": 1,
+            "756..1096": 1,
+            "1216..1279": 1,
+            "1820..1820": 9
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -310,6 +345,9 @@
             ]
           ],
           "record_count": 251,
+          "period_record_counts": {
+            "1623..1911": 251
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -331,6 +369,9 @@
             ]
           ],
           "record_count": 4017,
+          "period_record_counts": {
+            "-205..1912": 4017
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -352,6 +393,9 @@
             ]
           ],
           "record_count": 979,
+          "period_record_counts": {
+            "-687..1912": 979
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -373,6 +417,9 @@
             ]
           ],
           "record_count": 5,
+          "period_record_counts": {
+            "939..1282": 5
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -398,6 +445,10 @@
             ]
           ],
           "record_count": 242,
+          "period_record_counts": {
+            "958..1022": 1,
+            "1033..1911": 241
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -419,6 +470,9 @@
             ]
           ],
           "record_count": 361,
+          "period_record_counts": {
+            "955..1911": 361
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -452,6 +506,12 @@
             ]
           ],
           "record_count": 14,
+          "period_record_counts": {
+            "-314..155": 1,
+            "169..184": 1,
+            "918..1279": 10,
+            "1887..1911": 2
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -477,6 +537,10 @@
             ]
           ],
           "record_count": 2121,
+          "period_record_counts": {
+            "-688..1274": 2120,
+            "1276..1358": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -498,6 +562,9 @@
             ]
           ],
           "record_count": 522,
+          "period_record_counts": {
+            "682..985": 522
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -528,6 +595,9 @@
             ]
           ],
           "record_count": 5,
+          "period_record_counts": {
+            "311..588": 5
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -549,6 +619,9 @@
             ]
           ],
           "record_count": 11146,
+          "period_record_counts": {
+            "-763..1912": 11146
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -587,6 +660,11 @@
             ]
           ],
           "record_count": 397,
+          "period_record_counts": {
+            "-687..626": 387,
+            "766..850": 1,
+            "902..978": 9
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -608,6 +686,9 @@
             ]
           ],
           "record_count": 82,
+          "period_record_counts": {
+            "-221..1911": 82
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -635,6 +716,9 @@
             ]
           ],
           "record_count": 6,
+          "period_record_counts": {
+            "1238..1276": 6
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -664,6 +748,11 @@
             ]
           ],
           "record_count": 14,
+          "period_record_counts": {
+            "420..465": 2,
+            "1014..1129": 1,
+            "1368..1669": 11
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -685,6 +774,9 @@
             ]
           ],
           "record_count": 12,
+          "period_record_counts": {
+            "1911..1911": 12
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -706,6 +798,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "198..280": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -727,6 +822,9 @@
             ]
           ],
           "record_count": 2,
+          "period_record_counts": {
+            "222..279": 2
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -748,6 +846,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "1644..1644": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -777,6 +878,11 @@
             ]
           ],
           "record_count": 3,
+          "period_record_counts": {
+            "972..1276": 1,
+            "1287..1334": 1,
+            "1383..1388": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -798,6 +904,9 @@
             ]
           ],
           "record_count": 3,
+          "period_record_counts": {
+            "1726..1911": 3
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -819,6 +928,9 @@
             ]
           ],
           "record_count": 54,
+          "period_record_counts": {
+            "1253..1724": 54
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -844,6 +956,10 @@
             ]
           ],
           "record_count": 94,
+          "period_record_counts": {
+            "0..0": 1,
+            "1371..1911": 93
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -865,6 +981,9 @@
             ]
           ],
           "record_count": 30,
+          "period_record_counts": {
+            "1820..1820": 30
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -886,6 +1005,9 @@
             ]
           ],
           "record_count": 4,
+          "period_record_counts": {
+            "1911..1911": 4
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -911,6 +1033,10 @@
             ]
           ],
           "record_count": 223,
+          "period_record_counts": {
+            "1226..1265": 1,
+            "1342..1911": 222
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -932,6 +1058,9 @@
             ]
           ],
           "record_count": 34,
+          "period_record_counts": {
+            "972..1911": 34
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -961,6 +1090,11 @@
             ]
           ],
           "record_count": 6,
+          "period_record_counts": {
+            "1644..1732": 1,
+            "1820..1820": 2,
+            "1911..1911": 3
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -990,6 +1124,11 @@
             ]
           ],
           "record_count": 3,
+          "period_record_counts": {
+            "1645..1645": 1,
+            "1820..1820": 1,
+            "1911..1911": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1015,6 +1154,10 @@
             ]
           ],
           "record_count": 104,
+          "period_record_counts": {
+            "618..1277": 41,
+            "1911..1911": 63
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1036,6 +1179,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "1072..1276": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1057,6 +1203,9 @@
             ]
           ],
           "record_count": 10,
+          "period_record_counts": {
+            "1907..1911": 10
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1078,6 +1227,9 @@
             ]
           ],
           "record_count": 45,
+          "period_record_counts": {
+            "1131..1911": 45
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1099,6 +1251,9 @@
             ]
           ],
           "record_count": 102,
+          "period_record_counts": {
+            "1820..1820": 102
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1132,6 +1287,12 @@
             ]
           ],
           "record_count": 25,
+          "period_record_counts": {
+            "1101..1160": 1,
+            "1290..1302": 1,
+            "1326..1761": 20,
+            "1911..1911": 3
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1165,6 +1326,12 @@
             ]
           ],
           "record_count": 29,
+          "period_record_counts": {
+            "1265..1276": 2,
+            "1279..1284": 1,
+            "1292..1325": 1,
+            "1346..1911": 25
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1186,6 +1353,9 @@
             ]
           ],
           "record_count": 14,
+          "period_record_counts": {
+            "960..1466": 14
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1207,6 +1377,9 @@
             ]
           ],
           "record_count": 28,
+          "period_record_counts": {
+            "1662..1911": 28
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1228,6 +1401,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "263..285": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1249,6 +1425,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "222..279": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1270,6 +1449,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "960..1300": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1295,6 +1477,10 @@
             ]
           ],
           "record_count": 2,
+          "period_record_counts": {
+            "597..617": 1,
+            "738..902": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1316,6 +1502,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "1911..1911": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1337,6 +1526,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "1911..1911": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1362,6 +1554,10 @@
             ]
           ],
           "record_count": 20,
+          "period_record_counts": {
+            "1376..1644": 19,
+            "1772..1772": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1383,6 +1579,9 @@
             ]
           ],
           "record_count": 15,
+          "period_record_counts": {
+            "1820..1820": 15
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1404,6 +1603,9 @@
             ]
           ],
           "record_count": 3,
+          "period_record_counts": {
+            "1384..1907": 3
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1425,6 +1627,9 @@
             ]
           ],
           "record_count": 11,
+          "period_record_counts": {
+            "1375..1795": 11
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1446,6 +1651,9 @@
             ]
           ],
           "record_count": 5,
+          "period_record_counts": {
+            "1275..1729": 5
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1467,6 +1675,9 @@
             ]
           ],
           "record_count": 2,
+          "period_record_counts": {
+            "1379..1531": 2
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1492,6 +1703,10 @@
             ]
           ],
           "record_count": 346,
+          "period_record_counts": {
+            "1820..1820": 151,
+            "1911..1911": 195
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1513,6 +1728,9 @@
             ]
           ],
           "record_count": 3,
+          "period_record_counts": {
+            "1646..1661": 3
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1534,6 +1752,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "1911..1911": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1555,6 +1776,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "350..417": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1576,6 +1800,9 @@
             ]
           ],
           "record_count": 4,
+          "period_record_counts": {
+            "1820..1820": 4
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1597,6 +1824,9 @@
             ]
           ],
           "record_count": 3,
+          "period_record_counts": {
+            "-202..-111": 3
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1618,6 +1848,9 @@
             ]
           ],
           "record_count": 5,
+          "period_record_counts": {
+            "937..1328": 5
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1647,6 +1880,11 @@
             ]
           ],
           "record_count": 5,
+          "period_record_counts": {
+            "923..925": 2,
+            "937..955": 1,
+            "959..971": 2
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1668,6 +1906,9 @@
             ]
           ],
           "record_count": 2,
+          "period_record_counts": {
+            "1254..1284": 2
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1689,6 +1930,9 @@
             ]
           ],
           "record_count": 3,
+          "period_record_counts": {
+            "1820..1820": 3
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1710,6 +1954,9 @@
             ]
           ],
           "record_count": 152,
+          "period_record_counts": {
+            "1717..1911": 152
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1731,6 +1978,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "975..975": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1752,6 +2002,9 @@
             ]
           ],
           "record_count": 2,
+          "period_record_counts": {
+            "1911..1911": 2
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1773,6 +2026,9 @@
             ]
           ],
           "record_count": 5,
+          "period_record_counts": {
+            "962..1276": 5
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1794,6 +2050,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "667..926": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1815,6 +2074,9 @@
             ]
           ],
           "record_count": 80,
+          "period_record_counts": {
+            "638..1911": 80
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1836,6 +2098,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "1658..1725": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1857,6 +2122,9 @@
             ]
           ],
           "record_count": 6,
+          "period_record_counts": {
+            "738..1096": 6
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1878,6 +2146,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "738..902": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1899,6 +2170,9 @@
             ]
           ],
           "record_count": 59,
+          "period_record_counts": {
+            "1911..1911": 59
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1920,6 +2194,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "1425..1441": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1941,6 +2218,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "1403..1421": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1962,6 +2242,9 @@
             ]
           ],
           "record_count": 6,
+          "period_record_counts": {
+            "618..738": 6
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -1983,6 +2266,9 @@
             ]
           ],
           "record_count": 26,
+          "period_record_counts": {
+            "618..1381": 26
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -2008,6 +2294,10 @@
             ]
           ],
           "record_count": 4,
+          "period_record_counts": {
+            "1653..1756": 3,
+            "1911..1911": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -2029,6 +2319,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "738..902": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -2054,6 +2347,10 @@
             ]
           ],
           "record_count": 2,
+          "period_record_counts": {
+            "-202..29": 1,
+            "738..1269": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -2079,6 +2376,10 @@
             ]
           ],
           "record_count": 15,
+          "period_record_counts": {
+            "621..1265": 14,
+            "1911..1911": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -2100,6 +2401,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "215..215": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -2133,6 +2437,12 @@
             ]
           ],
           "record_count": 30,
+          "period_record_counts": {
+            "-59..8": 1,
+            "74..75": 1,
+            "91..107": 1,
+            "640..783": 27
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -2158,6 +2468,10 @@
             ]
           ],
           "record_count": 7,
+          "period_record_counts": {
+            "233..478": 2,
+            "632..794": 5
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -2179,6 +2493,9 @@
             ]
           ],
           "record_count": 2,
+          "period_record_counts": {
+            "123..316": 2
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -2200,6 +2517,9 @@
             ]
           ],
           "record_count": 249,
+          "period_record_counts": {
+            "1274..1911": 249
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -2221,6 +2541,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "562..562": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -2246,6 +2569,10 @@
             ]
           ],
           "record_count": 2,
+          "period_record_counts": {
+            "1644..1661": 1,
+            "1747..1905": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -2267,6 +2594,9 @@
             ]
           ],
           "record_count": 1,
+          "period_record_counts": {
+            "1820..1820": 1
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"
@@ -2288,6 +2618,9 @@
             ]
           ],
           "record_count": 6,
+          "period_record_counts": {
+            "907..1052": 6
+          },
           "provenance": {
             "basis": "frozen_compact_index_observation",
             "index_path": "data/processed/explore/tgaz_compact.json"

@@ -144,13 +144,23 @@ def _time_series_component(
     records: list[Mapping[str, object]],
     support: str,
 ) -> dict[str, object]:
+    observed_periods = _merged_periods(records)
+    period_record_counts = {
+        f"{begin}..{end}": sum(
+            1
+            for record in records
+            if _years(record)[0] <= end and begin <= _years(record)[1]
+        )
+        for begin, end in observed_periods
+    }
     return {
         "id": _component_id(raw_type),
         "raw_types": [raw_type],
         "temporal_model": "TIME_SERIES",
         "support": support,
-        "observed_periods": _merged_periods(records),
+        "observed_periods": observed_periods,
         "record_count": len(records),
+        "period_record_counts": period_record_counts,
         "provenance": OBSERVED_INDEX_PROVENANCE,
         "source_evidence": (
             "Exact raw-type records and validity intervals observed in the frozen compact index; "
@@ -194,6 +204,7 @@ def _settlement_components(records: list[Mapping[str, object]]) -> list[dict[str
             "temporal_model": "TIME_SLICE",
             "support": "SUPPORTED",
             "snapshot_years": [1820, 1911],
+            "record_count": len(towns),
             "snapshot_record_counts": town_counts,
             "provenance": APPROVED_SOURCE_PROVENANCE,
             "source_evidence": (
@@ -207,6 +218,7 @@ def _settlement_components(records: list[Mapping[str, object]]) -> list[dict[str
             "temporal_model": "TIME_SERIES",
             "support": "UNKNOWN",
             "supported_periods": _merged_periods(pavilions),
+            "record_count": len(pavilions),
             "period_record_counts": pavilion_counts,
             "provenance": APPROVED_SOURCE_PROVENANCE,
             "source_evidence": (

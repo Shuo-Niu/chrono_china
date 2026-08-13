@@ -40,5 +40,6 @@ def test_public_tests_exclude_only_new_real_data_dependencies_from_full_suites()
     package = json.loads((PROJECT_ROOT / "web/package.json").read_text(encoding="utf-8"))
     public_command = package["scripts"]["test:public"]
     full_command = package["scripts"]["test"]
-    assert "--exclude src/coverage/sourceCoverage.test.ts" in public_command
+    assert "--exclude src/coverage/sourceCoverage.real-data.test.ts" in public_command
+    assert "--exclude src/coverage/sourceCoverage.test.ts" not in public_command
     assert "sourceCoverage.test.ts" not in full_command

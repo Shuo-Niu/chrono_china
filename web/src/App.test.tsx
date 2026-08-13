@@ -140,6 +140,10 @@ function coverageMetadata(sha256 = compactIndexSha256) {
     temporal_model: "TIME_SERIES",
     support,
     observed_periods: observedPeriods,
+    record_count: 1,
+    period_record_counts: Object.fromEntries(
+      observedPeriods.map(([start, end]) => [`${start}..${end}`, 1]),
+    ),
     provenance: { basis: "test fixture" },
     source_evidence: "complete test fixture",
     evidence_strength: "TEST",
@@ -157,7 +161,11 @@ function coverageMetadata(sha256 = compactIndexSha256) {
     families: {
       high_admin: {
         default_support: "LIMITED",
-        components: [{ ...component("province", [TYPES.province], [[1911, 1911]]), record_count: 79 }],
+        components: [{
+          ...component("province", [TYPES.province], [[1911, 1911]]),
+          record_count: 79,
+          period_record_counts: { "1911..1911": 79 },
+        }],
         user_mode_copy: { limited: "\u9ad8\u5c42\u7ea7\u8d44\u6599\u6709\u9650" },
         developer_mode_explanation: "High-admin coverage is limited.",
       },
@@ -182,6 +190,7 @@ function coverageMetadata(sha256 = compactIndexSha256) {
             temporal_model: "TIME_SLICE",
             support: "SUPPORTED",
             snapshot_years: [1820, 1911],
+            record_count: 2,
             snapshot_record_counts: { "1820": 1, "1911": 1 },
             provenance: { basis: "test fixture" },
             source_evidence: "Named village snapshots.",
@@ -189,7 +198,7 @@ function coverageMetadata(sha256 = compactIndexSha256) {
           },
           {
             ...component("raw_pavilion_intervals", [TYPES.pavilion], [[14, 22], [623, 959]]),
-            period_record_counts: { "14..22": 1, "623..959": 1 },
+            record_count: 2,
           },
         ],
         user_mode_copy: {
