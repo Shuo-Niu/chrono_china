@@ -256,14 +256,22 @@ describe("source coverage", () => {
     }
   });
 
-  test("keeps active unsupported components conservative", () => {
+  test("rejects covered components declared unsupported and fails open without absence copy", () => {
     const raw = structuredClone(metadata()) as Record<string, any>;
     raw.families.settlement.components[1].support = "UNSUPPORTED";
-    expect(assessSourceCoverage(
-      parseCoverageMetadata(raw, index(), INDEX_SHA),
-      "settlement",
-      626,
-    ).support).toBe("UNSUPPORTED");
+    expect(() => parseCoverageMetadata(raw, index(), INDEX_SHA)).toThrow("schema");
+    const fallback = assessSourceCoverage(null, "settlement", 626);
+    expect(fallback).toMatchObject({ support: "UNKNOWN" });
+    expect(userCoverageMessages(fallback, "NO_RECORDS", true)).toEqual([]);
+
+    const bypassedParser = structuredClone(
+      parseCoverageMetadata(metadata(), index(), INDEX_SHA),
+    );
+    bypassedParser.families.settlement.components[1].support = "UNSUPPORTED";
+    const defensive = assessSourceCoverage(bypassedParser, "settlement", 626);
+    expect(defensive).toMatchObject({ support: "UNKNOWN" });
+    expect(defensive.diagnostic).not.toBeNull();
+    expect(userCoverageMessages(defensive, "NO_RECORDS", true)).toEqual([]);
   });
 
   test("preserves Developer Mode evidence and family explanation", () => {

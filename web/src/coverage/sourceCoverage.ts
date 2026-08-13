@@ -128,12 +128,16 @@ function parseComponent(
   }
   const supportedPeriods = asPeriods(value.supported_periods, `${field}.supported_periods`);
   const observedPeriods = asPeriods(value.observed_periods, `${field}.observed_periods`);
+  const support = asSupport(value.support, `${field}.support`);
   if (temporalModel === "TIME_SLICE" && snapshotYears.length === 0) {
     throw new Error(`invalid coverage metadata schema: ${field}.snapshot_years required`);
   }
   if (temporalModel === "TIME_SERIES" &&
       supportedPeriods.length === 0 && observedPeriods.length === 0) {
     throw new Error(`invalid coverage metadata schema: ${field}.periods required`);
+  }
+  if (support === "UNSUPPORTED") {
+    throw new Error(`invalid coverage metadata schema: ${field}.covered component unsupported`);
   }
   if (!isRecord(value.provenance)) {
     throw new Error(`invalid coverage metadata schema: ${field}.provenance`);
@@ -142,7 +146,7 @@ function parseComponent(
     id: asString(value.id, `${field}.id`),
     rawTypes,
     temporalModel: temporalModel as TemporalModel,
-    support: asSupport(value.support, `${field}.support`),
+    support,
     snapshotYears,
     supportedPeriods,
     observedPeriods,
@@ -271,11 +275,20 @@ export function assessSourceCoverage(
     componentActive(component, year));
   const temporalModels = TEMPORAL_MODELS.filter((model) =>
     activeComponents.some((component) => component.temporalModel === model));
+  if (activeComponents.some((component) => component.support === "UNSUPPORTED")) {
+    return {
+      family,
+      year,
+      support: "UNKNOWN",
+      temporalModels,
+      activeComponents,
+      userModeCopy: sourceFamily.userModeCopy,
+      diagnostic: "active coverage component cannot declare UNSUPPORTED",
+    };
+  }
   let support = sourceFamily.defaultSupport;
   if (activeComponents.length > 0) {
-    if (activeComponents.some((component) => component.support === "UNSUPPORTED")) {
-      support = "UNSUPPORTED";
-    } else if (sourceFamily.defaultSupport === "LIMITED" ||
+    if (sourceFamily.defaultSupport === "LIMITED" ||
         activeComponents.some((component) => component.support === "LIMITED")) {
       support = "LIMITED";
     } else if (activeComponents.some((component) => component.support === "UNKNOWN")) {
