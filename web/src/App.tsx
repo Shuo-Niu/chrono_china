@@ -1333,7 +1333,12 @@ export default function App() {
               type="button"
               data-legend-family={config.id}
               aria-pressed={enabledFamilies.has(config.id)}
-              aria-label={`${config.labelZh}：${enabledFamilies.has(config.id) ? "已显示" : "已隐藏"}`}
+              aria-label={
+                `${config.labelZh}：${enabledFamilies.has(config.id) ? "已显示" : "已隐藏"}` +
+                (coverageState.messages.length > 0
+                  ? `；${coverageState.messages.map((message) => message.text).join("；")}`
+                  : "")
+              }
               onClick={() => toggleFamily(config.id)}
             >
               <i
@@ -1349,11 +1354,11 @@ export default function App() {
                   title={coverageTitle}
                 >
                   {coverageState.messages.map((message) => {
-                    if (message.kind === "snapshot") return message.text;
+                    if (message.kind === "snapshot") return `${exploreYear}快照`;
                     if (message.kind === "unsupported") return "来源无资料";
                     if (message.kind === "limited") return "有限";
-                    if (message.kind === "unknown") return "未明";
-                    return "范围无记录";
+                    if (message.kind === "unknown") return "?";
+                    return "范围空";
                   }).join("·")}
                 </span>
               )}

@@ -5,6 +5,7 @@ const realRecords = {
   pavilion626: { id: "hvd_115201", center: [108.85463, 34.41219] as [number, number] },
   town1820: { id: "hvd_15476", center: [115.04019, 35.09462] as [number, number] },
   town1911: { id: "hvd_122406", center: [107.35506, 22.4202] as [number, number] },
+  highAdmin1911: { id: "hvd_30012", center: [119.32158, 26.07395] as [number, number] },
 };
 
 const responsiveViewports = [
@@ -132,10 +133,20 @@ test("Phase 1.4.1 real snapshots and interval settlements remain semantically di
   });
 
   await setYear(page, 1820);
-  await expect(settlementBadge).toContainText("1820 村镇快照");
+  await expect(settlementBadge).toContainText("1820快照");
   await expect(markerFor(page, realRecords.town1820.id)).toBeVisible();
   expect(await settlementState(page)).toMatchObject({
     support: "SUPPORTED", temporalModels: ["TIME_SLICE"], viewportResult: "HAS_RECORDS",
+  });
+
+  await setView(page, [140, 15], 11);
+  await expect(settlementBadge).toContainText("1820快照");
+  await expect(settlementBadge).toContainText("范围空");
+  await expect(page.locator('[data-legend-family="settlement"]')).toHaveAccessibleName(
+    /1820 村镇快照.*当前范围无记录/,
+  );
+  expect(await settlementState(page)).toMatchObject({
+    support: "SUPPORTED", temporalModels: ["TIME_SLICE"], viewportResult: "NO_RECORDS", viewportCount: 0,
   });
 
   await setYear(page, 1821);
@@ -147,8 +158,18 @@ test("Phase 1.4.1 real snapshots and interval settlements remain semantically di
   await expect(settlementBadge).toHaveText("来源无资料");
   await expect(markerFor(page, realRecords.town1911.id)).toHaveCount(0);
   await setYear(page, 1911);
-  await expect(settlementBadge).toContainText("1911 村镇快照");
+  await expect(settlementBadge).toContainText("1911快照");
   await expect(markerFor(page, realRecords.town1911.id)).toBeVisible();
+
+  await setView(page, realRecords.highAdmin1911.center);
+  await expect(markerFor(page, realRecords.highAdmin1911.id)).toBeVisible();
+  const highAdminState = JSON.parse(
+    await page.getByTestId("map").getAttribute("data-coverage-family-states") ?? "{}",
+  ).high_admin;
+  expect(highAdminState).toMatchObject({ support: "LIMITED", viewportResult: "HAS_RECORDS" });
+  await expect(page.locator('[data-legend-family="high_admin"]')).toHaveAccessibleName(
+    /高层级资料有限/,
+  );
 
   await setView(page, realRecords.pavilion14.center);
   await setYear(page, 14);
@@ -192,7 +213,7 @@ test("Phase 1.4.1 real snapshots and interval settlements remain semantically di
     }
   });
   await expect(page.getByTestId("map")).toHaveAttribute("data-query-result-year", "1911");
-  await expect(settlementBadge).toContainText("1911 村镇快照");
+  await expect(settlementBadge).toContainText("1911快照");
   await expect(page.getByTestId("map")).toHaveAttribute("data-full-historical-layer-clear-count", "0");
   await expect(page.getByTestId("map")).toHaveAttribute("data-stale-commit-count", "0");
 });
@@ -218,20 +239,35 @@ test("Phase 1.4.1 coverage badges preserve responsive overlay safe areas", async
   await waitForIndex(page);
   await setView(page, realRecords.town1911.center);
   await setYear(page, 1911);
-  await expect(page.getByTestId("coverage-settlement")).toContainText("1911 村镇快照");
+  await expect(page.getByTestId("coverage-settlement")).toContainText("1911快照");
   await expect(page.getByTestId("coverage-high_admin")).toContainText("有限");
   await markerFor(page, realRecords.town1911.id).click();
-  await expect(page.locator(".detail-card,.colocated-card").first()).toBeVisible();
+  const colocatedCard = page.locator(".colocated-card");
+  if (await colocatedCard.isVisible()) {
+    await page.locator(`[data-colocated-member-id="${realRecords.town1911.id}"]`).click();
+  }
+  await expect(page.locator(".detail-card")).toBeVisible();
 
   const forbiddenPairs = [
     ["timeline", "legend"], ["timeline", "zoom"], ["timeline", "scale"],
     ["timeline", "detail"], ["timeline", "attribution"], ["legend", "zoom"],
     ["legend", "scale"], ["legend", "detail"], ["detail", "zoom"], ["detail", "scale"],
+    ["legend", "attribution"],
   ] as const;
   for (const viewport of responsiveViewports) {
     await page.setViewportSize(viewport);
     await page.waitForTimeout(120);
     const state = await overlayState(page);
+    for (const [name, box] of Object.entries({
+      timeline: state.timeline,
+      legend: state.legend,
+      zoom: state.zoom,
+      scale: state.scale,
+      attribution: state.attribution,
+      detail: state.detail,
+    })) {
+      expect(box, `${viewport.width}x${viewport.height} ${name} must exist and be visible`).not.toBeNull();
+    }
     const collisions = forbiddenPairs.filter(([first, second]) =>
       intersects(state[first], state[second]));
     expect(collisions, `${viewport.width}x${viewport.height} forbidden collision`).toEqual([]);
@@ -269,5 +305,8 @@ test("Phase 1.4.1 coverage badges preserve responsive overlay safe areas", async
         }
       }
     }
+    const minimumFontSizes = await page.locator("[data-legend-family], [data-coverage-family]")
+      .evaluateAll((elements) => elements.map((element) => Number.parseFloat(getComputedStyle(element).fontSize)));
+    expect(Math.min(...minimumFontSizes), `${viewport.width} legend minimum font size`).toBeGreaterThanOrEqual(9);
   }
 });
