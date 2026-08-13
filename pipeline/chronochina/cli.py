@@ -51,6 +51,9 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "phase1-3-1c-explore", help="Build the compact viewport exploration index"
     )
+    subparsers.add_parser(
+        "phase1-4-1-coverage", help="Generate snapshot-aware historical coverage metadata"
+    )
     return parser
 
 
@@ -177,6 +180,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         }
     elif arguments.command == "phase1-3-1c-explore":
         output = build_explore_index()
+    elif arguments.command == "phase1-4-1-coverage":
+        from .qa.coverage_metadata import generate
+
+        result = generate()
+        output = {
+            "phase": "1.4.1",
+            "status": "PASS",
+            "canonical_index": result["canonical_index"],
+        }
     else:  # pragma: no cover - argparse enforces the known subcommands.
         raise AssertionError(arguments.command)
     print(json.dumps(output, ensure_ascii=False, indent=2))

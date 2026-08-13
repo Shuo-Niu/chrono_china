@@ -1,0 +1,1700 @@
+{
+  "schema_version": "1.0",
+  "canonical_index": {
+    "path": "data/processed/explore/tgaz_compact.json",
+    "bytes": 8026299,
+    "record_count": 71393,
+    "sha256": "7c9ccaedfd58445595e5ab68fd1fb9e106e33c37b8bb98002a7e8e6bad5b5baf",
+    "observed_envelope": {
+      "min_year": -763,
+      "max_year": 1912
+    }
+  },
+  "provenance": {
+    "canonical_source": "TGAZ/CHGIS 2016 snapshot",
+    "tgaz_documentation_envelope": {
+      "min_year": -222,
+      "max_year": 1911,
+      "role": "provenance_note_only"
+    }
+  },
+  "families": {
+    "settlement": {
+      "default_support": "UNSUPPORTED",
+      "components": [
+        {
+          "id": "raw_town_snapshots",
+          "raw_types": [
+            "村镇"
+          ],
+          "temporal_model": "TIME_SLICE",
+          "support": "SUPPORTED",
+          "snapshot_years": [
+            1820,
+            1911
+          ],
+          "snapshot_record_counts": {
+            "1820": 8659,
+            "1911": 40031
+          }
+        },
+        {
+          "id": "raw_pavilion_intervals",
+          "raw_types": [
+            "亭"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              14,
+              22
+            ],
+            [
+              623,
+              959
+            ]
+          ],
+          "period_record_counts": {
+            "14..22": 17,
+            "623..959": 1
+          }
+        }
+      ]
+    },
+    "high_admin": {
+      "default_support": "LIMITED",
+      "components": [
+        {
+          "id": "raw_738b_757f",
+          "raw_types": [
+            "王畿"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "LIMITED",
+          "supported_periods": [
+            [
+              -399,
+              207
+            ],
+            [
+              459,
+              463
+            ]
+          ],
+          "record_count": 4
+        },
+        {
+          "id": "raw_7701",
+          "raw_types": [
+            "省"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "LIMITED",
+          "supported_periods": [
+            [
+              1220,
+              1373
+            ],
+            [
+              1644,
+              1911
+            ]
+          ],
+          "record_count": 79
+        },
+        {
+          "id": "raw_7701_7ea7",
+          "raw_types": [
+            "省级"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "LIMITED",
+          "supported_periods": [
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_884c_7701",
+          "raw_types": [
+            "行省"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "LIMITED",
+          "supported_periods": [
+            [
+              1234,
+              1381
+            ]
+          ],
+          "record_count": 81
+        }
+      ]
+    },
+    "regional_admin": {
+      "default_support": "SUPPORTED",
+      "components": [
+        {
+          "id": "raw_4fa8_90e1",
+          "raw_types": [
+            "侨郡"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              431,
+              577
+            ]
+          ],
+          "record_count": 2
+        },
+        {
+          "id": "raw_4faf_56fd",
+          "raw_types": [
+            "侯国"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              -206,
+              514
+            ],
+            [
+              1389,
+              1911
+            ]
+          ],
+          "record_count": 253
+        },
+        {
+          "id": "raw_519b",
+          "raw_types": [
+            "军"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              436,
+              583
+            ],
+            [
+              636,
+              1367
+            ]
+          ],
+          "record_count": 149
+        },
+        {
+          "id": "raw_519b_9547",
+          "raw_types": [
+            "军镇"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              386,
+              548
+            ],
+            [
+              581,
+              596
+            ],
+            [
+              624,
+              737
+            ],
+            [
+              756,
+              1096
+            ],
+            [
+              1216,
+              1279
+            ],
+            [
+              1820,
+              1820
+            ]
+          ],
+          "record_count": 27
+        },
+        {
+          "id": "raw_5385",
+          "raw_types": [
+            "厅"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              1623,
+              1911
+            ]
+          ],
+          "record_count": 251
+        },
+        {
+          "id": "raw_5dde",
+          "raw_types": [
+            "州"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              -205,
+              1912
+            ]
+          ],
+          "record_count": 4017
+        },
+        {
+          "id": "raw_5e9c",
+          "raw_types": [
+            "府"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              -687,
+              1912
+            ]
+          ],
+          "record_count": 979
+        },
+        {
+          "id": "raw_76d1",
+          "raw_types": [
+            "监"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              939,
+              1282
+            ]
+          ],
+          "record_count": 5
+        },
+        {
+          "id": "raw_76f4_96b6_5dde",
+          "raw_types": [
+            "直隶州"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              958,
+              1022
+            ],
+            [
+              1033,
+              1911
+            ]
+          ],
+          "record_count": 242
+        },
+        {
+          "id": "raw_8def",
+          "raw_types": [
+            "路"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              955,
+              1911
+            ]
+          ],
+          "record_count": 361
+        },
+        {
+          "id": "raw_9053",
+          "raw_types": [
+            "道"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              -314,
+              155
+            ],
+            [
+              169,
+              184
+            ],
+            [
+              918,
+              1279
+            ],
+            [
+              1887,
+              1911
+            ]
+          ],
+          "record_count": 14
+        },
+        {
+          "id": "raw_90e1",
+          "raw_types": [
+            "郡"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              -688,
+              1274
+            ],
+            [
+              1276,
+              1358
+            ]
+          ],
+          "record_count": 2121
+        },
+        {
+          "id": "raw_9632_9547",
+          "raw_types": [
+            "防镇"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              682,
+              985
+            ]
+          ],
+          "record_count": 522
+        }
+      ]
+    },
+    "county": {
+      "default_support": "SUPPORTED",
+      "components": [
+        {
+          "id": "raw_4fa8_53bf",
+          "raw_types": [
+            "侨县"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              311,
+              588
+            ]
+          ],
+          "record_count": 5
+        },
+        {
+          "id": "raw_53bf",
+          "raw_types": [
+            "县"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "SUPPORTED",
+          "supported_periods": [
+            [
+              -763,
+              1912
+            ]
+          ],
+          "record_count": 11146
+        }
+      ]
+    },
+    "polity": {
+      "default_support": "UNKNOWN",
+      "components": [
+        {
+          "id": "raw_56fd",
+          "raw_types": [
+            "国"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              -687,
+              626
+            ],
+            [
+              766,
+              850
+            ],
+            [
+              902,
+              978
+            ]
+          ],
+          "record_count": 397
+        },
+        {
+          "id": "raw_653f_6743",
+          "raw_types": [
+            "政权"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              -221,
+              1911
+            ]
+          ],
+          "record_count": 82
+        }
+      ]
+    },
+    "other": {
+      "default_support": "UNKNOWN",
+      "components": [
+        {
+          "id": "raw_4e07_6237",
+          "raw_types": [
+            "万户"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1238,
+              1276
+            ]
+          ],
+          "record_count": 6
+        },
+        {
+          "id": "raw_4eac_5e2b",
+          "raw_types": [
+            "京師"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              420,
+              465
+            ],
+            [
+              1014,
+              1129
+            ],
+            [
+              1368,
+              1669
+            ]
+          ],
+          "record_count": 14
+        },
+        {
+          "id": "raw_4f50_9886",
+          "raw_types": [
+            "佐领"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 12
+        },
+        {
+          "id": "raw_5178_519c_6821_5c09",
+          "raw_types": [
+            "典农校尉"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              198,
+              280
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_5178_519c_90fd_5c09",
+          "raw_types": [
+            "典农都尉"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              222,
+              279
+            ]
+          ],
+          "record_count": 2
+        },
+        {
+          "id": "raw_5185_5927_81e3",
+          "raw_types": [
+            "内大臣"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1644,
+              1644
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_519b_6c11_5e9c",
+          "raw_types": [
+            "军民府"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              972,
+              1276
+            ],
+            [
+              1287,
+              1334
+            ],
+            [
+              1383,
+              1388
+            ]
+          ],
+          "record_count": 3
+        },
+        {
+          "id": "raw_529e_4e8b_5927_81e3",
+          "raw_types": [
+            "办事大臣"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1726,
+              1911
+            ]
+          ],
+          "record_count": 3
+        },
+        {
+          "id": "raw_5343_6237",
+          "raw_types": [
+            "千户"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1253,
+              1724
+            ]
+          ],
+          "record_count": 54
+        },
+        {
+          "id": "raw_536b",
+          "raw_types": [
+            "卫"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              0,
+              0
+            ],
+            [
+              1371,
+              1911
+            ]
+          ],
+          "record_count": 94
+        },
+        {
+          "id": "raw_53bf_7ea7",
+          "raw_types": [
+            "县级"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1820,
+              1820
+            ]
+          ],
+          "record_count": 30
+        },
+        {
+          "id": "raw_571f_53bf",
+          "raw_types": [
+            "土县"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 4
+        },
+        {
+          "id": "raw_571f_53f8",
+          "raw_types": [
+            "土司"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1226,
+              1265
+            ],
+            [
+              1342,
+              1911
+            ]
+          ],
+          "record_count": 223
+        },
+        {
+          "id": "raw_571f_5dde",
+          "raw_types": [
+            "土州"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              972,
+              1911
+            ]
+          ],
+          "record_count": 34
+        },
+        {
+          "id": "raw_571f_5e9c",
+          "raw_types": [
+            "土府"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1644,
+              1732
+            ],
+            [
+              1820,
+              1820
+            ],
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 6
+        },
+        {
+          "id": "raw_5730_533a",
+          "raw_types": [
+            "地区"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1645,
+              1645
+            ],
+            [
+              1820,
+              1820
+            ],
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 3
+        },
+        {
+          "id": "raw_57ce",
+          "raw_types": [
+            "城"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              618,
+              1277
+            ],
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 104
+        },
+        {
+          "id": "raw_5821",
+          "raw_types": [
+            "堡"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1072,
+              1276
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_59d4_5458",
+          "raw_types": [
+            "委员"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1907,
+              1911
+            ]
+          ],
+          "record_count": 10
+        },
+        {
+          "id": "raw_5b89_629a_53f8",
+          "raw_types": [
+            "安抚司"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1131,
+              1911
+            ]
+          ],
+          "record_count": 45
+        },
+        {
+          "id": "raw_5b97",
+          "raw_types": [
+            "宗"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1820,
+              1820
+            ]
+          ],
+          "record_count": 102
+        },
+        {
+          "id": "raw_5ba3_5c09_53f8",
+          "raw_types": [
+            "宣尉司"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1101,
+              1160
+            ],
+            [
+              1290,
+              1302
+            ],
+            [
+              1326,
+              1761
+            ],
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 25
+        },
+        {
+          "id": "raw_5ba3_629a_53f8",
+          "raw_types": [
+            "宣抚司"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1265,
+              1276
+            ],
+            [
+              1279,
+              1284
+            ],
+            [
+              1292,
+              1325
+            ],
+            [
+              1346,
+              1911
+            ]
+          ],
+          "record_count": 29
+        },
+        {
+          "id": "raw_5be8",
+          "raw_types": [
+            "寨"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              960,
+              1466
+            ]
+          ],
+          "record_count": 14
+        },
+        {
+          "id": "raw_5c06_519b",
+          "raw_types": [
+            "将军"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1662,
+              1911
+            ]
+          ],
+          "record_count": 28
+        },
+        {
+          "id": "raw_5c5e_56fd_90fd_5c09",
+          "raw_types": [
+            "属国都尉"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              263,
+              285
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_5c6f_7530_90fd_5c09",
+          "raw_types": [
+            "屯田都尉"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              222,
+              279
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_5c71_6d1e",
+          "raw_types": [
+            "山洞"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              960,
+              1300
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_5ddd",
+          "raw_types": [
+            "川"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              597,
+              617
+            ],
+            [
+              738,
+              902
+            ]
+          ],
+          "record_count": 2
+        },
+        {
+          "id": "raw_5dde_5224",
+          "raw_types": [
+            "州判"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_5de1_68c0_53f8",
+          "raw_types": [
+            "巡检司"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_5e03_653f_53f8",
+          "raw_types": [
+            "布政司"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1376,
+              1644
+            ],
+            [
+              1772,
+              1772
+            ]
+          ],
+          "record_count": 20
+        },
+        {
+          "id": "raw_5e9c_7ea7",
+          "raw_types": [
+            "府级"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1820,
+              1820
+            ]
+          ],
+          "record_count": 15
+        },
+        {
+          "id": "raw_5fa1_5937_5dde",
+          "raw_types": [
+            "御夷州"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1384,
+              1907
+            ]
+          ],
+          "record_count": 3
+        },
+        {
+          "id": "raw_6240",
+          "raw_types": [
+            "所"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1375,
+              1795
+            ]
+          ],
+          "record_count": 11
+        },
+        {
+          "id": "raw_62db_8ba8_53f8",
+          "raw_types": [
+            "招讨司"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1275,
+              1729
+            ]
+          ],
+          "record_count": 5
+        },
+        {
+          "id": "raw_6307_6325_4f7f",
+          "raw_types": [
+            "指挥使"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1379,
+              1531
+            ]
+          ],
+          "record_count": 2
+        },
+        {
+          "id": "raw_65d7",
+          "raw_types": [
+            "旗"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1820,
+              1820
+            ],
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 346
+        },
+        {
+          "id": "raw_6602_90a6_7ae0_4eac",
+          "raw_types": [
+            "昂邦章京"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1646,
+              1661
+            ]
+          ],
+          "record_count": 3
+        },
+        {
+          "id": "raw_672c_5dde",
+          "raw_types": [
+            "本州"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_6821_5c09",
+          "raw_types": [
+            "校尉"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              350,
+              417
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_7267_573a",
+          "raw_types": [
+            "牧场"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1820,
+              1820
+            ]
+          ],
+          "record_count": 4
+        },
+        {
+          "id": "raw_738b_56fd",
+          "raw_types": [
+            "王国"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              -202,
+              -111
+            ]
+          ],
+          "record_count": 3
+        },
+        {
+          "id": "raw_7538",
+          "raw_types": [
+            "甸"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              937,
+              1328
+            ]
+          ],
+          "record_count": 5
+        },
+        {
+          "id": "raw_7559_5b88",
+          "raw_types": [
+            "留守"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              923,
+              925
+            ],
+            [
+              937,
+              955
+            ],
+            [
+              959,
+              971
+            ]
+          ],
+          "record_count": 5
+        },
+        {
+          "id": "raw_767e_6237",
+          "raw_types": [
+            "百户"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1254,
+              1284
+            ]
+          ],
+          "record_count": 2
+        },
+        {
+          "id": "raw_76df",
+          "raw_types": [
+            "盟"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1820,
+              1820
+            ]
+          ],
+          "record_count": 3
+        },
+        {
+          "id": "raw_76f4_96b6_5385",
+          "raw_types": [
+            "直隶厅"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1717,
+              1911
+            ]
+          ],
+          "record_count": 152
+        },
+        {
+          "id": "raw_76f4_96b6_53bf",
+          "raw_types": [
+            "直隶县"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              975,
+              975
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_7763_529e_533a",
+          "raw_types": [
+            "督办区"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 2
+        },
+        {
+          "id": "raw_7826",
+          "raw_types": [
+            "砦"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              962,
+              1276
+            ]
+          ],
+          "record_count": 5
+        },
+        {
+          "id": "raw_7f81_7e3b_53bf",
+          "raw_types": [
+            "羁縻县"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              667,
+              926
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_7f81_7e3b_5dde",
+          "raw_types": [
+            "羁縻州"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              638,
+              1911
+            ]
+          ],
+          "record_count": 80
+        },
+        {
+          "id": "raw_7f81_7e3b_5e9c",
+          "raw_types": [
+            "羁縻府"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1658,
+              1725
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_8282_5ea6",
+          "raw_types": [
+            "节度"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              738,
+              1096
+            ]
+          ],
+          "record_count": 6
+        },
+        {
+          "id": "raw_82f4",
+          "raw_types": [
+            "苴"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              738,
+              902
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_8425",
+          "raw_types": [
+            "营"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 59
+        },
+        {
+          "id": "raw_884c_5728",
+          "raw_types": [
+            "行在"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1425,
+              1441
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_884c_90e8",
+          "raw_types": [
+            "行部"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1403,
+              1421
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_8bcf",
+          "raw_types": [
+            "诏"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              618,
+              738
+            ]
+          ],
+          "record_count": 6
+        },
+        {
+          "id": "raw_8d55",
+          "raw_types": [
+            "赕"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              618,
+              1381
+            ]
+          ],
+          "record_count": 26
+        },
+        {
+          "id": "raw_8f96_533a",
+          "raw_types": [
+            "辖区"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1653,
+              1756
+            ],
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 4
+        },
+        {
+          "id": "raw_8fde",
+          "raw_types": [
+            "连"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              738,
+              902
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_9091",
+          "raw_types": [
+            "邑"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              -202,
+              29
+            ],
+            [
+              738,
+              1269
+            ]
+          ],
+          "record_count": 2
+        },
+        {
+          "id": "raw_90e8",
+          "raw_types": [
+            "部"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              621,
+              1265
+            ],
+            [
+              1911,
+              1911
+            ]
+          ],
+          "record_count": 15
+        },
+        {
+          "id": "raw_90fd_5c09",
+          "raw_types": [
+            "都尉"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              215,
+              215
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_90fd_62a4_5e9c",
+          "raw_types": [
+            "都护府"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              -59,
+              8
+            ],
+            [
+              74,
+              75
+            ],
+            [
+              91,
+              107
+            ],
+            [
+              640,
+              783
+            ]
+          ],
+          "record_count": 30
+        },
+        {
+          "id": "raw_90fd_7763",
+          "raw_types": [
+            "都督"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              233,
+              478
+            ],
+            [
+              632,
+              794
+            ]
+          ],
+          "record_count": 7
+        },
+        {
+          "id": "raw_957f_53f2_5e9c",
+          "raw_types": [
+            "长史府"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              123,
+              316
+            ]
+          ],
+          "record_count": 2
+        },
+        {
+          "id": "raw_957f_5b98_53f8",
+          "raw_types": [
+            "长官司"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1274,
+              1911
+            ]
+          ],
+          "record_count": 249
+        },
+        {
+          "id": "raw_9632",
+          "raw_types": [
+            "防"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              562,
+              562
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_966a_90fd",
+          "raw_types": [
+            "陪都"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1644,
+              1661
+            ],
+            [
+              1747,
+              1905
+            ]
+          ],
+          "record_count": 2
+        },
+        {
+          "id": "raw_9996_5e9c",
+          "raw_types": [
+            "首府"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              1820,
+              1820
+            ]
+          ],
+          "record_count": 1
+        },
+        {
+          "id": "raw_9996_90fd",
+          "raw_types": [
+            "首都"
+          ],
+          "temporal_model": "TIME_SERIES",
+          "support": "UNKNOWN",
+          "supported_periods": [
+            [
+              907,
+              1052
+            ]
+          ],
+          "record_count": 6
+        }
+      ]
+    }
+  }
+}
