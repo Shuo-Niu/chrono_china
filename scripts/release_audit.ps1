@@ -32,6 +32,8 @@ if ($LASTEXITCODE -ne 0) {
 
 $AllowedDataFiles = @(
     "data/README.md",
+    # Project-authored aggregate coverage semantics only; contains no record IDs, names, coordinates, or source rows.
+    "data/metadata/historical_layer_coverage.json",
     "data/raw/.gitkeep",
     "data/intermediate/.gitkeep",
     "data/processed/.gitkeep",

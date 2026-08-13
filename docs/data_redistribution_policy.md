@@ -16,7 +16,11 @@ data/qa/
 artifacts/
 ```
 
-Only directory placeholders and `data/README.md` are versioned.
+Directory placeholders, `data/README.md`, and the specifically reviewed
+`data/metadata/historical_layer_coverage.json` artifact are versioned. That
+project-authored artifact contains aggregate coverage semantics and counts,
+not record-level IDs, names, coordinates, or source rows. No other file below
+`data/` is approved by this exception.
 
 ## Files that must not be committed
 
@@ -35,6 +39,10 @@ Small, project-authored aggregate counts may be described in documentation
 after a rights review. Publishing an aggregate does not authorize publishing
 the source rows used to calculate it. Record-level samples are treated as data
 and remain local by default.
+
+The reviewed `data/metadata/historical_layer_coverage.json` file is the sole
+current aggregate-data exception. Its publication does not relax the
+record-level ban above.
 
 ## Contributor responsibility
 

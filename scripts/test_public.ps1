@@ -12,6 +12,7 @@ if (-not (Test-Path $VenvPython)) {
 Set-Location $ProjectRoot
 
 $DataDependentTests = @(
+    "pipeline/tests/test_coverage_metadata.py",
     "pipeline/tests/test_phase1_3_1.py",
     "pipeline/tests/test_phase1_3_1a.py",
     "pipeline/tests/test_phase1_3_1b.py",
