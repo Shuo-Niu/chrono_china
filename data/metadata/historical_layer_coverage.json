@@ -36,7 +36,13 @@
           "snapshot_record_counts": {
             "1820": 8659,
             "1911": 40031
-          }
+          },
+          "provenance": {
+            "basis": "approved_phase_1_4_1_source_audit",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Approved Phase 1.4.1 audit identifies raw 村镇 as named 1820 and 1911 snapshots.",
+          "evidence_strength": "APPROVED_SOURCE_EVIDENCE"
         },
         {
           "id": "raw_pavilion_intervals",
@@ -58,9 +64,21 @@
           "period_record_counts": {
             "14..22": 17,
             "623..959": 1
-          }
+          },
+          "provenance": {
+            "basis": "approved_phase_1_4_1_source_audit",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Approved Phase 1.4.1 audit identifies raw 亭 interval records at 14..22 and 623..959.",
+          "evidence_strength": "APPROVED_SOURCE_EVIDENCE"
         }
-      ]
+      ],
+      "user_mode_copy": {
+        "snapshot_template": "{year} 村镇快照",
+        "unsupported": "当前来源无该时期资料",
+        "unknown": "来源覆盖未明"
+      },
+      "developer_mode_explanation": "Raw 村镇 snapshots and raw 亭 interval records are independent components; the current source does not establish broad settlement completeness."
     },
     "high_admin": {
       "default_support": "LIMITED",
@@ -71,8 +89,8 @@
             "王畿"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "LIMITED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               -399,
               207
@@ -82,7 +100,13 @@
               463
             ]
           ],
-          "record_count": 4
+          "record_count": 4,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_7701",
@@ -90,8 +114,8 @@
             "省"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "LIMITED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               1220,
               1373
@@ -101,7 +125,13 @@
               1911
             ]
           ],
-          "record_count": 79
+          "record_count": 79,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_7701_7ea7",
@@ -109,14 +139,20 @@
             "省级"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "LIMITED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               1911,
               1911
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_884c_7701",
@@ -124,19 +160,29 @@
             "行省"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "LIMITED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               1234,
               1381
             ]
           ],
-          "record_count": 81
+          "record_count": 81,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         }
-      ]
+      ],
+      "user_mode_copy": {
+        "limited": "高层级资料有限"
+      },
+      "developer_mode_explanation": "The available province material is uneven and the frozen compact index cannot map each record to a source layer; no precise sparse-period claim is made."
     },
     "regional_admin": {
-      "default_support": "SUPPORTED",
+      "default_support": "UNKNOWN",
       "components": [
         {
           "id": "raw_4fa8_90e1",
@@ -144,14 +190,20 @@
             "侨郡"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               431,
               577
             ]
           ],
-          "record_count": 2
+          "record_count": 2,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_4faf_56fd",
@@ -159,8 +211,8 @@
             "侯国"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               -206,
               514
@@ -170,7 +222,13 @@
               1911
             ]
           ],
-          "record_count": 253
+          "record_count": 253,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_519b",
@@ -178,8 +236,8 @@
             "军"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               436,
               583
@@ -189,7 +247,13 @@
               1367
             ]
           ],
-          "record_count": 149
+          "record_count": 149,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_519b_9547",
@@ -197,8 +261,8 @@
             "军镇"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               386,
               548
@@ -224,7 +288,13 @@
               1820
             ]
           ],
-          "record_count": 27
+          "record_count": 27,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5385",
@@ -232,14 +302,20 @@
             "厅"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               1623,
               1911
             ]
           ],
-          "record_count": 251
+          "record_count": 251,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5dde",
@@ -247,14 +323,20 @@
             "州"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               -205,
               1912
             ]
           ],
-          "record_count": 4017
+          "record_count": 4017,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5e9c",
@@ -262,14 +344,20 @@
             "府"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               -687,
               1912
             ]
           ],
-          "record_count": 979
+          "record_count": 979,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_76d1",
@@ -277,14 +365,20 @@
             "监"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               939,
               1282
             ]
           ],
-          "record_count": 5
+          "record_count": 5,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_76f4_96b6_5dde",
@@ -292,8 +386,8 @@
             "直隶州"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               958,
               1022
@@ -303,7 +397,13 @@
               1911
             ]
           ],
-          "record_count": 242
+          "record_count": 242,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_8def",
@@ -311,14 +411,20 @@
             "路"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               955,
               1911
             ]
           ],
-          "record_count": 361
+          "record_count": 361,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_9053",
@@ -326,8 +432,8 @@
             "道"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               -314,
               155
@@ -345,7 +451,13 @@
               1911
             ]
           ],
-          "record_count": 14
+          "record_count": 14,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_90e1",
@@ -353,8 +465,8 @@
             "郡"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               -688,
               1274
@@ -364,7 +476,13 @@
               1358
             ]
           ],
-          "record_count": 2121
+          "record_count": 2121,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_9632_9547",
@@ -372,19 +490,29 @@
             "防镇"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               682,
               985
             ]
           ],
-          "record_count": 522
+          "record_count": 522,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         }
-      ]
+      ],
+      "user_mode_copy": {
+        "unknown": "来源覆盖未明"
+      },
+      "developer_mode_explanation": "Intervals are observed in the frozen compact index; source completeness is not asserted."
     },
     "county": {
-      "default_support": "SUPPORTED",
+      "default_support": "UNKNOWN",
       "components": [
         {
           "id": "raw_4fa8_53bf",
@@ -392,14 +520,20 @@
             "侨县"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               311,
               588
             ]
           ],
-          "record_count": 5
+          "record_count": 5,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_53bf",
@@ -407,16 +541,26 @@
             "县"
           ],
           "temporal_model": "TIME_SERIES",
-          "support": "SUPPORTED",
-          "supported_periods": [
+          "support": "UNKNOWN",
+          "observed_periods": [
             [
               -763,
               1912
             ]
           ],
-          "record_count": 11146
+          "record_count": 11146,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         }
-      ]
+      ],
+      "user_mode_copy": {
+        "unknown": "来源覆盖未明"
+      },
+      "developer_mode_explanation": "Intervals are observed in the frozen compact index; source completeness is not asserted."
     },
     "polity": {
       "default_support": "UNKNOWN",
@@ -428,7 +572,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               -687,
               626
@@ -442,7 +586,13 @@
               978
             ]
           ],
-          "record_count": 397
+          "record_count": 397,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_653f_6743",
@@ -451,15 +601,25 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               -221,
               1911
             ]
           ],
-          "record_count": 82
+          "record_count": 82,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         }
-      ]
+      ],
+      "user_mode_copy": {
+        "unknown": "来源覆盖未明"
+      },
+      "developer_mode_explanation": "This heterogeneous developer-only family has no broad completeness claim."
     },
     "other": {
       "default_support": "UNKNOWN",
@@ -471,13 +631,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1238,
               1276
             ]
           ],
-          "record_count": 6
+          "record_count": 6,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_4eac_5e2b",
@@ -486,7 +652,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               420,
               465
@@ -500,7 +666,13 @@
               1669
             ]
           ],
-          "record_count": 14
+          "record_count": 14,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_4f50_9886",
@@ -509,13 +681,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1911,
               1911
             ]
           ],
-          "record_count": 12
+          "record_count": 12,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5178_519c_6821_5c09",
@@ -524,13 +702,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               198,
               280
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5178_519c_90fd_5c09",
@@ -539,13 +723,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               222,
               279
             ]
           ],
-          "record_count": 2
+          "record_count": 2,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5185_5927_81e3",
@@ -554,13 +744,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1644,
               1644
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_519b_6c11_5e9c",
@@ -569,7 +765,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               972,
               1276
@@ -583,7 +779,13 @@
               1388
             ]
           ],
-          "record_count": 3
+          "record_count": 3,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_529e_4e8b_5927_81e3",
@@ -592,13 +794,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1726,
               1911
             ]
           ],
-          "record_count": 3
+          "record_count": 3,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5343_6237",
@@ -607,13 +815,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1253,
               1724
             ]
           ],
-          "record_count": 54
+          "record_count": 54,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_536b",
@@ -622,7 +836,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               0,
               0
@@ -632,7 +846,13 @@
               1911
             ]
           ],
-          "record_count": 94
+          "record_count": 94,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_53bf_7ea7",
@@ -641,13 +861,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1820,
               1820
             ]
           ],
-          "record_count": 30
+          "record_count": 30,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_571f_53bf",
@@ -656,13 +882,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1911,
               1911
             ]
           ],
-          "record_count": 4
+          "record_count": 4,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_571f_53f8",
@@ -671,7 +903,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1226,
               1265
@@ -681,7 +913,13 @@
               1911
             ]
           ],
-          "record_count": 223
+          "record_count": 223,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_571f_5dde",
@@ -690,13 +928,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               972,
               1911
             ]
           ],
-          "record_count": 34
+          "record_count": 34,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_571f_5e9c",
@@ -705,7 +949,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1644,
               1732
@@ -719,7 +963,13 @@
               1911
             ]
           ],
-          "record_count": 6
+          "record_count": 6,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5730_533a",
@@ -728,7 +978,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1645,
               1645
@@ -742,7 +992,13 @@
               1911
             ]
           ],
-          "record_count": 3
+          "record_count": 3,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_57ce",
@@ -751,7 +1007,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               618,
               1277
@@ -761,7 +1017,13 @@
               1911
             ]
           ],
-          "record_count": 104
+          "record_count": 104,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5821",
@@ -770,13 +1032,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1072,
               1276
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_59d4_5458",
@@ -785,13 +1053,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1907,
               1911
             ]
           ],
-          "record_count": 10
+          "record_count": 10,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5b89_629a_53f8",
@@ -800,13 +1074,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1131,
               1911
             ]
           ],
-          "record_count": 45
+          "record_count": 45,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5b97",
@@ -815,13 +1095,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1820,
               1820
             ]
           ],
-          "record_count": 102
+          "record_count": 102,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5ba3_5c09_53f8",
@@ -830,7 +1116,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1101,
               1160
@@ -848,7 +1134,13 @@
               1911
             ]
           ],
-          "record_count": 25
+          "record_count": 25,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5ba3_629a_53f8",
@@ -857,7 +1149,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1265,
               1276
@@ -875,7 +1167,13 @@
               1911
             ]
           ],
-          "record_count": 29
+          "record_count": 29,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5be8",
@@ -884,13 +1182,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               960,
               1466
             ]
           ],
-          "record_count": 14
+          "record_count": 14,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5c06_519b",
@@ -899,13 +1203,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1662,
               1911
             ]
           ],
-          "record_count": 28
+          "record_count": 28,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5c5e_56fd_90fd_5c09",
@@ -914,13 +1224,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               263,
               285
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5c6f_7530_90fd_5c09",
@@ -929,13 +1245,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               222,
               279
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5c71_6d1e",
@@ -944,13 +1266,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               960,
               1300
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5ddd",
@@ -959,7 +1287,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               597,
               617
@@ -969,7 +1297,13 @@
               902
             ]
           ],
-          "record_count": 2
+          "record_count": 2,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5dde_5224",
@@ -978,13 +1312,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1911,
               1911
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5de1_68c0_53f8",
@@ -993,13 +1333,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1911,
               1911
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5e03_653f_53f8",
@@ -1008,7 +1354,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1376,
               1644
@@ -1018,7 +1364,13 @@
               1772
             ]
           ],
-          "record_count": 20
+          "record_count": 20,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5e9c_7ea7",
@@ -1027,13 +1379,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1820,
               1820
             ]
           ],
-          "record_count": 15
+          "record_count": 15,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_5fa1_5937_5dde",
@@ -1042,13 +1400,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1384,
               1907
             ]
           ],
-          "record_count": 3
+          "record_count": 3,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_6240",
@@ -1057,13 +1421,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1375,
               1795
             ]
           ],
-          "record_count": 11
+          "record_count": 11,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_62db_8ba8_53f8",
@@ -1072,13 +1442,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1275,
               1729
             ]
           ],
-          "record_count": 5
+          "record_count": 5,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_6307_6325_4f7f",
@@ -1087,13 +1463,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1379,
               1531
             ]
           ],
-          "record_count": 2
+          "record_count": 2,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_65d7",
@@ -1102,7 +1484,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1820,
               1820
@@ -1112,7 +1494,13 @@
               1911
             ]
           ],
-          "record_count": 346
+          "record_count": 346,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_6602_90a6_7ae0_4eac",
@@ -1121,13 +1509,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1646,
               1661
             ]
           ],
-          "record_count": 3
+          "record_count": 3,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_672c_5dde",
@@ -1136,13 +1530,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1911,
               1911
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_6821_5c09",
@@ -1151,13 +1551,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               350,
               417
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_7267_573a",
@@ -1166,13 +1572,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1820,
               1820
             ]
           ],
-          "record_count": 4
+          "record_count": 4,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_738b_56fd",
@@ -1181,13 +1593,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               -202,
               -111
             ]
           ],
-          "record_count": 3
+          "record_count": 3,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_7538",
@@ -1196,13 +1614,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               937,
               1328
             ]
           ],
-          "record_count": 5
+          "record_count": 5,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_7559_5b88",
@@ -1211,7 +1635,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               923,
               925
@@ -1225,7 +1649,13 @@
               971
             ]
           ],
-          "record_count": 5
+          "record_count": 5,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_767e_6237",
@@ -1234,13 +1664,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1254,
               1284
             ]
           ],
-          "record_count": 2
+          "record_count": 2,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_76df",
@@ -1249,13 +1685,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1820,
               1820
             ]
           ],
-          "record_count": 3
+          "record_count": 3,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_76f4_96b6_5385",
@@ -1264,13 +1706,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1717,
               1911
             ]
           ],
-          "record_count": 152
+          "record_count": 152,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_76f4_96b6_53bf",
@@ -1279,13 +1727,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               975,
               975
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_7763_529e_533a",
@@ -1294,13 +1748,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1911,
               1911
             ]
           ],
-          "record_count": 2
+          "record_count": 2,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_7826",
@@ -1309,13 +1769,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               962,
               1276
             ]
           ],
-          "record_count": 5
+          "record_count": 5,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_7f81_7e3b_53bf",
@@ -1324,13 +1790,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               667,
               926
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_7f81_7e3b_5dde",
@@ -1339,13 +1811,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               638,
               1911
             ]
           ],
-          "record_count": 80
+          "record_count": 80,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_7f81_7e3b_5e9c",
@@ -1354,13 +1832,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1658,
               1725
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_8282_5ea6",
@@ -1369,13 +1853,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               738,
               1096
             ]
           ],
-          "record_count": 6
+          "record_count": 6,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_82f4",
@@ -1384,13 +1874,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               738,
               902
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_8425",
@@ -1399,13 +1895,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1911,
               1911
             ]
           ],
-          "record_count": 59
+          "record_count": 59,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_884c_5728",
@@ -1414,13 +1916,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1425,
               1441
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_884c_90e8",
@@ -1429,13 +1937,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1403,
               1421
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_8bcf",
@@ -1444,13 +1958,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               618,
               738
             ]
           ],
-          "record_count": 6
+          "record_count": 6,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_8d55",
@@ -1459,13 +1979,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               618,
               1381
             ]
           ],
-          "record_count": 26
+          "record_count": 26,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_8f96_533a",
@@ -1474,7 +2000,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1653,
               1756
@@ -1484,7 +2010,13 @@
               1911
             ]
           ],
-          "record_count": 4
+          "record_count": 4,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_8fde",
@@ -1493,13 +2025,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               738,
               902
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_9091",
@@ -1508,7 +2046,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               -202,
               29
@@ -1518,7 +2056,13 @@
               1269
             ]
           ],
-          "record_count": 2
+          "record_count": 2,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_90e8",
@@ -1527,7 +2071,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               621,
               1265
@@ -1537,7 +2081,13 @@
               1911
             ]
           ],
-          "record_count": 15
+          "record_count": 15,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_90fd_5c09",
@@ -1546,13 +2096,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               215,
               215
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_90fd_62a4_5e9c",
@@ -1561,7 +2117,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               -59,
               8
@@ -1579,7 +2135,13 @@
               783
             ]
           ],
-          "record_count": 30
+          "record_count": 30,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_90fd_7763",
@@ -1588,7 +2150,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               233,
               478
@@ -1598,7 +2160,13 @@
               794
             ]
           ],
-          "record_count": 7
+          "record_count": 7,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_957f_53f2_5e9c",
@@ -1607,13 +2175,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               123,
               316
             ]
           ],
-          "record_count": 2
+          "record_count": 2,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_957f_5b98_53f8",
@@ -1622,13 +2196,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1274,
               1911
             ]
           ],
-          "record_count": 249
+          "record_count": 249,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_9632",
@@ -1637,13 +2217,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               562,
               562
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_966a_90fd",
@@ -1652,7 +2238,7 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1644,
               1661
@@ -1662,7 +2248,13 @@
               1905
             ]
           ],
-          "record_count": 2
+          "record_count": 2,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_9996_5e9c",
@@ -1671,13 +2263,19 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               1820,
               1820
             ]
           ],
-          "record_count": 1
+          "record_count": 1,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         },
         {
           "id": "raw_9996_90fd",
@@ -1686,15 +2284,25 @@
           ],
           "temporal_model": "TIME_SERIES",
           "support": "UNKNOWN",
-          "supported_periods": [
+          "observed_periods": [
             [
               907,
               1052
             ]
           ],
-          "record_count": 6
+          "record_count": 6,
+          "provenance": {
+            "basis": "frozen_compact_index_observation",
+            "index_path": "data/processed/explore/tgaz_compact.json"
+          },
+          "source_evidence": "Exact raw-type records and validity intervals observed in the frozen compact index; this does not establish source completeness.",
+          "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         }
-      ]
+      ],
+      "user_mode_copy": {
+        "unknown": "来源覆盖未明"
+      },
+      "developer_mode_explanation": "This heterogeneous family has no broad completeness claim."
     }
   }
 }

@@ -9,6 +9,8 @@ import pytest
 from chronochina.io import sha256_file
 from chronochina.qa.coverage_metadata import (
     build_coverage_metadata,
+    derive_canonical_identity,
+    generate,
     load_compact_index,
     validate_coverage_metadata,
 )
@@ -64,7 +66,17 @@ def test_settlement_components_preserve_snapshot_and_interval_models() -> None:
         item["id"]: item for item in metadata["families"]["settlement"]["components"]
     }
 
-    assert components["raw_town_snapshots"] == {
+    assert {
+        key: components["raw_town_snapshots"][key]
+        for key in (
+            "id",
+            "raw_types",
+            "temporal_model",
+            "support",
+            "snapshot_years",
+            "snapshot_record_counts",
+        )
+    } == {
         "id": "raw_town_snapshots",
         "raw_types": ["村镇"],
         "temporal_model": "TIME_SLICE",
@@ -72,7 +84,17 @@ def test_settlement_components_preserve_snapshot_and_interval_models() -> None:
         "snapshot_years": [1820, 1911],
         "snapshot_record_counts": {"1820": 8659, "1911": 40031},
     }
-    assert components["raw_pavilion_intervals"] == {
+    assert {
+        key: components["raw_pavilion_intervals"][key]
+        for key in (
+            "id",
+            "raw_types",
+            "temporal_model",
+            "support",
+            "supported_periods",
+            "period_record_counts",
+        )
+    } == {
         "id": "raw_pavilion_intervals",
         "raw_types": ["亭"],
         "temporal_model": "TIME_SERIES",
@@ -95,6 +117,41 @@ def test_high_admin_preserves_all_raw_types_without_sparse_period_claims() -> No
     }
     assert all(item["temporal_model"] == "TIME_SERIES" for item in high_admin["components"])
     assert "sparse_periods" not in high_admin
+    assert all("supported_periods" not in item for item in high_admin["components"])
+    assert all("observed_periods" in item for item in high_admin["components"])
+
+
+def test_metadata_includes_conservative_component_evidence_and_mode_copy() -> None:
+    metadata = build_coverage_metadata(COMPACT_PATH)
+    pavilion = metadata["families"]["settlement"]["components"][1]
+
+    assert pavilion["supported_periods"] == [[14, 22], [623, 959]]
+    assert pavilion["evidence_strength"] == "APPROVED_SOURCE_EVIDENCE"
+    assert pavilion["provenance"]["basis"] == "approved_phase_1_4_1_source_audit"
+    assert "source_evidence" in pavilion
+    for family in metadata["families"].values():
+        assert "user_mode_copy" in family
+        assert "developer_mode_explanation" in family
+        for component in family["components"]:
+            assert {"provenance", "source_evidence", "evidence_strength"} <= component.keys()
+            if component["id"] != "raw_pavilion_intervals":
+                assert "supported_periods" not in component
+            if (
+                component["temporal_model"] == "TIME_SERIES"
+                and component["id"] != "raw_pavilion_intervals"
+            ):
+                assert "observed_periods" in component
+
+
+def test_generate_rejects_a_compact_index_outside_the_approved_freeze(tmp_path: Path) -> None:
+    compact = tmp_path / "data/processed/explore/tgaz_compact.json"
+    compact.parent.mkdir(parents=True)
+    payload = json.loads(COMPACT_PATH.read_text(encoding="utf-8"))
+    payload["records"][0][1] = "changed only to prove explicit refreeze is required"
+    compact.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="approved frozen SHA-256"):
+        generate(tmp_path)
 
 
 def test_metadata_generation_does_not_modify_frozen_index(tmp_path: Path) -> None:
@@ -113,6 +170,18 @@ def test_load_compact_index_rejects_malformed_tuple_schema(tmp_path: Path) -> No
 
     with pytest.raises(ValueError, match="does not match declared fields"):
         load_compact_index(compact)
+
+
+@pytest.mark.parametrize("year", [1.5, "1820", True])
+def test_identity_rejects_non_integer_validity_years(tmp_path: Path, year: object) -> None:
+    compact = tmp_path / "malformed-year.json"
+    write_compact(
+        compact,
+        [["hvd_1", "name", "pinyin", year, 2, 1.0, 2.0, "村镇"]],
+    )
+
+    with pytest.raises(ValueError, match="must be integers"):
+        derive_canonical_identity(compact, load_compact_index(compact))
 
 
 def test_build_rejects_unaccounted_settlement_raw_type(tmp_path: Path) -> None:

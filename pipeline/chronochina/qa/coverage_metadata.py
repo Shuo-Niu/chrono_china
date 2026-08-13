@@ -11,16 +11,55 @@ from .phase1_3_1f import display_family
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 CANONICAL_INDEX_PATH = "data/processed/explore/tgaz_compact.json"
+APPROVED_FROZEN_SHA256 = "7c9ccaedfd58445595e5ab68fd1fb9e106e33c37b8bb98002a7e8e6bad5b5baf"
 REQUIRED_FIELDS = {"tgaz_id", "valid_from", "valid_to", "feature_type"}
 SETTLEMENT_RAW_TYPES = {"村镇", "亭"}
 HIGH_ADMIN_RAW_TYPES = {"王畿", "省", "行省", "省级"}
 FAMILY_SUPPORT = {
     "settlement": "UNSUPPORTED",
     "high_admin": "LIMITED",
-    "regional_admin": "SUPPORTED",
-    "county": "SUPPORTED",
+    "regional_admin": "UNKNOWN",
+    "county": "UNKNOWN",
     "polity": "UNKNOWN",
     "other": "UNKNOWN",
+}
+FAMILY_MODE_COPY = {
+    "settlement": {
+        "snapshot_template": "{year} 村镇快照",
+        "unsupported": "当前来源无该时期资料",
+        "unknown": "来源覆盖未明",
+    },
+    "high_admin": {"limited": "高层级资料有限"},
+    "regional_admin": {"unknown": "来源覆盖未明"},
+    "county": {"unknown": "来源覆盖未明"},
+    "polity": {"unknown": "来源覆盖未明"},
+    "other": {"unknown": "来源覆盖未明"},
+}
+FAMILY_DEVELOPER_EXPLANATIONS = {
+    "settlement": (
+        "Raw 村镇 snapshots and raw 亭 interval records are independent components; "
+        "the current source does not establish broad settlement completeness."
+    ),
+    "high_admin": (
+        "The available province material is uneven and the frozen compact index cannot map "
+        "each record to a source layer; no precise sparse-period claim is made."
+    ),
+    "regional_admin": (
+        "Intervals are observed in the frozen compact index; source completeness is not asserted."
+    ),
+    "county": (
+        "Intervals are observed in the frozen compact index; source completeness is not asserted."
+    ),
+    "polity": "This heterogeneous developer-only family has no broad completeness claim.",
+    "other": "This heterogeneous family has no broad completeness claim.",
+}
+OBSERVED_INDEX_PROVENANCE = {
+    "basis": "frozen_compact_index_observation",
+    "index_path": CANONICAL_INDEX_PATH,
+}
+APPROVED_SOURCE_PROVENANCE = {
+    "basis": "approved_phase_1_4_1_source_audit",
+    "index_path": CANONICAL_INDEX_PATH,
 }
 
 
@@ -57,16 +96,16 @@ def _records(payload: Mapping[str, object]) -> list[dict[str, object]]:
 def _years(record: Mapping[str, object]) -> tuple[int, int]:
     begin = record["valid_from"]
     end = record["valid_to"]
-    if isinstance(begin, bool) or isinstance(end, bool):
+    if (
+        isinstance(begin, bool)
+        or isinstance(end, bool)
+        or not isinstance(begin, int)
+        or not isinstance(end, int)
+    ):
         raise ValueError("Compact index validity years must be integers")
-    try:
-        start_year = int(begin)
-        end_year = int(end)
-    except (TypeError, ValueError) as error:
-        raise ValueError("Compact index validity years must be integers") from error
-    if start_year > end_year:
+    if begin > end:
         raise ValueError("Compact index has an inverted validity interval")
-    return start_year, end_year
+    return begin, end
 
 
 def derive_canonical_identity(path: Path, payload: Mapping[str, object]) -> dict[str, object]:
@@ -111,8 +150,14 @@ def _time_series_component(
         "raw_types": [raw_type],
         "temporal_model": "TIME_SERIES",
         "support": support,
-        "supported_periods": _merged_periods(records),
+        "observed_periods": _merged_periods(records),
         "record_count": len(records),
+        "provenance": OBSERVED_INDEX_PROVENANCE,
+        "source_evidence": (
+            "Exact raw-type records and validity intervals observed in the frozen compact index; "
+            "this does not establish source completeness."
+        ),
+        "evidence_strength": "FROZEN_INDEX_OBSERVATION",
     }
 
 
@@ -151,6 +196,11 @@ def _settlement_components(records: list[Mapping[str, object]]) -> list[dict[str
             "support": "SUPPORTED",
             "snapshot_years": [1820, 1911],
             "snapshot_record_counts": town_counts,
+            "provenance": APPROVED_SOURCE_PROVENANCE,
+            "source_evidence": (
+                "Approved Phase 1.4.1 audit identifies raw 村镇 as named 1820 and 1911 snapshots."
+            ),
+            "evidence_strength": "APPROVED_SOURCE_EVIDENCE",
         },
         {
             "id": "raw_pavilion_intervals",
@@ -159,6 +209,11 @@ def _settlement_components(records: list[Mapping[str, object]]) -> list[dict[str
             "support": "UNKNOWN",
             "supported_periods": _merged_periods(pavilions),
             "period_record_counts": pavilion_counts,
+            "provenance": APPROVED_SOURCE_PROVENANCE,
+            "source_evidence": (
+                "Approved Phase 1.4.1 audit identifies raw 亭 interval records at 14..22 and 623..959."
+            ),
+            "evidence_strength": "APPROVED_SOURCE_EVIDENCE",
         },
     ]
 
@@ -190,13 +245,16 @@ def build_coverage_metadata(compact_path: Path) -> dict[str, object]:
             by_type: dict[str, list[dict[str, object]]] = {}
             for record in family_records[family]:
                 by_type.setdefault(str(record["feature_type"]), []).append(record)
+            component_support = "UNKNOWN" if family == "high_admin" else support
             components = [
-                _time_series_component(raw_type, by_type[raw_type], support)
+                _time_series_component(raw_type, by_type[raw_type], component_support)
                 for raw_type in sorted(by_type)
             ]
         families[family] = {
             "default_support": support,
             "components": components,
+            "user_mode_copy": FAMILY_MODE_COPY[family],
+            "developer_mode_explanation": FAMILY_DEVELOPER_EXPLANATIONS[family],
         }
 
     return {
@@ -235,6 +293,10 @@ def validate_coverage_metadata(metadata: Mapping[str, object], compact_path: Pat
 def generate(repo_root: Path = PROJECT_ROOT) -> dict[str, object]:
     compact_path = repo_root / CANONICAL_INDEX_PATH
     unchanged_sha = sha256_file(compact_path)
+    if unchanged_sha != APPROVED_FROZEN_SHA256:
+        raise ValueError(
+            "Compact index SHA-256 does not match the approved frozen SHA-256; explicit refreeze required"
+        )
     metadata = build_coverage_metadata(compact_path)
     validate_coverage_metadata(metadata, compact_path)
 
