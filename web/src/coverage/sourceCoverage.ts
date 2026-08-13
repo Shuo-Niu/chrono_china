@@ -115,11 +115,14 @@ function asCountMap(
   expectedKeys: readonly string[],
   field: string,
 ): Readonly<Record<string, number>> {
+  const actualKeys = isRecord(value) ? Object.keys(value) : [];
   if (!isRecord(value) ||
-      JSON.stringify(Object.keys(value)) !== JSON.stringify(expectedKeys)) {
+      actualKeys.length !== expectedKeys.length ||
+      expectedKeys.some((key) => !Object.hasOwn(value, key))) {
     throw new Error(`invalid coverage metadata schema: ${field}`);
   }
-  return Object.fromEntries(Object.entries(value).map(([key, rawCount]) => {
+  return Object.fromEntries(expectedKeys.map((key) => {
+    const rawCount = value[key];
     const count = asInteger(rawCount, `${field}.${key}`);
     if (count < 0) throw new Error(`invalid coverage metadata schema: ${field}.${key}`);
     return [key, count];
@@ -189,6 +192,11 @@ function parseComponent(
       periodKeys,
       `${field}.period_record_counts`,
     );
+    const periodTotal = Object.values(periodRecordCounts)
+      .reduce((total, count) => total + count, 0);
+    if (periodTotal !== recordCount) {
+      throw new Error(`invalid coverage metadata schema: ${field}.record_count total`);
+    }
   }
   if (support === "UNSUPPORTED") {
     throw new Error(`invalid coverage metadata schema: ${field}.covered component unsupported`);

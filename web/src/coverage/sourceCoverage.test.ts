@@ -100,7 +100,11 @@ function metadata(): unknown {
       },
       high_admin: {
         default_support: "LIMITED",
-        components: [{ ...timeSeries("province", ["省"], [[1220, 1911]]), record_count: 79 }],
+        components: [{
+          ...timeSeries("province", ["省"], [[1220, 1911]]),
+          record_count: 79,
+          period_record_counts: { "1220..1911": 79 },
+        }],
         developer_mode_explanation: "fixture",
         user_mode_copy: { limited: "高层级资料有限" },
       },
@@ -330,12 +334,7 @@ describe("source coverage", () => {
       (value: Record<string, any>) => { delete value.families.settlement.components[1].record_count; },
       (value: Record<string, any>) => { delete value.families.settlement.components[1].period_record_counts; },
       (value: Record<string, any>) => { value.families.settlement.components[1].period_record_counts["14-22"] = 17; },
-      (value: Record<string, any>) => {
-        value.families.settlement.components[1].period_record_counts = {
-          "623..959": 1,
-          "14..22": 17,
-        };
-      },
+      (value: Record<string, any>) => { value.families.settlement.components[1].period_record_counts["14..22"] = 16; },
       (value: Record<string, any>) => { value.families.settlement.components[1].snapshot_record_counts = {}; },
       (value: Record<string, any>) => { value.families.high_admin.components[0].record_count = 1.5; },
       (value: Record<string, any>) => { value.families.high_admin.components[0].record_count = -1; },
@@ -347,10 +346,23 @@ describe("source coverage", () => {
     }
   });
 
+  test("accepts equivalent count-map property order and normalizes to period order", () => {
+    const reordered = structuredClone(metadata()) as Record<string, any>;
+    reordered.families.settlement.components[1].period_record_counts = {
+      "623..959": 1,
+      "14..22": 17,
+    };
+    expect(
+      parseCoverageMetadata(reordered, index(), INDEX_SHA)
+        .families.settlement.components[1].periodRecordCounts,
+    ).toEqual({ "14..22": 17, "623..959": 1 });
+  });
+
   test("emits snapshot and simultaneous exceptional coverage state in stable order", () => {
     const raw = structuredClone(metadata()) as Record<string, any>;
     raw.families.settlement.components[1].supported_periods.push([1820, 1820]);
     raw.families.settlement.components[1].period_record_counts["1820..1820"] = 1;
+    raw.families.settlement.components[1].record_count = 19;
     const assessment = assessSourceCoverage(
       parseCoverageMetadata(raw, index(), INDEX_SHA),
       "settlement",
