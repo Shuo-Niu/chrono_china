@@ -133,7 +133,11 @@ export function familyConfig(family: DisplayFamily): DisplayFamilyConfig {
 }
 
 export function displayFamily(feature: HistoricalFeature): DisplayFamily {
-  return FAMILY_BY_RAW_TYPE.get(feature.properties.feature_type) ?? "other";
+  return displayFamilyFromRawType(feature.properties.feature_type);
+}
+
+export function displayFamilyFromRawType(rawType: string): DisplayFamily {
+  return FAMILY_BY_RAW_TYPE.get(rawType) ?? "other";
 }
 
 export function displayFamilyPriority(feature: HistoricalFeature): number {

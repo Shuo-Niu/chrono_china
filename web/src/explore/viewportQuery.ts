@@ -1,4 +1,5 @@
 import type { HistoricalFeature, HistoricalFeatureCollection } from "../types";
+import type { ViewportResult } from "../coverage/sourceCoverage";
 
 export type CompactRecord = [
   tgazId: string,
@@ -22,6 +23,7 @@ export interface CompactHistoricalIndex {
     dataset: string;
     normalized_path: string;
     normalized_sha256: string;
+    compact_sha256?: string;
     record_count: number;
     canonical_uri_template: string;
     license: string | null;
@@ -29,18 +31,9 @@ export interface CompactHistoricalIndex {
   records: CompactRecord[];
 }
 
-export type ViewportCoverageStatus =
-  | "covered_with_active_records"
-  | "covered_no_active_records"
-  | "outside_source_scope"
-  | "insufficient_source_coverage"
-  | "unsupported_year"
-  | "query_failed";
-
 export interface ViewportQueryResult {
   collection: HistoricalFeatureCollection;
-  coverageStatus: ViewportCoverageStatus;
-  coverageReason: string;
+  viewportResult: ViewportResult;
   activeRecordCount: number;
   spatialRecordCount: number;
   queryLatencyMs: number;
@@ -57,13 +50,6 @@ const EXPECTED_FIELDS = [
   "tgaz_id", "name", "name_pinyin", "valid_from", "valid_to", "lon", "lat",
   "feature_type", "parent_source_id", "parent_name", "location_confidence",
 ];
-
-const CONSERVATIVE_GAP_INTERIORS = [
-  { id: "xinjiang", bbox: [78, 38, 91, 46] },
-  { id: "tibet_lhasa", bbox: [89.5, 28, 92.5, 31.5] },
-  { id: "qinghai_xining", bbox: [99.5, 34.5, 103, 38] },
-  { id: "inner_mongolia_hohhot", bbox: [109.5, 39, 114, 43] },
-] as const;
 
 export function parseCompactIndex(value: unknown): CompactHistoricalIndex {
   const index = value as CompactHistoricalIndex;
@@ -85,16 +71,6 @@ function longitudeInside(lon: number, west: number, east: number): boolean {
 function recordInside(record: CompactRecord, bbox: [number, number, number, number]): boolean {
   const [west, south, east, north] = bbox;
   return longitudeInside(record[5], west, east) && south <= record[6] && record[6] <= north;
-}
-
-function viewportCenterGap(bbox: [number, number, number, number]): string | null {
-  const [west, south, east, north] = bbox;
-  const centerLon = (west + east) / 2;
-  const centerLat = (south + north) / 2;
-  const match = CONSERVATIVE_GAP_INTERIORS.find(({ bbox: gap }) =>
-    centerLon >= gap[0] && centerLat >= gap[1] && centerLon <= gap[2] && centerLat <= gap[3],
-  );
-  return match?.id ?? null;
 }
 
 function haversineKm(
@@ -160,26 +136,7 @@ export function queryCompactIndex(
   const active = spatial.filter((record) => record[3] <= year && year <= record[4]);
   const center: [number, number] = [(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2];
   const features = active.map((record) => toFeature(record, center));
-  const globalYears = compactIndexYearRange(index);
-  const knownGap = viewportCenterGap(bbox);
-  let coverageStatus: ViewportCoverageStatus;
-  let coverageReason: string;
-  if (knownGap) {
-    coverageStatus = "outside_source_scope";
-    coverageReason = `当前视口中心位于 ${knownGap} 保守负控框内；CHGIS Time Series 基础覆盖不包含该区域。框内即使有索引记录，也不能视为完整覆盖。`;
-  } else if (year < globalYears[0] || year > globalYears[1]) {
-    coverageStatus = "unsupported_year";
-    coverageReason = `所选年份超出索引记录的有效年代包络 ${globalYears[0]}..${globalYears[1]}。`;
-  } else if (active.length > 0) {
-    coverageStatus = "covered_with_active_records";
-    coverageReason = "当前精确年份与视口查询取得有效来源记录。";
-  } else if (spatial.length > 0) {
-    coverageStatus = "covered_no_active_records";
-    coverageReason = "当前视口存在其他年代的来源记录，但没有记录在所选精确年份有效。";
-  } else {
-    coverageStatus = "insufficient_source_coverage";
-    coverageReason = "当前视口未观察到来源记录足迹；这不能作为历史上没有地点的证据。";
-  }
+  const viewportResult: ViewportResult = active.length > 0 ? "HAS_RECORDS" : "NO_RECORDS";
   const queryLatencyMs = now() - started;
   return {
     collection: {
@@ -189,7 +146,7 @@ export function queryCompactIndex(
         anchor_display_name: "当前视口",
         year,
         radius_km: 0,
-        coverage_status: coverageStatus,
+        coverage_status: viewportResult,
         underlying_active_record_count: active.length,
         active_feature_count: active.length,
         rendered_feature_count: features.length,
@@ -200,21 +157,9 @@ export function queryCompactIndex(
       },
       features,
     },
-    coverageStatus,
-    coverageReason,
+    viewportResult,
     activeRecordCount: active.length,
     spatialRecordCount: spatial.length,
     queryLatencyMs,
   };
-}
-
-export function coverageStatusLabel(status: ViewportCoverageStatus): string {
-  return {
-    covered_with_active_records: "当前视口有该年有效记录",
-    covered_no_active_records: "本区有来源记录，但所选年份无有效记录",
-    outside_source_scope: "当前视口位于已知来源覆盖范围外",
-    insufficient_source_coverage: "当前视口来源覆盖不足，不能解释为历史上没有地点",
-    unsupported_year: "所选年份超出当前索引年代范围",
-    query_failed: "视口查询失败",
-  }[status];
 }
