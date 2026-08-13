@@ -73,12 +73,12 @@
           "evidence_strength": "APPROVED_SOURCE_EVIDENCE"
         }
       ],
+      "developer_mode_explanation": "Raw 村镇 snapshots and raw 亭 interval records are independent components; the current source does not establish broad settlement completeness.",
       "user_mode_copy": {
         "snapshot_template": "{year} 村镇快照",
         "unsupported": "当前来源无该时期资料",
         "unknown": "来源覆盖未明"
-      },
-      "developer_mode_explanation": "Raw 村镇 snapshots and raw 亭 interval records are independent components; the current source does not establish broad settlement completeness."
+      }
     },
     "high_admin": {
       "default_support": "LIMITED",
@@ -176,10 +176,10 @@
           "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         }
       ],
+      "developer_mode_explanation": "The available province material is uneven and the frozen compact index cannot map each record to a source layer; no precise sparse-period claim is made.",
       "user_mode_copy": {
         "limited": "高层级资料有限"
-      },
-      "developer_mode_explanation": "The available province material is uneven and the frozen compact index cannot map each record to a source layer; no precise sparse-period claim is made."
+      }
     },
     "regional_admin": {
       "default_support": "UNKNOWN",
@@ -506,10 +506,10 @@
           "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         }
       ],
+      "developer_mode_explanation": "Intervals are observed in the frozen compact index; source completeness is not asserted.",
       "user_mode_copy": {
         "unknown": "来源覆盖未明"
-      },
-      "developer_mode_explanation": "Intervals are observed in the frozen compact index; source completeness is not asserted."
+      }
     },
     "county": {
       "default_support": "UNKNOWN",
@@ -557,10 +557,10 @@
           "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         }
       ],
+      "developer_mode_explanation": "Intervals are observed in the frozen compact index; source completeness is not asserted.",
       "user_mode_copy": {
         "unknown": "来源覆盖未明"
-      },
-      "developer_mode_explanation": "Intervals are observed in the frozen compact index; source completeness is not asserted."
+      }
     },
     "polity": {
       "default_support": "UNKNOWN",
@@ -616,9 +616,6 @@
           "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         }
       ],
-      "user_mode_copy": {
-        "unknown": "来源覆盖未明"
-      },
       "developer_mode_explanation": "This heterogeneous developer-only family has no broad completeness claim."
     },
     "other": {
@@ -2299,10 +2296,10 @@
           "evidence_strength": "FROZEN_INDEX_OBSERVATION"
         }
       ],
+      "developer_mode_explanation": "This heterogeneous family has no broad completeness claim.",
       "user_mode_copy": {
         "unknown": "来源覆盖未明"
-      },
-      "developer_mode_explanation": "This heterogeneous family has no broad completeness claim."
+      }
     }
   }
 }

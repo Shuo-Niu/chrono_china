@@ -32,7 +32,6 @@ FAMILY_MODE_COPY = {
     "high_admin": {"limited": "高层级资料有限"},
     "regional_admin": {"unknown": "来源覆盖未明"},
     "county": {"unknown": "来源覆盖未明"},
-    "polity": {"unknown": "来源覆盖未明"},
     "other": {"unknown": "来源覆盖未明"},
 }
 FAMILY_DEVELOPER_EXPLANATIONS = {
@@ -250,12 +249,14 @@ def build_coverage_metadata(compact_path: Path) -> dict[str, object]:
                 _time_series_component(raw_type, by_type[raw_type], component_support)
                 for raw_type in sorted(by_type)
             ]
-        families[family] = {
+        family_metadata: dict[str, object] = {
             "default_support": support,
             "components": components,
-            "user_mode_copy": FAMILY_MODE_COPY[family],
             "developer_mode_explanation": FAMILY_DEVELOPER_EXPLANATIONS[family],
         }
+        if family != "polity":
+            family_metadata["user_mode_copy"] = FAMILY_MODE_COPY[family]
+        families[family] = family_metadata
 
     return {
         "schema_version": "1.0",

@@ -129,8 +129,9 @@ def test_metadata_includes_conservative_component_evidence_and_mode_copy() -> No
     assert pavilion["evidence_strength"] == "APPROVED_SOURCE_EVIDENCE"
     assert pavilion["provenance"]["basis"] == "approved_phase_1_4_1_source_audit"
     assert "source_evidence" in pavilion
-    for family in metadata["families"].values():
-        assert "user_mode_copy" in family
+    for family_id, family in metadata["families"].items():
+        if family_id != "polity":
+            assert family["user_mode_copy"]
         assert "developer_mode_explanation" in family
         for component in family["components"]:
             assert {"provenance", "source_evidence", "evidence_strength"} <= component.keys()
@@ -141,6 +142,13 @@ def test_metadata_includes_conservative_component_evidence_and_mode_copy() -> No
                 and component["id"] != "raw_pavilion_intervals"
             ):
                 assert "observed_periods" in component
+
+
+def test_polity_is_developer_mode_only_and_has_no_user_mode_copy() -> None:
+    polity = build_coverage_metadata(COMPACT_PATH)["families"]["polity"]
+
+    assert "user_mode_copy" not in polity
+    assert polity["developer_mode_explanation"]
 
 
 def test_generate_rejects_a_compact_index_outside_the_approved_freeze(tmp_path: Path) -> None:
