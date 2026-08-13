@@ -157,7 +157,7 @@ function coverageMetadata(sha256 = compactIndexSha256) {
     families: {
       high_admin: {
         default_support: "LIMITED",
-        components: [component("province", [TYPES.province], [[1911, 1911]])],
+        components: [{ ...component("province", [TYPES.province], [[1911, 1911]]), record_count: 79 }],
         user_mode_copy: { limited: "\u9ad8\u5c42\u7ea7\u8d44\u6599\u6709\u9650" },
         developer_mode_explanation: "High-admin coverage is limited.",
       },
@@ -182,11 +182,15 @@ function coverageMetadata(sha256 = compactIndexSha256) {
             temporal_model: "TIME_SLICE",
             support: "SUPPORTED",
             snapshot_years: [1820, 1911],
+            snapshot_record_counts: { "1820": 1, "1911": 1 },
             provenance: { basis: "test fixture" },
             source_evidence: "Named village snapshots.",
             evidence_strength: "TEST",
           },
-          component("raw_pavilion_intervals", [TYPES.pavilion], [[14, 22], [623, 959]]),
+          {
+            ...component("raw_pavilion_intervals", [TYPES.pavilion], [[14, 22], [623, 959]]),
+            period_record_counts: { "14..22": 1, "623..959": 1 },
+          },
         ],
         user_mode_copy: {
           snapshot_template: "{year} \u6751\u9547\u5feb\u7167",
@@ -242,7 +246,11 @@ function jsonResponse(value: unknown, rawText = JSON.stringify(value)) {
 function installFetchMock(options: { malformedCoverage?: boolean } = {}) {
   const responses: Record<string, unknown> = {
     "/coverage/historical_layer_coverage.json": options.malformedCoverage
-      ? coverageMetadata("0".repeat(64))
+      ? (() => {
+        const malformed = coverageMetadata() as Record<string, any>;
+        malformed.families.settlement.components[0].snapshot_record_counts["1911"] = -1;
+        return malformed;
+      })()
       : coverageMetadata(),
     "/anchors/beijing/manifest.json": manifest("beijing"),
     "/anchors/xian/manifest.json": manifest("xian"),
@@ -387,7 +395,12 @@ test("Developer Mode exposes component evidence and both coverage axes", async (
   await userEvent.click(screen.getByRole("button", { name: "\u5f00\u53d1\u8005\u6a21\u5f0f" }));
   const diagnostics = await screen.findByTestId("coverage-family-diagnostics");
   expect(diagnostics).toHaveTextContent("settlement · SUPPORTED · TIME_SLICE · HAS_RECORDS");
+  expect(diagnostics).toHaveTextContent("province · \u7701 · TIME_SERIES · UNKNOWN");
+  expect(diagnostics).toHaveTextContent("active 1 · source-supported 79 · period 1911..1911");
   expect(diagnostics).toHaveTextContent("raw_town_snapshots · \u6751\u9547 · TIME_SLICE · SUPPORTED");
+  expect(diagnostics).toHaveTextContent("active 1 · source-supported 1 · snapshot 1911");
+  expect(diagnostics).toHaveTextContent("raw_pavilion_intervals · \u4ead · TIME_SERIES · UNKNOWN");
+  expect(diagnostics).toHaveTextContent("active 0 · source-supported 2 · outside evidenced periods");
   expect(diagnostics).toHaveTextContent("snapshots 1820,1911");
   expect(diagnostics).toHaveTextContent("observed 14..22;623..959");
   expect(diagnostics).toHaveTextContent("Named village snapshots.");

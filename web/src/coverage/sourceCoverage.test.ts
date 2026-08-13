@@ -6,6 +6,7 @@ import type { HistoricalFeature } from "../types";
 import type { CompactHistoricalIndex } from "../explore/viewportQuery";
 import {
   assessSourceCoverage,
+  componentCountEvidence,
   parseCoverageMetadata,
   resolveViewportResult,
   userCoverageMessages,
@@ -69,6 +70,7 @@ function metadata(): unknown {
             temporal_model: "TIME_SLICE",
             support: "SUPPORTED",
             snapshot_years: [1820, 1911],
+            snapshot_record_counts: { "1820": 8659, "1911": 40031 },
             provenance: { basis: "fixture" },
             source_evidence: "fixture",
             evidence_strength: "APPROVED_SOURCE_EVIDENCE",
@@ -79,6 +81,7 @@ function metadata(): unknown {
             temporal_model: "TIME_SERIES",
             support: "UNKNOWN",
             supported_periods: [[14, 22], [623, 959]],
+            period_record_counts: { "14..22": 17, "623..959": 1 },
             provenance: { basis: "fixture" },
             source_evidence: "fixture",
             evidence_strength: "APPROVED_SOURCE_EVIDENCE",
@@ -93,7 +96,7 @@ function metadata(): unknown {
       },
       high_admin: {
         default_support: "LIMITED",
-        components: [timeSeries("province", ["省"], [[1220, 1911]])],
+        components: [{ ...timeSeries("province", ["省"], [[1220, 1911]]), record_count: 79 }],
         developer_mode_explanation: "fixture",
         user_mode_copy: { limited: "高层级资料有限" },
       },
@@ -278,15 +281,67 @@ describe("source coverage", () => {
     const parsed = parseCoverageMetadata(metadata(), index(), INDEX_SHA);
     expect(parsed.families.settlement.developerModeExplanation).toBe("fixture");
     expect(parsed.families.settlement.components[0]).toMatchObject({
+      snapshotRecordCounts: { "1820": 8659, "1911": 40031 },
       sourceEvidence: "fixture",
       evidenceStrength: "APPROVED_SOURCE_EVIDENCE",
       provenance: { basis: "fixture" },
     });
+    expect(parsed.families.settlement.components[1].periodRecordCounts).toEqual({
+      "14..22": 17,
+      "623..959": 1,
+    });
+    expect(parsed.families.high_admin.components[0].recordCount).toBe(79);
+  });
+
+  test("reports current-year active and source evidence counts without conflating them", () => {
+    const parsed = parseCoverageMetadata(metadata(), index(), INDEX_SHA);
+    const settlement = parsed.families.settlement.components;
+    const town = settlement[0];
+    const pavilion = settlement[1];
+    expect(componentCountEvidence(town, index(), 1820)).toMatchObject({
+      currentYearActiveCount: 1,
+      sourceSupportedCount: 8659,
+      evidenceLabel: "snapshot 1820",
+    });
+    expect(componentCountEvidence(town, index(), 1911)).toMatchObject({
+      currentYearActiveCount: 1,
+      sourceSupportedCount: 40031,
+      evidenceLabel: "snapshot 1911",
+    });
+    expect(componentCountEvidence(pavilion, index(), 14)).toMatchObject({
+      currentYearActiveCount: 1,
+      sourceSupportedCount: 17,
+      evidenceLabel: "period 14..22",
+    });
+    for (const year of [626, 750]) {
+      expect(componentCountEvidence(pavilion, index(), year)).toMatchObject({
+        currentYearActiveCount: 1,
+        sourceSupportedCount: 1,
+        evidenceLabel: "period 623..959",
+      });
+    }
+    expect(componentCountEvidence(parsed.families.high_admin.components[0], index(), 750))
+      .toMatchObject({ currentYearActiveCount: 0, sourceSupportedCount: 79 });
+  });
+
+  test("rejects malformed component count evidence so App can fail open", () => {
+    const cases = [
+      (value: Record<string, any>) => { value.families.settlement.components[0].snapshot_record_counts["1820"] = -1; },
+      (value: Record<string, any>) => { value.families.settlement.components[0].snapshot_record_counts["1821"] = 1; },
+      (value: Record<string, any>) => { value.families.settlement.components[1].period_record_counts["14-22"] = 17; },
+      (value: Record<string, any>) => { value.families.high_admin.components[0].record_count = 1.5; },
+    ];
+    for (const mutate of cases) {
+      const malformed = structuredClone(metadata()) as Record<string, any>;
+      mutate(malformed);
+      expect(() => parseCoverageMetadata(malformed, index(), INDEX_SHA)).toThrow("schema");
+    }
   });
 
   test("emits snapshot and simultaneous exceptional coverage state in stable order", () => {
     const raw = structuredClone(metadata()) as Record<string, any>;
     raw.families.settlement.components[1].supported_periods.push([1820, 1820]);
+    raw.families.settlement.components[1].period_record_counts["1820..1820"] = 1;
     const assessment = assessSourceCoverage(
       parseCoverageMetadata(raw, index(), INDEX_SHA),
       "settlement",

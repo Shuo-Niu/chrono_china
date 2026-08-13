@@ -57,6 +57,7 @@ import {
 } from "./explore/viewportQuery";
 import {
   assessSourceCoverage,
+  componentCountEvidence,
   parseCoverageMetadata,
   resolveViewportResult,
   userCoverageMessages,
@@ -1268,6 +1269,10 @@ export default function App() {
                             ? ` · observed ${component.observedPeriods.map(([start, end]) => `${start}..${end}`).join(";")}`
                             : ""}
                           {` · ${component.evidenceStrength} · ${component.sourceEvidence}`}
+                          {exploreIndex && (() => {
+                            const counts = componentCountEvidence(component, exploreIndex, exploreYear);
+                            return ` · active ${counts.currentYearActiveCount} · source-supported ${counts.sourceSupportedCount ?? "unknown"} · ${counts.evidenceLabel}`;
+                          })()}
                         </p>
                       ))}
                     </details>
