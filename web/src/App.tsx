@@ -1348,14 +1348,24 @@ export default function App() {
                   data-testid={`coverage-${config.id}`}
                   title={coverageTitle}
                 >
-                  {coverageState.messages.map((message) => message.text).join(" · ")}
+                  {coverageState.messages.map((message) => {
+                    if (message.kind === "snapshot") return message.text;
+                    if (message.kind === "unsupported") return "来源无资料";
+                    if (message.kind === "limited") return "有限";
+                    if (message.kind === "unknown") return "未明";
+                    return "范围无记录";
+                  }).join("·")}
                 </span>
               )}
             </button>
             );
           })}
-          <small className="legend__counts" data-testid="layer-counts">
-            源 {activeCollection?.features.length ?? 0} · 已启用 {semanticSelection.eligibleFeatureCount} · 位置 {renderedUnits.length}
+          <small
+            className="legend__counts"
+            data-testid="layer-counts"
+            title={`当前范围源记录 ${activeCollection?.features.length ?? 0}；已启用候选 ${semanticSelection.eligibleFeatureCount}；实际显示位置 ${renderedUnits.length}`}
+          >
+            源 {activeCollection?.features.length ?? 0} · 选 {semanticSelection.eligibleFeatureCount} · 显 {renderedUnits.length}
           </small>
         </aside>
 

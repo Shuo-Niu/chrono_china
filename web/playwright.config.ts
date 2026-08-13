@@ -19,6 +19,9 @@ export default defineConfig({
     "phase1_3_1d.spec.ts",
   ],
   fullyParallel: false,
+  // Interaction specs include wall-clock latency gates; run them without
+  // cross-spec browser contention so those measurements remain meaningful.
+  workers: 1,
   retries: 0,
   reporter: [
     ["list"],

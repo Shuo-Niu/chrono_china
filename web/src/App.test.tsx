@@ -308,7 +308,11 @@ test("User Mode shows independent snapshot and limited coverage facts only for e
   const map = await renderReadyApp();
   await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"));
   expect(screen.getByTestId("coverage-settlement")).toHaveTextContent("1911 \u6751\u9547\u5feb\u7167");
-  expect(screen.getByTestId("coverage-high_admin")).toHaveTextContent("\u9ad8\u5c42\u7ea7\u8d44\u6599\u6709\u9650");
+  expect(screen.getByTestId("coverage-high_admin")).toHaveTextContent("\u6709\u9650");
+  expect(screen.getByTestId("coverage-high_admin")).toHaveAttribute(
+    "title",
+    expect.stringContaining("\u9ad8\u5c42\u7ea7\u8d44\u6599\u6709\u9650"),
+  );
   expect(map.dataset.coverageFamilyStates).toContain('"settlement"');
   expect(map).toHaveAttribute("data-explore-viewport-result", "HAS_RECORDS");
 
@@ -354,7 +358,11 @@ test("settlement coverage follows exact snapshots while preserving interval pavi
       expect(status).toHaveTextContent(`${year} \u6751\u9547\u5feb\u7167`);
       expect(map.dataset.historicalPointIds).toContain(`village_${year}`);
     } else {
-      expect(status).toHaveTextContent("\u5f53\u524d\u6765\u6e90\u65e0\u8be5\u65f6\u671f\u8d44\u6599");
+      expect(status).toHaveTextContent("\u6765\u6e90\u65e0\u8d44\u6599");
+      expect(status).toHaveAttribute(
+        "title",
+        expect.stringContaining("\u5f53\u524d\u6765\u6e90\u65e0\u8be5\u65f6\u671f\u8d44\u6599"),
+      );
       expect(map.dataset.historicalPointIds).not.toContain("village_");
     }
   }

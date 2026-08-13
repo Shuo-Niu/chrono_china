@@ -108,8 +108,17 @@ test("manual layers, neutral timeline, responsive safe areas, and formal screens
   for (const family of familyIds) {
     await expect(page.locator(`[data-legend-family="${family}"]`)).toHaveAttribute("aria-pressed", "true");
   }
-  const allTypes = "省、行省、省级、王畿郡、侨郡、府、州、直隶州、路、道、侯国、厅、军、军镇、防镇、监县、侨县村镇、亭其他未分类来源类型";
-  expect((await page.getByTestId("layer-switcher").textContent())?.replace(/\s+/g, "")).toContain(allTypes);
+  expect(await page.locator("[data-legend-family]").evaluateAll((buttons) =>
+    buttons.map((button) => [...button.children].find((child) =>
+      child.tagName === "SPAN" && !child.classList.contains("legend__coverage"),
+    )?.textContent?.trim()),
+  )).toEqual([
+    "省、行省、省级、王畿",
+    "郡、侨郡、府、州、直隶州、路、道、侯国、厅、军、军镇、防镇、监",
+    "县、侨县",
+    "村镇、亭",
+    "其他未分类来源类型",
+  ]);
 
   const toggleStart = Date.now();
   for (const family of ["regional_admin", "county", "settlement", "other"]) {
