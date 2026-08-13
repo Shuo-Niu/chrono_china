@@ -147,6 +147,10 @@ h1 {
 .coverage-status--unsupported_year { border-left-color: #a65b3c; background: #f6e7df; color: #77402d; }
 .coverage-status--query_failed { border-left-color: #9d2f2f; background: #f9e1df; color: #772323; }
 .coverage-reason { margin: 6px 0 0; color: #68777b; font-size: 0.69rem; line-height: 1.45; }
+.coverage-diagnostics { margin-top: 7px; font-size: 0.62rem; }
+.coverage-diagnostics details { padding: 2px 0; }
+.coverage-diagnostics summary { cursor: pointer; font-weight: 750; }
+.coverage-diagnostics p { margin: 3px 0 3px 12px; overflow-wrap: anywhere; }
 .explore-query-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin: 13px 0 0; }
 .explore-query-stats div { padding: 7px; border: 1px solid #d5d3ca; background: #f4f0e7; }
 .explore-query-stats dt { color: #6b797c; font-size: 0.62rem; }
@@ -404,6 +408,7 @@ h1 {
 .legend > button:hover, .legend > button:focus-visible { border-color: #879596; background: #fffaf0; }
 .legend > button[aria-pressed="false"] { color: #7d8586; opacity: 0.56; }
 .legend > button[aria-pressed="false"] .legend__dot { filter: grayscale(1); box-shadow: none; }
+.legend__coverage { color: #8a4a31; font-size: 0.52rem; font-weight: 760; white-space: nowrap; }
 .legend__counts { margin-left: auto; color: #68777b; font-size: 0.58rem; font-weight: 700; white-space: nowrap; }
 .legend__anchor { width: 12px; height: 12px; border: 2px solid #18333f; border-radius: 2px; background: #f3cf84; transform: rotate(45deg); }
 .legend__dot { width: 10px; height: 10px; border-radius: 50%; }

@@ -17,6 +17,7 @@ import {
 import {
   DISPLAY_FAMILY_REGISTRY,
   displayFamily,
+  displayFamilyFromRawType,
   familyConfig,
   isVisibleForMode,
   markerVariables,
@@ -49,13 +50,18 @@ import { ContinuousTimeline } from "./temporal/ContinuousTimeline";
 import { formatHistoricalYear } from "./temporal/temporal";
 import {
   compactIndexYearRange,
-  coverageStatusLabel,
   parseCompactIndex,
   queryCompactIndex,
   type CompactHistoricalIndex,
-  type ViewportCoverageStatus,
   type ViewportQueryResult,
 } from "./explore/viewportQuery";
+import {
+  assessSourceCoverage,
+  parseCoverageMetadata,
+  resolveViewportResult,
+  userCoverageMessages,
+  type CoverageMetadata,
+} from "./coverage/sourceCoverage";
 import { DetailErrorBoundary } from "./detail/DetailErrorBoundary";
 import {
   detailFromActiveFeature,
@@ -104,6 +110,11 @@ export function confidenceLabel(value: string): string {
 
 type HistoricalDisplayMode = "point_label" | "point_only";
 
+async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
 function knownValue(value: string | null): string {
   return value && value !== "\\N" ? value : "上级未知 / 未加载";
 }
@@ -129,10 +140,12 @@ export default function App() {
   const [exploreIndex, setExploreIndex] = useState<CompactHistoricalIndex | null>(null);
   const [exploreIndexStatus, setExploreIndexStatus] = useState<"idle" | "loading" | "ready" | "failed">("idle");
   const [exploreIndexLoadMs, setExploreIndexLoadMs] = useState<number | null>(null);
+  const [exploreIndexSha256, setExploreIndexSha256] = useState<string | null>(null);
   const [exploreResult, setExploreResult] = useState<ViewportQueryResult | null>(null);
-  const [exploreCoverageStatus, setExploreCoverageStatus] =
-    useState<ViewportCoverageStatus>("insufficient_source_coverage");
-  const [exploreCoverageReason, setExploreCoverageReason] = useState("视口数据尚未查询");
+  const [coverageMetadata, setCoverageMetadata] = useState<CoverageMetadata | null>(null);
+  const [coverageMetadataStatus, setCoverageMetadataStatus] =
+    useState<"idle" | "loading" | "ready" | "failed">("idle");
+  const [coverageMetadataError, setCoverageMetadataError] = useState<string | null>(null);
   const [exploreCommittedSequence, setExploreCommittedSequence] = useState(0);
   const [exploreCancelledCount, setExploreCancelledCount] = useState(0);
   const [exploreStaleCommitCount, setExploreStaleCommitCount] = useState(0);
@@ -277,26 +290,54 @@ export default function App() {
     setExploreIndexStatus("loading");
     const started = performance.now();
     void fetch("/explore/tgaz_compact.json")
-      .then((response) => {
+      .then(async (response) => {
         if (!response.ok) throw new Error(`compact index HTTP ${response.status}`);
-        return response.json();
+        const bytes = await response.arrayBuffer();
+        const payload = JSON.parse(new TextDecoder().decode(bytes));
+        return { payload, sha256: await sha256Hex(bytes) };
       })
-      .then((payload) => {
+      .then(({ payload, sha256 }) => {
         if (cancelled) return;
         setExploreIndex(parseCompactIndex(payload));
+        setExploreIndexSha256(sha256);
         setExploreIndexLoadMs(performance.now() - started);
         setExploreIndexStatus("ready");
       })
       .catch((reason) => {
         if (cancelled) return;
         setExploreIndexStatus("failed");
-        setExploreCoverageStatus("query_failed");
-        setExploreCoverageReason(String(reason));
+        setExploreIndexSha256(null);
       });
     return () => {
       cancelled = true;
     };
   }, [exploreIndex]);
+
+  useEffect(() => {
+    if (!exploreIndex || !exploreIndexSha256 || coverageMetadataStatus !== "idle") return;
+    let cancelled = false;
+    setCoverageMetadataStatus("loading");
+    void fetch("/coverage/historical_layer_coverage.json")
+      .then((response) => {
+        if (!response.ok) throw new Error(`coverage metadata HTTP ${response.status}`);
+        return response.json();
+      })
+      .then((payload) => {
+        if (cancelled) return;
+        setCoverageMetadata(parseCoverageMetadata(payload, exploreIndex, exploreIndexSha256));
+        setCoverageMetadataStatus("ready");
+        setCoverageMetadataError(null);
+      })
+      .catch((reason) => {
+        if (cancelled) return;
+        setCoverageMetadata(null);
+        setCoverageMetadataStatus("failed");
+        setCoverageMetadataError(String(reason));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [exploreIndex, exploreIndexSha256]);
 
   useEffect(() => {
     if (!exploreIndex || !viewportBbox) return;
@@ -311,8 +352,6 @@ export default function App() {
           return;
         }
         setExploreResult(result);
-        setExploreCoverageStatus(result.coverageStatus);
-        setExploreCoverageReason(result.coverageReason);
         setExploreCommittedSequence(sequence);
         if (exploreInputAt.current !== null) {
           setExploreInputToMapLatencyMs(performance.now() - exploreInputAt.current);
@@ -324,8 +363,7 @@ export default function App() {
           return;
         }
         setExploreResult(null);
-        setExploreCoverageStatus("query_failed");
-        setExploreCoverageReason(String(reason));
+        console.error("[ChronoChina viewport query]", reason);
         setExploreCommittedSequence(sequence);
         if (exploreInputAt.current !== null) {
           setExploreInputToMapLatencyMs(performance.now() - exploreInputAt.current);
@@ -623,6 +661,38 @@ export default function App() {
     ),
     [],
   );
+  const coverageFamilyStates = useMemo(() => {
+    return visibleLegendFamilies.map((config) => {
+      const assessment = assessSourceCoverage(coverageMetadata, config.id, exploreYear);
+      const viewportResult = resolveViewportResult(
+        exploreResult?.collection.features ?? [],
+        config.id,
+      );
+      return {
+        family: config.id,
+        assessment,
+        viewportResult,
+        messages: userCoverageMessages(
+          assessment,
+          viewportResult,
+          enabledFamilies.has(config.id),
+        ),
+        globalActiveCount: exploreIndex?.records.filter((record) =>
+          record[3] <= exploreYear && exploreYear <= record[4] &&
+          displayFamilyFromRawType(record[7]) === config.id).length ?? 0,
+      };
+    });
+  }, [coverageMetadata, enabledFamilies, exploreIndex, exploreResult, exploreYear, visibleLegendFamilies]);
+  const serializedCoverageFamilyStates = useMemo(() => JSON.stringify(
+    Object.fromEntries(coverageFamilyStates.map((state) => [state.family, {
+      support: state.assessment.support,
+      temporalModels: state.assessment.temporalModels,
+      viewportResult: state.viewportResult,
+      globalActiveCount: state.globalActiveCount,
+      viewportCount: exploreResult?.collection.features.filter((feature) =>
+        displayFamily(feature) === state.family).length ?? 0,
+    }])),
+  ), [coverageFamilyStates, exploreResult]);
 
   const toggleFamily = useCallback((family: DisplayFamily) => {
     setEnabledFamilies((current) => {
@@ -816,6 +886,9 @@ export default function App() {
           data-snapshot-year={activeYear ?? ""}
           data-query-result-year={activeCollection?.metadata.year ?? ""}
           data-explore-index-status={exploreIndexStatus}
+          data-coverage-metadata-status={coverageMetadataStatus}
+          data-coverage-family-states={serializedCoverageFamilyStates}
+          data-explore-viewport-result={exploreResult?.viewportResult ?? "NO_RECORDS"}
           data-explore-index-record-count={exploreIndex?.source.record_count ?? 0}
           data-explore-index-load-ms={exploreIndexLoadMs?.toFixed(3) ?? ""}
           data-explore-query-sequence={exploreCommittedSequence}
@@ -823,7 +896,6 @@ export default function App() {
           data-stale-commit-count={exploreStaleCommitCount}
           data-explore-query-latency-ms={exploreResult?.queryLatencyMs.toFixed(3) ?? ""}
           data-timeline-input-to-map-latency-ms={exploreInputToMapLatencyMs?.toFixed(3) ?? ""}
-          data-explore-coverage-status={exploreCoverageStatus}
           data-explore-active-record-count={exploreResult?.activeRecordCount ?? 0}
           data-explore-spatial-record-count={exploreResult?.spatialRecordCount ?? 0}
           data-viewport-bbox={viewportBbox?.map((value) => value.toFixed(6)).join(",") ?? ""}
@@ -1144,10 +1216,49 @@ export default function App() {
                 <button type="button" onClick={applyExploreYear}>应用年份</button>
               </div>
             </div>
-            <p className={`coverage-status coverage-status--${exploreCoverageStatus}`} data-testid="explore-coverage-status">
-              {coverageStatusLabel(exploreCoverageStatus)}
+            <p className="coverage-status" data-testid="explore-coverage-status">
+              viewport {exploreResult?.viewportResult ?? "NO_RECORDS"}
             </p>
-            <p className="coverage-reason">{exploreCoverageReason}</p>
+            <p className="coverage-reason" data-testid="coverage-metadata-diagnostic">
+              coverage metadata {coverageMetadataStatus}
+              {coverageMetadataError ? ` · ${coverageMetadataError}` : ""}
+            </p>
+            {coverageMetadata && (
+              <div className="coverage-diagnostics" data-testid="coverage-family-diagnostics">
+                {coverageFamilyStates.map((state) => {
+                  const displayedCount = renderedUnits.flatMap((unit) => unit.members)
+                    .filter((feature) => displayFamily(feature) === state.family).length;
+                  const viewportCount = exploreResult?.collection.features
+                    .filter((feature) => displayFamily(feature) === state.family).length ?? 0;
+                  return (
+                    <details key={state.family}>
+                      <summary>
+                        {state.family} · {state.assessment.support} ·
+                        {` ${state.assessment.temporalModels.join(",") || "NONE"} · ${state.viewportResult}`}
+                      </summary>
+                      <p>{coverageMetadata.families[state.family].developerModeExplanation}</p>
+                      <p>global {state.globalActiveCount} · viewport {viewportCount} · displayed {displayedCount}</p>
+                      {coverageMetadata.families[state.family].components.map((component) => (
+                        <p key={component.id}>
+                          {component.id} · {component.rawTypes.join(",")} · {component.temporalModel} ·
+                          {` ${component.support}`}
+                          {component.snapshotYears.length > 0
+                            ? ` · snapshots ${component.snapshotYears.join(",")}`
+                            : ""}
+                          {component.supportedPeriods.length > 0
+                            ? ` · supported ${component.supportedPeriods.map(([start, end]) => `${start}..${end}`).join(";")}`
+                            : ""}
+                          {component.observedPeriods.length > 0
+                            ? ` · observed ${component.observedPeriods.map(([start, end]) => `${start}..${end}`).join(";")}`
+                            : ""}
+                          {` · ${component.evidenceStrength} · ${component.sourceEvidence}`}
+                        </p>
+                      ))}
+                    </details>
+                  );
+                })}
+              </div>
+            )}
             <dl className="explore-query-stats">
               <div><dt>索引匹配记录</dt><dd>{exploreResult?.activeRecordCount ?? 0}</dd></div>
               <div><dt>可交互历史位置</dt><dd>{renderedUnits.length}</dd></div>
@@ -1195,7 +1306,12 @@ export default function App() {
         )}
 
         <aside className="legend" aria-label="地图图例" data-testid="layer-switcher">
-          {visibleLegendFamilies.map((config) => (
+          {visibleLegendFamilies.map((config) => {
+            const coverageState = coverageFamilyStates.find((state) => state.family === config.id)!;
+            const coverageTitle = coverageState.messages
+              .map((message) => message.explanation)
+              .join("；");
+            return (
             <button
               key={config.id}
               type="button"
@@ -1209,8 +1325,19 @@ export default function App() {
                 style={markerVariables(config.id, mapZoom) as CSSProperties}
               />
               <span>{config.labelZh}</span>
+              {coverageState.messages.length > 0 && (
+                <span
+                  className="legend__coverage"
+                  data-coverage-family={config.id}
+                  data-testid={`coverage-${config.id}`}
+                  title={coverageTitle}
+                >
+                  {coverageState.messages.map((message) => message.text).join(" · ")}
+                </span>
+              )}
             </button>
-          ))}
+            );
+          })}
           <small className="legend__counts" data-testid="layer-counts">
             源 {activeCollection?.features.length ?? 0} · 已启用 {semanticSelection.eligibleFeatureCount} · 位置 {renderedUnits.length}
           </small>

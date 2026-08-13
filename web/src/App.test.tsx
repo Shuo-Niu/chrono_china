@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { createHash } from "node:crypto";
 import { expect, test, vi } from "vitest";
 import App, { confidenceLabel, formatYear, sourceNotePresentation } from "./App";
 import { yearToOrdinal } from "./temporal/timelineScale";
@@ -7,6 +8,8 @@ import { yearToOrdinal } from "./temporal/timelineScale";
 const TYPES = {
   province: "\u7701",
   regional: "\u90e1",
+  village: "\u6751\u9547",
+  pavilion: "\u4ead",
 };
 
 function manifest(anchorId = "beijing") {
@@ -105,7 +108,7 @@ const compactIndex = {
     dataset: "TGAZ / CHGIS CSV spatial index",
     normalized_path: "data/intermediate/tgaz_points.jsonl",
     normalized_sha256: "abc",
-    record_count: 5,
+    record_count: 7,
     canonical_uri_template: "http://maps.cga.harvard.edu/tgaz/placename/{TGAZ_ID}",
     license: null,
   },
@@ -115,8 +118,96 @@ const compactIndex = {
     ["bce_record", "\u5148\u79e6\u8bb0\u5f55", null, -201, -201, 116.4, 39.9, TYPES.regional, null, null, "source_point"],
     ["arbitrary_record", "\u4efb\u610f\u5e74\u8bb0\u5f55", null, 100, 200, 116.4, 39.9, TYPES.regional, null, null, "source_point"],
     ["hvd_88266", "\u5ba3\u5316\u5e9c", "Xuanhua Fu", 0, 1911, 116.4, 39.9, "\u5e9c", null, null, "source_point"],
+    ["pavilion_14", "\u53e4\u4ead", null, 14, 22, 116.5, 39.9, TYPES.pavilion, null, null, "source_point"],
+    ["pavilion_623", "\u675c\u90ae\u4ead", null, 623, 959, 116.5, 39.9, TYPES.pavilion, null, null, "source_point"],
   ],
 };
+
+const compactIndexText = JSON.stringify(compactIndex);
+const compactIndexSha256 = createHash("sha256").update(compactIndexText, "utf8").digest("hex");
+
+function coverageMetadata(sha256 = compactIndexSha256) {
+  const component = (
+    id: string,
+    rawTypes: string[],
+    observedPeriods: number[][],
+    support: "SUPPORTED" | "UNKNOWN" = "UNKNOWN",
+  ) => ({
+    id,
+    raw_types: rawTypes,
+    temporal_model: "TIME_SERIES",
+    support,
+    observed_periods: observedPeriods,
+    provenance: { basis: "test fixture" },
+    source_evidence: "complete test fixture",
+    evidence_strength: "TEST",
+  });
+  return {
+    schema_version: "1.0",
+    canonical_index: {
+      path: "data/processed/explore/tgaz_compact.json",
+      bytes: new TextEncoder().encode(compactIndexText).byteLength,
+      record_count: compactIndex.records.length,
+      sha256,
+      observed_envelope: { min_year: -201, max_year: 1911 },
+    },
+    provenance: { canonical_source: "test fixture" },
+    families: {
+      high_admin: {
+        default_support: "LIMITED",
+        components: [component("province", [TYPES.province], [[1911, 1911]])],
+        user_mode_copy: { limited: "\u9ad8\u5c42\u7ea7\u8d44\u6599\u6709\u9650" },
+        developer_mode_explanation: "High-admin coverage is limited.",
+      },
+      regional_admin: {
+        default_support: "SUPPORTED",
+        components: [component("regional", [TYPES.regional, "\u5e9c"], [[-201, 1911]], "SUPPORTED")],
+        user_mode_copy: {},
+        developer_mode_explanation: "Regional fixture coverage.",
+      },
+      county: {
+        default_support: "SUPPORTED",
+        components: [component("county", ["\u53bf"], [[-201, 1911]], "SUPPORTED")],
+        user_mode_copy: {},
+        developer_mode_explanation: "County fixture coverage.",
+      },
+      settlement: {
+        default_support: "UNSUPPORTED",
+        components: [
+          {
+            id: "raw_town_snapshots",
+            raw_types: [TYPES.village],
+            temporal_model: "TIME_SLICE",
+            support: "SUPPORTED",
+            snapshot_years: [1820, 1911],
+            provenance: { basis: "test fixture" },
+            source_evidence: "Named village snapshots.",
+            evidence_strength: "TEST",
+          },
+          component("raw_pavilion_intervals", [TYPES.pavilion], [[14, 22], [623, 959]]),
+        ],
+        user_mode_copy: {
+          snapshot_template: "{year} \u6751\u9547\u5feb\u7167",
+          unsupported: "\u5f53\u524d\u6765\u6e90\u65e0\u8be5\u65f6\u671f\u8d44\u6599",
+          unknown: "\u6765\u6e90\u8986\u76d6\u672a\u660e",
+        },
+        developer_mode_explanation: "Village snapshots and pavilion intervals stay independent.",
+      },
+      other: {
+        default_support: "UNKNOWN",
+        components: [component("other", ["\u5176\u4ed6"], [[-201, 1911]])],
+        user_mode_copy: { unknown: "\u6765\u6e90\u8986\u76d6\u672a\u660e" },
+        developer_mode_explanation: "Other coverage is unknown.",
+      },
+      polity: {
+        default_support: "UNKNOWN",
+        components: [component("polity", ["\u56fd"], [[-201, 1911]])],
+        user_mode_copy: {},
+        developer_mode_explanation: "Developer-only polity coverage.",
+      },
+    },
+  };
+}
 
 function emptyCollection(anchorId = "beijing") {
   return {
@@ -136,19 +227,30 @@ function emptyCollection(anchorId = "beijing") {
   };
 }
 
-function jsonResponse(value: unknown) {
-  return { ok: true, status: 200, json: async () => value } as Response;
+function jsonResponse(value: unknown, rawText = JSON.stringify(value)) {
+  return {
+    ok: true,
+    status: 200,
+    json: async () => value,
+    text: async () => rawText,
+    arrayBuffer: async () => new TextEncoder().encode(rawText).buffer,
+  } as Response;
 }
 
-function installFetchMock() {
+function installFetchMock(options: { malformedCoverage?: boolean } = {}) {
   const responses: Record<string, unknown> = {
-    "/explore/tgaz_compact.json": compactIndex,
+    "/coverage/historical_layer_coverage.json": options.malformedCoverage
+      ? coverageMetadata("0".repeat(64))
+      : coverageMetadata(),
     "/anchors/beijing/manifest.json": manifest("beijing"),
     "/anchors/xian/manifest.json": manifest("xian"),
     "/temporal_context/beijing.json": temporalManifest("beijing"),
     "/phase1_1/anchors/beijing/slices/1911.geojson": emptyCollection("beijing"),
   };
   const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    if (String(input) === "/explore/tgaz_compact.json") {
+      return jsonResponse(compactIndex, compactIndexText);
+    }
     const value = responses[String(input)];
     return value
       ? jsonResponse(value)
@@ -197,6 +299,73 @@ test("User Mode exposes manual single-line layers, a concise timeline, and no mo
   expect(screen.getByTestId("continuous-timeline")).not.toHaveTextContent("\u516c\u5143\u7eaa\u5e74\u65e0 0 \u5e74");
   expect(screen.getByLabelText("历史点显示模式")).toBeVisible();
   expect(screen.getByLabelText("背景地图模式")).toBeVisible();
+});
+
+test("User Mode shows independent snapshot and limited coverage facts only for enabled layers", async () => {
+  installFetchMock();
+  const map = await renderReadyApp();
+  await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"));
+  expect(screen.getByTestId("coverage-settlement")).toHaveTextContent("1911 \u6751\u9547\u5feb\u7167");
+  expect(screen.getByTestId("coverage-settlement")).toHaveTextContent("\u5f53\u524d\u8303\u56f4\u65e0\u8bb0\u5f55");
+  expect(screen.getByTestId("coverage-high_admin")).toHaveTextContent("\u9ad8\u5c42\u7ea7\u8d44\u6599\u6709\u9650");
+  expect(map.dataset.coverageFamilyStates).toContain('"settlement"');
+  expect(map).toHaveAttribute("data-explore-viewport-result", "HAS_RECORDS");
+
+  await userEvent.click(screen.getByRole("button", { name: /\u6751\u9547\u3001\u4ead/ }));
+  expect(screen.queryByTestId("coverage-settlement")).not.toBeInTheDocument();
+});
+
+test("settlement coverage follows exact snapshots while preserving interval pavilion records", async () => {
+  installFetchMock();
+  const map = await renderReadyApp();
+  await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"));
+  const timeline = screen.getByTestId("timeline-range");
+
+  for (const year of [14, 626, 750]) {
+    fireEvent.change(timeline, { target: { value: yearToOrdinal(year) } });
+    await waitFor(() => expect(map).toHaveAttribute("data-query-result-year", String(year)));
+    expect(map.dataset.historicalPointIds).toContain(year === 14 ? "pavilion_14" : "pavilion_623");
+    expect(screen.getByTestId("coverage-settlement")).not.toHaveTextContent(
+      "\u5f53\u524d\u6765\u6e90\u65e0\u8be5\u65f6\u671f\u8d44\u6599",
+    );
+  }
+
+  for (const year of [1819, 1820, 1821, 1910, 1911]) {
+    fireEvent.change(timeline, { target: { value: yearToOrdinal(year) } });
+    await waitFor(() => expect(map).toHaveAttribute("data-query-result-year", String(year)));
+    const status = screen.getByTestId("coverage-settlement");
+    if (year === 1820 || year === 1911) {
+      expect(status).toHaveTextContent(`${year} \u6751\u9547\u5feb\u7167`);
+    } else {
+      expect(status).toHaveTextContent("\u5f53\u524d\u6765\u6e90\u65e0\u8be5\u65f6\u671f\u8d44\u6599");
+    }
+  }
+});
+
+test("invalid coverage metadata fails open without removing historical interaction", async () => {
+  installFetchMock({ malformedCoverage: true });
+  const map = await renderReadyApp();
+  await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "failed"));
+  expect(document.querySelectorAll("[data-coverage-family]")).toHaveLength(0);
+  expect(map).toHaveAttribute("data-historical-point-ids", "province_1911,hvd_88266,regional_1911");
+  await userEvent.click(document.querySelector<HTMLElement>(".history-marker--colocated")!);
+  expect(screen.getByLabelText("\u540c\u5740\u5386\u53f2\u8bb0\u5f55")).toBeVisible();
+
+  await userEvent.click(screen.getByRole("button", { name: "\u5f00\u53d1\u8005\u6a21\u5f0f" }));
+  expect(screen.getByTestId("coverage-metadata-diagnostic")).toHaveTextContent("failed");
+});
+
+test("Developer Mode exposes component evidence and both coverage axes", async () => {
+  installFetchMock();
+  await renderReadyApp();
+  await userEvent.click(screen.getByRole("button", { name: "\u5f00\u53d1\u8005\u6a21\u5f0f" }));
+  const diagnostics = await screen.findByTestId("coverage-family-diagnostics");
+  expect(diagnostics).toHaveTextContent("settlement · SUPPORTED · TIME_SLICE · NO_RECORDS");
+  expect(diagnostics).toHaveTextContent("raw_town_snapshots · \u6751\u9547 · TIME_SLICE · SUPPORTED");
+  expect(diagnostics).toHaveTextContent("snapshots 1820,1911");
+  expect(diagnostics).toHaveTextContent("observed 14..22;623..959");
+  expect(diagnostics).toHaveTextContent("Named village snapshots.");
+  expect(diagnostics).toHaveTextContent("global 0 · viewport 0 · displayed 0");
 });
 
 test("point-only mode removes persistent labels without changing layers or interaction", async () => {
