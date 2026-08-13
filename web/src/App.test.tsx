@@ -307,7 +307,7 @@ test("User Mode shows independent snapshot and limited coverage facts only for e
   installFetchMock();
   const map = await renderReadyApp();
   await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"));
-  expect(screen.getByTestId("coverage-settlement")).toHaveTextContent("1911\u5feb\u7167");
+  expect(screen.getByTestId("coverage-settlement")).toHaveTextContent("1911 \u6751\u9547\u5feb\u7167");
   expect(screen.getByTestId("coverage-high_admin")).toHaveTextContent("\u6709\u9650");
   expect(screen.getByTestId("coverage-high_admin")).toHaveAttribute(
     "title",
@@ -355,7 +355,7 @@ test("settlement coverage follows exact snapshots while preserving interval pavi
     await waitFor(() => expect(map).toHaveAttribute("data-query-result-year", String(year)));
     const status = screen.getByTestId("coverage-settlement");
     if (year === 1820 || year === 1911) {
-      expect(status).toHaveTextContent(`${year}\u5feb\u7167`);
+      expect(status).toHaveTextContent(`${year} \u6751\u9547\u5feb\u7167`);
       expect(map.dataset.historicalPointIds).toContain(`village_${year}`);
     } else {
       expect(status).toHaveTextContent("\u6765\u6e90\u65e0\u8d44\u6599");

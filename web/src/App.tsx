@@ -1354,10 +1354,10 @@ export default function App() {
                   title={coverageTitle}
                 >
                   {coverageState.messages.map((message) => {
-                    if (message.kind === "snapshot") return `${exploreYear}快照`;
+                    if (message.kind === "snapshot") return message.text;
                     if (message.kind === "unsupported") return "来源无资料";
                     if (message.kind === "limited") return "有限";
-                    if (message.kind === "unknown") return "?";
+                    if (message.kind === "unknown") return "覆盖未明";
                     return "范围空";
                   }).join("·")}
                 </span>
@@ -1370,7 +1370,7 @@ export default function App() {
             data-testid="layer-counts"
             title={`当前范围源记录 ${activeCollection?.features.length ?? 0}；已启用候选 ${semanticSelection.eligibleFeatureCount}；实际显示位置 ${renderedUnits.length}`}
           >
-            源 {activeCollection?.features.length ?? 0} · 选 {semanticSelection.eligibleFeatureCount} · 显 {renderedUnits.length}
+            源{activeCollection?.features.length ?? 0}/选{semanticSelection.eligibleFeatureCount}/显{renderedUnits.length}
           </small>
         </aside>
 

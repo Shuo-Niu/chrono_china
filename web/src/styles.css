@@ -793,6 +793,13 @@ h1 {
   .provenance-bar { padding: 11px 18px; }
 }
 
+@media (max-width: 1100px) {
+  .legend { gap: 1px; padding-right: 0; padding-left: 0; }
+  .legend .legend__dot {
+    display: none;
+  }
+}
+
 @media (max-width: 480px) {
   .app-shell { grid-template-rows: auto minmax(690px, 1fr) auto; }
   .map-stage { min-height: 690px; }

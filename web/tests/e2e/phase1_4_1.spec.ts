@@ -133,14 +133,19 @@ test("Phase 1.4.1 real snapshots and interval settlements remain semantically di
   });
 
   await setYear(page, 1820);
-  await expect(settlementBadge).toContainText("1820快照");
+  await expect(settlementBadge).toContainText("1820 村镇快照");
   await expect(markerFor(page, realRecords.town1820.id)).toBeVisible();
   expect(await settlementState(page)).toMatchObject({
     support: "SUPPORTED", temporalModels: ["TIME_SLICE"], viewportResult: "HAS_RECORDS",
   });
 
+  await setYear(page, 1821);
+  await expect(settlementBadge).toHaveText("来源无资料");
+  await expect(markerFor(page, realRecords.town1820.id)).toHaveCount(0);
+
+  await setYear(page, 1820);
   await setView(page, [140, 15], 11);
-  await expect(settlementBadge).toContainText("1820快照");
+  await expect(settlementBadge).toContainText("1820 村镇快照");
   await expect(settlementBadge).toContainText("范围空");
   await expect(page.locator('[data-legend-family="settlement"]')).toHaveAccessibleName(
     /1820 村镇快照.*当前范围无记录/,
@@ -149,16 +154,12 @@ test("Phase 1.4.1 real snapshots and interval settlements remain semantically di
     support: "SUPPORTED", temporalModels: ["TIME_SLICE"], viewportResult: "NO_RECORDS", viewportCount: 0,
   });
 
-  await setYear(page, 1821);
-  await expect(settlementBadge).toHaveText("来源无资料");
-  await expect(markerFor(page, realRecords.town1820.id)).toHaveCount(0);
-
   await setView(page, realRecords.town1911.center);
   await setYear(page, 1910);
   await expect(settlementBadge).toHaveText("来源无资料");
   await expect(markerFor(page, realRecords.town1911.id)).toHaveCount(0);
   await setYear(page, 1911);
-  await expect(settlementBadge).toContainText("1911快照");
+  await expect(settlementBadge).toContainText("1911 村镇快照");
   await expect(markerFor(page, realRecords.town1911.id)).toBeVisible();
 
   await setView(page, realRecords.highAdmin1911.center);
@@ -213,7 +214,7 @@ test("Phase 1.4.1 real snapshots and interval settlements remain semantically di
     }
   });
   await expect(page.getByTestId("map")).toHaveAttribute("data-query-result-year", "1911");
-  await expect(settlementBadge).toContainText("1911快照");
+  await expect(settlementBadge).toContainText("1911 村镇快照");
   await expect(page.getByTestId("map")).toHaveAttribute("data-full-historical-layer-clear-count", "0");
   await expect(page.getByTestId("map")).toHaveAttribute("data-stale-commit-count", "0");
 });
@@ -239,7 +240,7 @@ test("Phase 1.4.1 coverage badges preserve responsive overlay safe areas", async
   await waitForIndex(page);
   await setView(page, realRecords.town1911.center);
   await setYear(page, 1911);
-  await expect(page.getByTestId("coverage-settlement")).toContainText("1911快照");
+  await expect(page.getByTestId("coverage-settlement")).toContainText("1911 村镇快照");
   await expect(page.getByTestId("coverage-high_admin")).toContainText("有限");
   await markerFor(page, realRecords.town1911.id).click();
   const colocatedCard = page.locator(".colocated-card");
@@ -250,9 +251,11 @@ test("Phase 1.4.1 coverage badges preserve responsive overlay safe areas", async
 
   const forbiddenPairs = [
     ["timeline", "legend"], ["timeline", "zoom"], ["timeline", "scale"],
-    ["timeline", "detail"], ["timeline", "attribution"], ["legend", "zoom"],
-    ["legend", "scale"], ["legend", "detail"], ["detail", "zoom"], ["detail", "scale"],
-    ["legend", "attribution"],
+    ["timeline", "attribution"], ["timeline", "detail"],
+    ["legend", "zoom"], ["legend", "scale"], ["legend", "attribution"], ["legend", "detail"],
+    ["zoom", "scale"], ["zoom", "attribution"], ["zoom", "detail"],
+    ["scale", "attribution"], ["scale", "detail"],
+    ["attribution", "detail"],
   ] as const;
   for (const viewport of responsiveViewports) {
     await page.setViewportSize(viewport);
