@@ -104,7 +104,9 @@ test("manual layers, neutral timeline, responsive safe areas, and formal screens
     .filter((entry) => entry.name.includes("/explore/tgaz_compact.json")).length);
 
   await expect(page.getByLabel("现代地点")).toHaveCount(0);
-  await expect(page.locator("[data-legend-family]")).toHaveCount(5);
+  await expect(page.locator("[data-legend-family]")).toHaveCount(4);
+  await expect(page.locator('[data-legend-family="settlement"]')).toHaveCount(0);
+  await expect(page.getByTestId("layer-switcher")).not.toContainText("村镇、亭");
   await expect(page.getByTestId("continuous-timeline")).toHaveAttribute("data-progress-fill", "none");
   await expect(page.getByTestId("continuous-timeline")).not.toContainText("精确年份");
   await expect(page.getByTestId("continuous-timeline")).not.toContainText("拖动查看任意整数年份");
@@ -112,9 +114,9 @@ test("manual layers, neutral timeline, responsive safe areas, and formal screens
   await page.screenshot({ path: path.join(artifactDir, "01-default-user-mode-no-selector.png"), fullPage: true });
   await page.screenshot({ path: path.join(artifactDir, "02-single-line-complete-legend-all-on.png"), fullPage: true });
 
-  const familyIds = ["high_admin", "regional_admin", "county", "settlement", "other"];
+  const familyIds = ["high_admin", "regional_admin", "county", "other"];
   await expect(page.locator('[data-legend-family="high_admin"]')).toHaveAttribute("aria-pressed", "true");
-  for (const family of ["regional_admin", "county", "settlement", "other"]) {
+  for (const family of ["regional_admin", "county", "other"]) {
     await expect(page.locator(`[data-legend-family="${family}"]`)).toHaveAttribute("aria-pressed", "false");
   }
   expect(await page.locator("[data-legend-family]").evaluateAll((buttons) =>
@@ -125,12 +127,11 @@ test("manual layers, neutral timeline, responsive safe areas, and formal screens
     "省、行省、省级、王畿",
     "郡、侨郡、府、州、直隶州、路、道、侯国、厅、军、军镇、防镇、监",
     "县、侨县",
-    "村镇、亭",
     "其他未分类来源类型",
   ]);
 
   const toggleStart = Date.now();
-  for (const family of ["regional_admin", "county", "settlement", "other"]) {
+  for (const family of ["regional_admin", "county", "other"]) {
     await page.locator(`[data-legend-family="${family}"]`).click();
   }
   const toggleLatencyMs = Date.now() - toggleStart;
@@ -138,7 +139,7 @@ test("manual layers, neutral timeline, responsive safe areas, and formal screens
     await expect(page.locator(`[data-legend-family="${family}"]`)).toHaveAttribute("aria-pressed", "true");
   }
   await page.screenshot({ path: path.join(artifactDir, "02-single-line-complete-legend-all-on.png"), fullPage: true });
-  for (const family of ["regional_admin", "county", "settlement", "other"]) {
+  for (const family of ["regional_admin", "county", "other"]) {
     await page.locator(`[data-legend-family="${family}"]`).click();
   }
   await expect(map).toHaveAttribute("data-enabled-display-families", "high_admin");
@@ -148,10 +149,10 @@ test("manual layers, neutral timeline, responsive safe areas, and formal screens
   await setMapView(page, [116.48, 39.96], 11.1);
   await setExactYear(page, 1800);
   expect(await map.getAttribute("data-enabled-display-families")).toBe(enabledBeforeViewChange);
-  for (const family of ["regional_admin", "county", "settlement", "other"]) {
+  for (const family of ["regional_admin", "county", "other"]) {
     await page.locator(`[data-legend-family="${family}"]`).click();
   }
-  await expect(map).toHaveAttribute("data-enabled-display-families", /settlement/);
+  await expect(map).not.toHaveAttribute("data-enabled-display-families", /settlement/);
 
   await setExactYear(page, 600);
   await page.screenshot({ path: path.join(artifactDir, "04-timeline-middle-year.png"), fullPage: true });
@@ -212,7 +213,7 @@ test("manual layers, neutral timeline, responsive safe areas, and formal screens
   const close = page.locator(".detail-card__close").first();
   if (await close.isVisible()) await close.click();
   await page.setViewportSize({ width: 1440, height: 900 });
-  for (const family of ["regional_admin", "county", "settlement", "other"]) {
+  for (const family of ["regional_admin", "county", "other"]) {
     const toggle = page.locator(`[data-legend-family="${family}"]`);
     if (await toggle.getAttribute("aria-pressed") === "true") await toggle.click();
   }
@@ -221,7 +222,7 @@ test("manual layers, neutral timeline, responsive safe areas, and formal screens
   await expect(map).toHaveAttribute("data-enabled-display-families", "high_admin");
   await page.screenshot({ path: path.join(artifactDir, "10-nationwide-high-admin-only.png"), fullPage: true });
 
-  for (const family of ["regional_admin", "county", "settlement", "other"]) {
+  for (const family of ["regional_admin", "county", "other"]) {
     await page.locator(`[data-legend-family="${family}"]`).click();
   }
   await setMapView(page, [116.39723, 39.9075], 9.5);

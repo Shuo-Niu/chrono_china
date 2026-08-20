@@ -80,7 +80,7 @@ export const DISPLAY_FAMILY_REGISTRY: readonly DisplayFamilyConfig[] = [
     stroke: "#713d2b",
     halo: "#fffaf0",
     labelPriority: 3,
-    userVisible: true,
+    userVisible: false,
     developerVisible: true,
     legend: true,
   },

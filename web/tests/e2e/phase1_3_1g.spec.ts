@@ -48,7 +48,7 @@ test("display controls are orthogonal and timeline updates retain keyed markers"
   const highDensityVisiblePoints = Number(await map.getAttribute("data-historical-point-count"));
 
   const settlementToggle = page.locator('[data-legend-family="settlement"]');
-  await expect(settlementToggle).toHaveAttribute("aria-pressed", "false");
+  await expect(settlementToggle).toHaveCount(0);
   const familiesWithSettlementOff = await map.getAttribute("data-enabled-display-families");
   await page.getByRole("button", { name: "仅点" }).click();
   await expect(map).toHaveAttribute("data-historical-display-mode", "point_only");
@@ -73,7 +73,7 @@ test("display controls are orthogonal and timeline updates retain keyed markers"
 
   await page.getByRole("button", { name: "点 + 标签" }).click();
   await expect(map).toHaveAttribute("data-historical-display-mode", "point_label");
-  await expect(settlementToggle).toHaveAttribute("aria-pressed", "false");
+  await expect(settlementToggle).toHaveCount(0);
 
   const historicalStateBeforeBasemap = {
     year: await map.getAttribute("data-snapshot-year"),
@@ -91,7 +91,6 @@ test("display controls are orthogonal and timeline updates retain keyed markers"
     bbox: await map.getAttribute("data-viewport-bbox"),
   }).toEqual(historicalStateBeforeBasemap);
 
-  await settlementToggle.click();
   for (const family of ["regional_admin", "county", "other"]) {
     const toggle = page.locator(`[data-legend-family="${family}"]`);
     if (await toggle.getAttribute("aria-pressed") === "false") await toggle.click();

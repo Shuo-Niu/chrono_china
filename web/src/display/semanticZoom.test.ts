@@ -48,7 +48,8 @@ describe("manual historical layer display units", () => {
     expect(low.eligibleFamilies).toEqual(["high_admin", "county"]);
     expect(low.units.map((unit) => unit.id)).toEqual(["province", "county"]);
     expect(maximum.units.map((unit) => unit.id)).toEqual(low.units.map((unit) => unit.id));
-    expect(maximum.semanticHiddenFeatureCount).toBe(2);
+    expect(maximum.semanticHiddenFeatureCount).toBe(1);
+    expect(maximum.activeFamilies).not.toContain("settlement");
   });
 
   test("co-location membership is recalculated after a family is turned off", () => {

@@ -27,12 +27,6 @@ async function waitForIndex(page: Page, coverageStatus: "ready" | "failed" = "re
     .toBeGreaterThan(0);
 }
 
-async function enableSettlement(page: Page) {
-  const toggle = page.locator('[data-legend-family="settlement"]');
-  if (await toggle.getAttribute("aria-pressed") === "false") await toggle.click();
-  await expect(toggle).toHaveAttribute("aria-pressed", "true");
-}
-
 async function setYear(page: Page, year: number) {
   const map = page.getByTestId("map");
   await page.getByTestId("timeline-range").evaluate((element, ordinal) => {
@@ -123,107 +117,46 @@ async function overlayState(page: Page) {
   });
 }
 
-test("Phase 1.4.1 real snapshots and interval settlements remain semantically distinct", async ({ page }) => {
+test("settlement facts remain diagnostic-only while User Mode hides their controls and points", async ({ page }) => {
   test.setTimeout(240_000);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await waitForIndex(page);
-  await enableSettlement(page);
+  await expect(page.locator('[data-legend-family="settlement"]')).toHaveCount(0);
+  await expect(page.getByTestId("coverage-settlement")).toHaveCount(0);
+  await expect(page.getByTestId("layer-switcher")).not.toContainText("村镇、亭");
 
-  const settlementBadge = page.getByTestId("coverage-settlement");
   await setView(page, realRecords.town1820.center);
-  await setYear(page, 1819);
-  await expect(settlementBadge).toHaveText("来源无资料");
-  await expect(markerFor(page, realRecords.town1820.id)).toHaveCount(0);
+  for (const year of [1819, 1820, 1821]) {
+    await setYear(page, year);
+    await expect(markerFor(page, realRecords.town1820.id)).toHaveCount(0);
+  }
   expect(await settlementState(page)).toMatchObject({
-    support: "UNSUPPORTED", temporalModels: [], viewportResult: "NO_RECORDS", viewportCount: 0,
+    support: "UNSUPPORTED", viewportResult: "NO_RECORDS", viewportCount: 0,
   });
-
   await setYear(page, 1820);
-  await expect(settlementBadge).toContainText("1820 村镇快照");
-  await expect(markerFor(page, realRecords.town1820.id)).toBeVisible();
-  expect(await settlementState(page)).toMatchObject({
-    support: "SUPPORTED", temporalModels: ["TIME_SLICE"], viewportResult: "HAS_RECORDS",
-  });
-
-  await setYear(page, 1821);
-  await expect(settlementBadge).toHaveText("来源无资料");
-  await expect(markerFor(page, realRecords.town1820.id)).toHaveCount(0);
-
-  await setYear(page, 1820);
-  await setView(page, [140, 15], 11);
-  await expect(settlementBadge).toContainText("1820 村镇快照");
-  await expect(settlementBadge).toContainText("范围空");
-  await expect(page.locator('[data-legend-family="settlement"]')).toHaveAccessibleName(
-    /1820 村镇快照.*当前范围无记录/,
-  );
   expect(await settlementState(page)).toMatchObject({
     support: "SUPPORTED", temporalModels: ["TIME_SLICE"], viewportResult: "NO_RECORDS", viewportCount: 0,
   });
 
   await setView(page, realRecords.town1911.center);
-  await setYear(page, 1910);
-  await expect(settlementBadge).toHaveText("来源无资料");
-  await expect(markerFor(page, realRecords.town1911.id)).toHaveCount(0);
   await setYear(page, 1911);
-  await expect(settlementBadge).toContainText("1911 村镇快照");
-  await expect(markerFor(page, realRecords.town1911.id)).toBeVisible();
-
-  await setView(page, realRecords.highAdmin1911.center);
-  await expect(markerFor(page, realRecords.highAdmin1911.id)).toBeVisible();
-  const highAdminState = JSON.parse(
-    await page.getByTestId("map").getAttribute("data-coverage-family-states") ?? "{}",
-  ).high_admin;
-  expect(highAdminState).toMatchObject({ support: "LIMITED", viewportResult: "HAS_RECORDS" });
-  await expect(page.locator('[data-legend-family="high_admin"]')).toHaveAccessibleName(
-    /高层级资料有限/,
-  );
-
-  await setView(page, realRecords.pavilion14.center);
-  await setYear(page, 14);
-  await expect(markerFor(page, realRecords.pavilion14.id)).toBeVisible();
-  await expect(settlementBadge).not.toContainText("来源无资料");
+  await expect(markerFor(page, realRecords.town1911.id)).toHaveCount(0);
+  expect(await settlementState(page)).toMatchObject({
+    support: "SUPPORTED", temporalModels: ["TIME_SLICE"], viewportResult: "NO_RECORDS", viewportCount: 0,
+  });
 
   await setView(page, realRecords.pavilion626.center);
-  for (const year of [626, 750]) {
+  for (const year of [14, 626, 750]) {
     await setYear(page, year);
-    await expect(markerFor(page, realRecords.pavilion626.id)).toBeVisible();
-    await expect(settlementBadge).not.toContainText("来源无资料");
-    expect(await settlementState(page)).toMatchObject({
-      support: "UNKNOWN", temporalModels: ["TIME_SERIES"], viewportResult: "HAS_RECORDS",
-    });
+    await expect(markerFor(page, year === 14 ? realRecords.pavilion14.id : realRecords.pavilion626.id))
+      .toHaveCount(0);
   }
 
-  const retained = markerFor(page, realRecords.pavilion626.id);
-  await retained.evaluate((element) => { (element as HTMLElement).dataset.phase141Probe = "retained"; });
-  await setYear(page, 751);
-  await expect(markerFor(page, realRecords.pavilion626.id)).toHaveAttribute("data-phase141-probe", "retained");
-
-  const settlementToggle = page.locator('[data-legend-family="settlement"]');
-  await settlementToggle.click();
-  await expect(settlementToggle).toHaveAttribute("aria-pressed", "false");
-  await expect(settlementBadge).toHaveCount(0);
-  expect(await settlementState(page)).toMatchObject({ viewportResult: "NO_RECORDS", viewportCount: 0 });
-  await setView(page, [109.1, 34.6], 9.5);
-  await setYear(page, 750);
-  await expect(settlementToggle).toHaveAttribute("aria-pressed", "false");
-  await settlementToggle.click();
-  await expect(settlementToggle).toHaveAttribute("aria-pressed", "true");
-  await expect(markerFor(page, realRecords.pavilion626.id)).toBeVisible();
-
-  await page.getByTestId("timeline-range").evaluate(async (element) => {
-    const input = element as HTMLInputElement;
-    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
-    for (const year of [1819, 1820, 1821, 1910, 1911]) {
-      setter.call(input, String(year - 1));
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-    }
-  });
-  await expect(page.getByTestId("map")).toHaveAttribute("data-query-result-year", "1911");
-  await expect(settlementBadge).toContainText("1911 村镇快照");
-  await expect(page.getByTestId("map")).toHaveAttribute("data-full-historical-layer-clear-count", "0");
-  await expect(page.getByTestId("map")).toHaveAttribute("data-stale-commit-count", "0");
+  await page.getByRole("button", { name: "开发者模式" }).click();
+  const diagnostics = page.getByTestId("coverage-family-diagnostics");
+  await expect(diagnostics).toContainText("raw_town_snapshots · 村镇 · TIME_SLICE");
+  await expect(diagnostics).toContainText("raw_pavilion_intervals · 亭 · TIME_SERIES");
 });
 
 test("Phase 1.4.1 malformed coverage metadata fails open without an absence claim", async ({ page }) => {
@@ -234,10 +167,10 @@ test("Phase 1.4.1 malformed coverage metadata fails open without an absence clai
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await waitForIndex(page, "failed");
-  await enableSettlement(page);
-  await setView(page, realRecords.pavilion626.center);
-  await setYear(page, 626);
-  await expect(markerFor(page, realRecords.pavilion626.id)).toBeVisible();
+  await expect(page.locator('[data-legend-family="settlement"]')).toHaveCount(0);
+  await setView(page, realRecords.highAdmin1911.center);
+  await setYear(page, 1911);
+  await expect(markerFor(page, realRecords.highAdmin1911.id)).toBeVisible();
   await expect(page.locator("[data-coverage-family]")).toHaveCount(0);
   await expect(page.getByTestId("layer-switcher")).not.toContainText("来源无资料");
 });
@@ -247,15 +180,14 @@ test("Phase 1.4.1 coverage badges preserve responsive overlay safe areas", async
   await page.setViewportSize(responsiveViewports[0]);
   await page.goto("/");
   await waitForIndex(page);
-  await enableSettlement(page);
-  await setView(page, realRecords.town1911.center);
+  await expect(page.locator('[data-legend-family="settlement"]')).toHaveCount(0);
+  await setView(page, realRecords.highAdmin1911.center);
   await setYear(page, 1911);
-  await expect(page.getByTestId("coverage-settlement")).toContainText("1911 村镇快照");
   await expect(page.getByTestId("coverage-high_admin")).toContainText("有限");
-  await markerFor(page, realRecords.town1911.id).click();
+  await markerFor(page, realRecords.highAdmin1911.id).click();
   const colocatedCard = page.locator(".colocated-card");
   if (await colocatedCard.isVisible()) {
-    await page.locator(`[data-colocated-member-id="${realRecords.town1911.id}"]`).click();
+    await page.locator(`[data-colocated-member-id="${realRecords.highAdmin1911.id}"]`).click();
   }
   await expect(page.locator(".detail-card")).toBeVisible();
 
@@ -289,7 +221,7 @@ test("Phase 1.4.1 coverage badges preserve responsive overlay safe areas", async
     expect(state.legendLayout.overflowY).not.toMatch(/auto|scroll/);
     expect(state.legendLayout.scrollWidth).toBeLessThanOrEqual(state.legendLayout.clientWidth + 2);
     expect(state.legendLayout.scrollHeight).toBeLessThanOrEqual(state.legendLayout.clientHeight + 2);
-    expect(state.entries).toHaveLength(5);
+    expect(state.entries).toHaveLength(4);
     const firstCenter = (state.entries[0].box.y + state.entries[0].box.bottom) / 2;
     for (const [index, entry] of state.entries.entries()) {
       expect(entry.box.x, `${viewport.width} ${entry.family} left viewport bound`)

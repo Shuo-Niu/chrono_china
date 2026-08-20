@@ -62,7 +62,7 @@ test("real-record detail clicks are contained and rapid timeline input stays fra
     path.resolve("../data/processed/explore/tgaz_compact.json"),
     "utf8",
   )) as { records: CompactRecord[] };
-  const targetTypes = ["省", "行省", "县", "侨县", "郡", "府", "州", "军", "军镇", "道", "村镇"];
+  const targetTypes = ["省", "行省", "县", "侨县", "郡", "府", "州", "军", "军镇", "道"];
   const records = targetTypes.map((rawType) => {
     const found = payload.records.find((record) => record[7] === rawType);
     if (!found) throw new Error(`missing real fixture type ${rawType}`);
@@ -76,7 +76,8 @@ test("real-record detail clicks are contained and rapid timeline input stays fra
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await waitForIndex(page);
-  for (const family of ["regional_admin", "county", "settlement", "other"]) {
+  await expect(page.locator('[data-legend-family="settlement"]')).toHaveCount(0);
+  for (const family of ["regional_admin", "county", "other"]) {
     const toggle = page.locator(`[data-legend-family="${family}"]`);
     if (await toggle.getAttribute("aria-pressed") === "false") await toggle.click();
   }

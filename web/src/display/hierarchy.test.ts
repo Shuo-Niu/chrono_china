@@ -47,6 +47,8 @@ describe("historical display hierarchy", () => {
     expect(displayFamily(feature("yuan", "行省", 0))).toBe("high_admin");
     expect(displayFamily(feature("settlement", "村镇", 0))).toBe("settlement");
     expect(displayFamilyFromRawType("亭")).toBe("settlement");
+    const settlement = DISPLAY_FAMILY_REGISTRY.find((config) => config.id === "settlement");
+    expect(settlement).toMatchObject({ userVisible: false, developerVisible: true });
     expect(displayFamilyFromRawType("未知来源类型")).toBe("other");
   });
 

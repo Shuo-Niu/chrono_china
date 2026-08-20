@@ -158,14 +158,15 @@ async function launchAndVerify(reopen = false) {
       assert.ok(highDensity > 0, "1911 viewport must contain real historical records");
 
       const settlement = page.locator('[data-legend-family="settlement"]');
-      assert.equal(await settlement.getAttribute("aria-pressed"), "false");
-      await settlement.click();
-      assert.equal(await settlement.getAttribute("aria-pressed"), "true");
+      assert.equal(await settlement.count(), 0, "settlement controls must stay hidden in User Mode");
+      assert.equal((await page.getByTestId("layer-switcher").innerText()).includes("村镇、亭"), false);
       await setYear(page, 1820);
-      await page.getByTestId("coverage-settlement").waitFor({ state: "visible" });
-      assert.match(await page.getByTestId("coverage-settlement").innerText(), /1820 村镇快照/);
-      await setYear(page, 1819);
-      assert.match(await page.getByTestId("coverage-settlement").innerText(), /来源无资料/);
+      assert.equal(
+        (await page.getByTestId("map").getAttribute("data-historical-point-ids")).includes("hvd_15476"),
+        false,
+        "hidden settlement snapshots must not render",
+      );
+      await setYear(page, 1911);
 
       const county = page.locator('[data-legend-family="county"]');
       assert.equal(await county.getAttribute("aria-pressed"), "false");
