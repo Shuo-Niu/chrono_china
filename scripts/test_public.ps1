@@ -38,6 +38,11 @@ try {
         throw "Public Web tests failed."
     }
 
+    npm.cmd run test:desktop
+    if ($LASTEXITCODE -ne 0) {
+        throw "Public desktop packaging tests failed."
+    }
+
     npm.cmd run build
     if ($LASTEXITCODE -ne 0) {
         throw "Production build failed."

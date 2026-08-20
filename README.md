@@ -92,6 +92,18 @@ After generating the complete authorized local dataset, run the full suite and E
 powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -E2E
 ```
 
+## Build the Windows usability candidate
+
+After generating the authorized local processed data, a maintainer can build the unsigned Windows 10/11 x64 installer and portable candidate:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\build_phase1_5_windows.ps1
+```
+
+Artifacts are written under `artifacts/phase1_5/windows/` and are intentionally excluded from Git. The build includes only the two allowlisted User Mode runtime datasets and validates the packed `app.asar`; it does not require a Vite, Node, or Python server at runtime. Run the packaged-binary smoke test with `Set-Location web; npm.cmd run smoke:windows`.
+
+This command creates a technical testing candidate, not distribution permission. Do not send or publicly host a package containing CHGIS/TGAZ-derived records until the applicable redistribution rights have been confirmed in writing. The candidate is unsigned, so SmartScreen may warn.
+
 ## Data rights and commercial use
 
 Open-source code does not make upstream data open data. The project-authored code and documentation are Apache-2.0 and may be used commercially under that license. The principal data sources have separate conditions:

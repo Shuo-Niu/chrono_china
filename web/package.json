@@ -1,24 +1,28 @@
 {
   "name": "chronochina-web",
+  "productName": "ChronoChina",
   "private": true,
   "version": "0.1.0",
+  "description": "ChronoChina Windows usability-test application",
+  "author": "Shuo Niu",
   "license": "Apache-2.0",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run --reporter=default --reporter=junit --outputFile.junit=../artifacts/vitest-results.xml",
     "test:public": "vitest run --exclude src/display/ranking.real-data.test.ts --exclude src/explore/viewportQuery.test.ts --exclude src/coverage/sourceCoverage.real-data.test.ts",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "test:desktop": "node --test electron/runtime.test.cjs electron/packageAllowlist.test.cjs",
+    "pack:windows": "npm run build && npm run test:desktop && electron-builder --win --x64",
+    "smoke:windows": "node electron/packaged-smoke.cjs"
   },
-  "dependencies": {
-    "maplibre-gl": "6.2.0",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@playwright/test": "1.62.1",
+    "@electron/asar": "3.4.1",
     "@testing-library/jest-dom": "7.0.0",
     "@testing-library/react": "16.3.2",
     "@testing-library/user-event": "14.6.3",
@@ -26,9 +30,60 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "@vitejs/plugin-react": "6.0.5",
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.3",
     "jsdom": "29.1.1",
+    "maplibre-gl": "6.2.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "typescript": "7.0.2",
     "vite": "8.2.1",
     "vitest": "4.1.10"
+  },
+  "build": {
+    "appId": "org.chronochina.usability",
+    "productName": "ChronoChina",
+    "asar": true,
+    "npmRebuild": false,
+    "directories": {
+      "output": "../artifacts/phase1_5/windows"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/main.cjs",
+      "electron/runtime.cjs",
+      "package.json"
+    ],
+    "extraFiles": [
+      {
+        "from": "electron/README_FIRST.txt",
+        "to": "README_FIRST.txt"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "signAndEditExecutable": false,
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "artifactName": "ChronoChina-Phase1.5-Setup-${version}-${arch}.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "portable": {
+      "artifactName": "ChronoChina-Phase1.5-Portable-${version}-${arch}.${ext}"
+    }
   }
 }

@@ -24,6 +24,11 @@ try {
         throw "Web unit tests failed."
     }
 
+    npm.cmd run test:desktop
+    if ($LASTEXITCODE -ne 0) {
+        throw "Desktop packaging tests failed."
+    }
+
     npm.cmd run build
     if ($LASTEXITCODE -ne 0) {
         throw "Web production build failed."
