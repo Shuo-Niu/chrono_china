@@ -27,6 +27,12 @@ async function waitForIndex(page: Page, coverageStatus: "ready" | "failed" = "re
     .toBeGreaterThan(0);
 }
 
+async function enableSettlement(page: Page) {
+  const toggle = page.locator('[data-legend-family="settlement"]');
+  if (await toggle.getAttribute("aria-pressed") === "false") await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+}
+
 async function setYear(page: Page, year: number) {
   const map = page.getByTestId("map");
   await page.getByTestId("timeline-range").evaluate((element, ordinal) => {
@@ -122,6 +128,7 @@ test("Phase 1.4.1 real snapshots and interval settlements remain semantically di
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await waitForIndex(page);
+  await enableSettlement(page);
 
   const settlementBadge = page.getByTestId("coverage-settlement");
   await setView(page, realRecords.town1820.center);
@@ -220,12 +227,14 @@ test("Phase 1.4.1 real snapshots and interval settlements remain semantically di
 });
 
 test("Phase 1.4.1 malformed coverage metadata fails open without an absence claim", async ({ page }) => {
+  test.setTimeout(120_000);
   await page.route("**/coverage/historical_layer_coverage.json", async (route) => {
     await route.fulfill({ status: 200, contentType: "application/json", body: "{\"schema_version\":\"broken\"}" });
   });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await waitForIndex(page, "failed");
+  await enableSettlement(page);
   await setView(page, realRecords.pavilion626.center);
   await setYear(page, 626);
   await expect(markerFor(page, realRecords.pavilion626.id)).toBeVisible();
@@ -238,6 +247,7 @@ test("Phase 1.4.1 coverage badges preserve responsive overlay safe areas", async
   await page.setViewportSize(responsiveViewports[0]);
   await page.goto("/");
   await waitForIndex(page);
+  await enableSettlement(page);
   await setView(page, realRecords.town1911.center);
   await setYear(page, 1911);
   await expect(page.getByTestId("coverage-settlement")).toContainText("1911 村镇快照");

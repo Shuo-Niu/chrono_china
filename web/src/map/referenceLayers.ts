@@ -33,11 +33,30 @@ export interface ReferenceApplyResult {
 }
 
 export const MODERN_REFERENCE_SOURCE_ID = "chronochina-modern-reference";
-export const MODERN_REFERENCE_SOURCE_URL = "https://tiles.openfreemap.org/planet";
-export const MODERN_REFERENCE_GLYPHS_URL =
-  "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
-const MODERN_REFERENCE_HOSTNAME = new URL(MODERN_REFERENCE_SOURCE_URL).hostname;
+export const MODERN_REFERENCE_RASTER_SOURCE_ID = "chronochina-natural-earth-reference";
+const OPENFREEMAP_ORIGIN = "https://tiles.openfreemap.org";
+function packagedTileTemplate(): string | null {
+  if (typeof window === "undefined") return null;
+  const candidate = new URLSearchParams(window.location.search).get("referenceTiles");
+  if (!candidate) return null;
+  try {
+    const parsed = new URL(candidate);
+    return parsed.protocol === "https:" && parsed.hostname === "tiles.openfreemap.org" &&
+      candidate.includes("{z}") && candidate.includes("{x}") && candidate.includes("{y}")
+      ? candidate
+      : null;
+  } catch {
+    return null;
+  }
+}
 
+export const MODERN_REFERENCE_SOURCE_URL =
+  packagedTileTemplate() ?? `${OPENFREEMAP_ORIGIN}/planet`;
+export const MODERN_REFERENCE_GLYPHS_URL =
+  `${OPENFREEMAP_ORIGIN}/fonts/{fontstack}/{range}.pbf`;
+const MODERN_REFERENCE_HOSTNAME = new URL(OPENFREEMAP_ORIGIN).hostname;
+
+const LOW_ZOOM_RASTER_LAYER_ID = "reference-lowzoom-geography";
 const WATER_LAYER_ID = "reference-water";
 const WATERWAY_LAYER_ID = "reference-major-waterway";
 const SETTLEMENT_LABEL_LAYER_ID = "reference-settlement-label";
@@ -54,6 +73,7 @@ const COLOR_PEAK_LAYER_ID = "reference-color-peak";
 const COLOR_PEAK_LABEL_LAYER_ID = "reference-color-peak-label";
 
 export const MODERN_REFERENCE_LAYER_IDS = [
+  LOW_ZOOM_RASTER_LAYER_ID,
   WATER_LAYER_ID,
   WATERWAY_LAYER_ID,
   SETTLEMENT_LABEL_LAYER_ID,
@@ -84,7 +104,7 @@ export const REFERENCE_MODES: ReferenceMode[] = [
     code: "R1",
     label: "自然地理",
     description: "仅加入现代海岸/水体与主要河流。",
-    geometryLayerIds: [WATER_LAYER_ID, WATERWAY_LAYER_ID],
+    geometryLayerIds: [LOW_ZOOM_RASTER_LAYER_ID, WATER_LAYER_ID, WATERWAY_LAYER_ID],
     labelLayerIds: [],
   },
   {
@@ -92,7 +112,7 @@ export const REFERENCE_MODES: ReferenceMode[] = [
     code: "R2",
     label: "最小现代参考",
     description: "R1 + 稀疏主要城市地名 + 极淡主要交通骨架；不含道路名称或密集街道。",
-    geometryLayerIds: [WATER_LAYER_ID, WATERWAY_LAYER_ID, MAJOR_ROAD_LAYER_ID],
+    geometryLayerIds: [LOW_ZOOM_RASTER_LAYER_ID, WATER_LAYER_ID, WATERWAY_LAYER_ID, MAJOR_ROAD_LAYER_ID],
     labelLayerIds: [SETTLEMENT_LABEL_LAYER_ID],
   },
   {
@@ -100,7 +120,7 @@ export const REFERENCE_MODES: ReferenceMode[] = [
     code: "R3",
     label: "现代行政参考",
     description: "R1 + 现代行政线与稀疏地名；不是历史边界。",
-    geometryLayerIds: [WATER_LAYER_ID, WATERWAY_LAYER_ID, ADMIN_BOUNDARY_LAYER_ID],
+    geometryLayerIds: [LOW_ZOOM_RASTER_LAYER_ID, WATER_LAYER_ID, WATERWAY_LAYER_ID, ADMIN_BOUNDARY_LAYER_ID],
     labelLayerIds: [ADMIN_LABEL_LAYER_ID],
   },
   {
@@ -109,6 +129,7 @@ export const REFERENCE_MODES: ReferenceMode[] = [
     label: "彩色地理参考",
     description: "彩色水体、植被、土地利用、建筑与山峰参考；不是卫星影像，也不是历史边界。",
     geometryLayerIds: [
+      LOW_ZOOM_RASTER_LAYER_ID,
       COLOR_LANDCOVER_LAYER_ID,
       COLOR_LANDUSE_LAYER_ID,
       COLOR_PARK_LAYER_ID,
@@ -123,6 +144,17 @@ export const REFERENCE_MODES: ReferenceMode[] = [
 ];
 
 const MODERN_REFERENCE_LAYERS: LayerSpecification[] = [
+  {
+    id: LOW_ZOOM_RASTER_LAYER_ID,
+    type: "raster",
+    source: MODERN_REFERENCE_RASTER_SOURCE_ID,
+    layout: { visibility: "none" },
+    paint: {
+      "raster-opacity": 0.62,
+      "raster-saturation": -0.35,
+      "raster-contrast": -0.08,
+    },
+  },
   {
     id: WATER_LAYER_ID,
     type: "fill",
@@ -167,7 +199,7 @@ const MODERN_REFERENCE_LAYERS: LayerSpecification[] = [
     type: "symbol",
     source: MODERN_REFERENCE_SOURCE_ID,
     "source-layer": "place",
-    minzoom: 6,
+    minzoom: 3,
     filter: [
       "all",
       ["==", ["get", "class"], "city"],
@@ -393,7 +425,12 @@ export function referenceMode(modeId: ReferenceModeId): ReferenceMode {
 
 export const R2_REFERENCE_COMPLETENESS_CONTRACT = {
   modeId: "r2_minimal_modern" as const,
-  geometryLayerIds: [WATER_LAYER_ID, WATERWAY_LAYER_ID, MAJOR_ROAD_LAYER_ID],
+  geometryLayerIds: [
+    LOW_ZOOM_RASTER_LAYER_ID,
+    WATER_LAYER_ID,
+    WATERWAY_LAYER_ID,
+    MAJOR_ROAD_LAYER_ID,
+  ],
   labelLayerIds: [SETTLEMENT_LABEL_LAYER_ID],
   sceneRequirements: {
     beijing: [MAJOR_ROAD_LAYER_ID, SETTLEMENT_LABEL_LAYER_ID],
@@ -410,10 +447,23 @@ function hideAvailableReferenceLayers(map: MapLibreMap): void {
 }
 
 function ensureReferenceLayers(map: MapLibreMap, layerIds: Set<string>): void {
+  if (layerIds.has(LOW_ZOOM_RASTER_LAYER_ID) && !map.getSource(MODERN_REFERENCE_RASTER_SOURCE_ID)) {
+    map.addSource(MODERN_REFERENCE_RASTER_SOURCE_ID, {
+      type: "raster",
+      tiles: [`${OPENFREEMAP_ORIGIN}/natural_earth/ne2sr/{z}/{x}/{y}.png`],
+      tileSize: 256,
+      maxzoom: 6,
+      attribution:
+        '<a href="https://openfreemap.org/">OpenFreeMap</a> · Natural Earth',
+    });
+  }
   if (!map.getSource(MODERN_REFERENCE_SOURCE_ID)) {
+    const source = MODERN_REFERENCE_SOURCE_URL.includes("{z}")
+      ? { tiles: [MODERN_REFERENCE_SOURCE_URL], minzoom: 0, maxzoom: 14 }
+      : { url: MODERN_REFERENCE_SOURCE_URL };
     map.addSource(MODERN_REFERENCE_SOURCE_ID, {
       type: "vector",
-      url: MODERN_REFERENCE_SOURCE_URL,
+      ...source,
       attribution:
         '<a href="https://openfreemap.org/">OpenFreeMap</a> · ' +
         '<a href="https://openmaptiles.org/">© OpenMapTiles</a> · ' +
@@ -473,7 +523,10 @@ export function isModernReferenceMapError(event: unknown): boolean {
     sourceId?: unknown;
     error?: { message?: unknown };
   };
-  if (candidate.sourceId === MODERN_REFERENCE_SOURCE_ID) return true;
+  if (
+    candidate.sourceId === MODERN_REFERENCE_SOURCE_ID ||
+    candidate.sourceId === MODERN_REFERENCE_RASTER_SOURCE_ID
+  ) return true;
   const urls =
     String(candidate.error?.message ?? "").match(/https?:\/\/[^\s"'<>]+/g) ?? [];
   return urls.some((url) => {

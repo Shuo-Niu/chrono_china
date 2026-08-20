@@ -112,6 +112,11 @@ export function confidenceLabel(value: string): string {
 
 type HistoricalDisplayMode = "point_label" | "point_only";
 
+const INITIAL_CHINA_BOUNDS: [[number, number], [number, number]] = [
+  [73, 18],
+  [135, 54],
+];
+
 async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
   const digest = await globalThis.crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -132,7 +137,7 @@ export default function App() {
   const previousRenderedUnits = useRef<DisplayUnit[]>([]);
   const previousMarkerElements = useRef<Map<string, Element>>(new Map());
   const [mapReady, setMapReady] = useState(false);
-  const [mapZoom, setMapZoom] = useState(7.4);
+  const [mapZoom, setMapZoom] = useState(3.5);
   const [mapRevision, setMapRevision] = useState(0);
   const [viewMode] = useState<"focus" | "explore">("explore");
   const [searchAnchorId, setSearchAnchorId] = useState("beijing");
@@ -168,9 +173,7 @@ export default function App() {
     useState<ReferenceModeId>("r2_minimal_modern");
   const [developerMode, setDeveloperMode] = useState(false);
   const [enabledFamilies, setEnabledFamilies] = useState<Set<DisplayFamily>>(
-    () => new Set(
-      DISPLAY_FAMILY_REGISTRY.filter((config) => config.userVisible).map((config) => config.id),
-    ),
+    () => new Set(["high_admin"]),
   );
   const [referenceSourceStatus, setReferenceSourceStatus] =
     useState<ReferenceSourceStatus>("off");
@@ -199,8 +202,11 @@ export default function App() {
     const instance = new maplibregl.Map({
       container: mapContainer.current,
       style: blankStyle,
-      center: [116.39723, 39.9075],
-      zoom: 7.4,
+      bounds: INITIAL_CHINA_BOUNDS,
+      fitBoundsOptions: {
+        padding: { top: 30, right: 30, bottom: 190, left: 30 },
+        maxZoom: 4.3,
+      },
       attributionControl: false,
     });
     instance.addControl(
@@ -271,7 +277,7 @@ export default function App() {
       }
     });
     map.current = instance;
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV || new URLSearchParams(window.location.search).has("qa")) {
       window.__CHRONOCHINA_QA_MAP__ = instance;
     }
     return () => {

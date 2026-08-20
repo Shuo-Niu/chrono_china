@@ -63,24 +63,12 @@
     "win": {
       "target": [
         {
-          "target": "nsis",
-          "arch": ["x64"]
-        },
-        {
           "target": "portable",
           "arch": ["x64"]
         }
       ],
       "signAndEditExecutable": false,
       "verifyUpdateCodeSignature": false
-    },
-    "nsis": {
-      "artifactName": "ChronoChina-Phase1.5-Setup-${version}-${arch}.${ext}",
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "perMachine": false,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
     },
     "portable": {
       "artifactName": "ChronoChina-Phase1.5-Portable-${version}-${arch}.${ext}"

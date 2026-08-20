@@ -76,6 +76,10 @@ test("real-record detail clicks are contained and rapid timeline input stays fra
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await waitForIndex(page);
+  for (const family of ["regional_admin", "county", "settlement", "other"]) {
+    const toggle = page.locator(`[data-legend-family="${family}"]`);
+    if (await toggle.getAttribute("aria-pressed") === "false") await toggle.click();
+  }
 
   await clickRecord(page, xuanhua);
   for (const record of records) await clickRecord(page, record);

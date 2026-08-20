@@ -43,15 +43,15 @@ test("R0 remains source-free and reference modes add only their controlled layer
 
   expect(applyReferenceMode(asMap(stub), "r1_physical")).toMatchObject({
     status: "loading",
-    geometryLayerCount: 2,
+    geometryLayerCount: 3,
     labelLayerCount: 0,
   });
   expect(stub.sources.has(MODERN_REFERENCE_SOURCE_ID)).toBe(true);
-  expect(stub.layers.size).toBe(2);
+  expect(stub.layers.size).toBe(3);
   expect(stub.visibility.get("reference-water")).toBe("visible");
 
   expect(applyReferenceMode(asMap(stub), "r2_minimal_modern")).toMatchObject({
-    geometryLayerCount: 3,
+    geometryLayerCount: 4,
     labelLayerCount: 1,
   });
   expect(stub.visibility.get("reference-settlement-label")).toBe("visible");
@@ -59,7 +59,7 @@ test("R0 remains source-free and reference modes add only their controlled layer
   expect(stub.visibility.get("reference-modern-admin-boundary")).toBe("none");
 
   expect(applyReferenceMode(asMap(stub), "r3_modern_admin")).toMatchObject({
-    geometryLayerCount: 3,
+    geometryLayerCount: 4,
     labelLayerCount: 1,
   });
   expect(stub.visibility.get("reference-modern-admin-boundary")).toBe("visible");
@@ -67,7 +67,7 @@ test("R0 remains source-free and reference modes add only their controlled layer
 
   expect(applyReferenceMode(asMap(stub), "r4_color_geography")).toMatchObject({
     status: "loading",
-    geometryLayerCount: 8,
+    geometryLayerCount: 9,
     labelLayerCount: 2,
   });
   expect(stub.visibility.get("reference-color-landcover")).toBe("visible");

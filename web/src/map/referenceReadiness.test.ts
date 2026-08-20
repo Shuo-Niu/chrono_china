@@ -10,9 +10,13 @@ import {
 
 class ReadinessMapStub {
   rendered = new Set<string>();
+  loadedSources = new Set<string>();
+  zoom = 7.4;
   handlers = new Map<string, Set<(event: { sourceId?: string }) => void>>();
 
   getLayer() { return {}; }
+  getZoom() { return this.zoom; }
+  isSourceLoaded(id: string) { return this.loadedSources.has(id); }
   queryRenderedFeatures(options?: { layers?: string[] }) {
     return options?.layers?.some((layerId) => this.rendered.has(layerId)) ? [{}] : [];
   }
@@ -41,6 +45,17 @@ test("R2 starts loading and becomes ready only after rendered geometry and label
   stub.rendered.add("reference-settlement-label");
   expect(assessR2Reference(asMap(stub))).toMatchObject({
     state: "ready",
+    fallbackActive: false,
+  });
+});
+
+test("nationwide low zoom is ready when the official raster reference is loaded", () => {
+  const stub = new ReadinessMapStub();
+  stub.zoom = 2.8;
+  stub.loadedSources.add("chronochina-natural-earth-reference");
+  expect(assessR2Reference(asMap(stub))).toMatchObject({
+    state: "ready",
+    loadedCriticalLayerIds: ["reference-lowzoom-geography"],
     fallbackActive: false,
   });
 });

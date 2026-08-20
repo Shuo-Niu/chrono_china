@@ -94,7 +94,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -E2E
 
 ## Build the Windows usability candidate
 
-After generating the authorized local processed data, a maintainer can build the unsigned Windows 10/11 x64 installer and portable candidate:
+After generating the authorized local processed data, a maintainer can build the unsigned Windows 10/11 x64 portable candidate:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\build_phase1_5_windows.ps1

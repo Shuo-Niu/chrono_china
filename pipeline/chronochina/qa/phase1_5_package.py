@@ -78,6 +78,13 @@ def build_package_manifest(release_root: Path, staging_root: Path) -> dict[str, 
 
     if not runtime_assets:
         raise ValueError("no runtime assets found")
+    top_level_executables = [
+        item["path"]
+        for item in packaged_files
+        if "/" not in str(item["path"]) and str(item["path"]).lower().endswith(".exe")
+    ]
+    if len(top_level_executables) != 1 or "portable" not in str(top_level_executables[0]).lower():
+        raise ValueError("release must contain exactly one portable executable and no installer")
     return {
         "schema_version": "1.0",
         "generated_at": utc_now(),

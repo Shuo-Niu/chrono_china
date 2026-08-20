@@ -1,5 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
 const path = require("node:path");
 
 const {
@@ -41,4 +42,13 @@ test("support logs redact local user paths", () => {
     sanitizeLogMessage("failed at C:\\Users\\example\\ChronoChina\\data.json"),
     /C:\\Users\\example/,
   );
+});
+
+test("Windows candidate is portable-only and opens a visible map window", () => {
+  const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf8"));
+  assert.deepEqual(packageJson.build.win.target, [{ target: "portable", arch: ["x64"] }]);
+  assert.equal(packageJson.build.nsis, undefined);
+  const main = fs.readFileSync(path.resolve(__dirname, "main.cjs"), "utf8");
+  assert.match(main, /show:\s*true/);
+  assert.doesNotMatch(main, /ready-to-show/);
 });

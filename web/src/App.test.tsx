@@ -288,6 +288,13 @@ async function renderReadyApp() {
   return map;
 }
 
+async function enableFamilies(...families: string[]) {
+  for (const family of families) {
+    const toggle = document.querySelector<HTMLElement>(`[data-legend-family="${family}"]`)!;
+    if (toggle.getAttribute("aria-pressed") === "false") await userEvent.click(toggle);
+  }
+}
+
 test("formatters preserve BCE, confidence, and complete source-note semantics", () => {
   expect(formatYear(-221)).toBe("\u516c\u5143\u524d 221 \u5e74");
   expect(() => formatYear(0)).toThrow("\u4e0d\u5b58\u5728 0 \u5e74");
@@ -318,12 +325,25 @@ test("User Mode exposes manual single-line layers, a concise timeline, and no mo
   expect(screen.getByTestId("continuous-timeline")).not.toHaveTextContent("\u516c\u5143\u7eaa\u5e74\u65e0 0 \u5e74");
   expect(screen.getByLabelText("历史点显示模式")).toBeVisible();
   expect(screen.getByLabelText("背景地图模式")).toBeVisible();
+  expect(map).toHaveAttribute("data-snapshot-year", "1911");
+  expect(map).toHaveAttribute("data-enabled-display-families", "high_admin");
+  expect(screen.getByRole("button", { name: /省、行省、省级、王畿/ })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  for (const family of ["regional_admin", "county", "settlement", "other"]) {
+    expect(document.querySelector(`[data-legend-family="${family}"]`)).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  }
 });
 
 test("User Mode shows independent snapshot and limited coverage facts only for enabled layers", async () => {
   installFetchMock();
   const map = await renderReadyApp();
   await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"));
+  await enableFamilies("settlement");
   expect(screen.getByTestId("coverage-settlement")).toHaveTextContent("1911 \u6751\u9547\u5feb\u7167");
   expect(screen.getByTestId("coverage-high_admin")).toHaveTextContent("\u6709\u9650");
   expect(screen.getByTestId("coverage-high_admin")).toHaveAttribute(
@@ -355,6 +375,7 @@ test("settlement coverage follows exact snapshots while preserving interval pavi
   installFetchMock();
   const map = await renderReadyApp();
   await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"));
+  await enableFamilies("settlement");
   const timeline = screen.getByTestId("timeline-range");
 
   for (const year of [14, 626, 750]) {
@@ -389,6 +410,7 @@ test("invalid coverage metadata fails open without removing historical interacti
   installFetchMock({ malformedCoverage: true });
   const map = await renderReadyApp();
   await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "failed"));
+  await enableFamilies("regional_admin", "settlement");
   expect(document.querySelectorAll("[data-coverage-family]")).toHaveLength(0);
   expect(map.dataset.historicalPointIds).toContain("village_1911");
   await userEvent.click(document.querySelector<HTMLElement>(".history-marker--colocated")!);
@@ -401,6 +423,7 @@ test("invalid coverage metadata fails open without removing historical interacti
 test("Developer Mode exposes component evidence and both coverage axes", async () => {
   installFetchMock();
   await renderReadyApp();
+  await enableFamilies("settlement");
   await userEvent.click(screen.getByRole("button", { name: "\u5f00\u53d1\u8005\u6a21\u5f0f" }));
   const diagnostics = await screen.findByTestId("coverage-family-diagnostics");
   expect(diagnostics).toHaveTextContent("settlement · SUPPORTED · TIME_SLICE · HAS_RECORDS");
@@ -421,6 +444,7 @@ test("Developer Mode exposes component evidence and both coverage axes", async (
 test("point-only mode removes persistent labels without changing layers or interaction", async () => {
   installFetchMock();
   const map = await renderReadyApp();
+  await enableFamilies("regional_admin", "settlement");
   const regionalToggle = screen.getByRole("button", { name: /郡、府、州/ });
   await userEvent.click(regionalToggle);
   const enabledBefore = map.dataset.enabledDisplayFamilies;
@@ -440,6 +464,7 @@ test("point-only mode removes persistent labels without changing layers or inter
 test("basemap switching preserves historical state", async () => {
   installFetchMock();
   const map = await renderReadyApp();
+  await enableFamilies("regional_admin");
   const before = {
     year: map.dataset.snapshotYear,
     ids: map.dataset.historicalPointIds,
@@ -472,6 +497,7 @@ test("colored basemap initialization failure falls back to minimal without clear
 test("exact-year updates retain keyed marker instances and never clear the layer while pending", async () => {
   installFetchMock();
   const map = await renderReadyApp();
+  await enableFamilies("regional_admin");
   const timeline = screen.getByTestId("timeline-range");
   fireEvent.change(timeline, { target: { value: yearToOrdinal(150) } });
   await waitFor(() => expect(map).toHaveAttribute("data-query-result-year", "150"));
@@ -489,6 +515,7 @@ test("exact-year updates retain keyed marker instances and never clear the layer
 test("manual layer toggle updates point and co-location counts and persists across year changes", async () => {
   installFetchMock();
   const map = await renderReadyApp();
+  await enableFamilies("regional_admin", "settlement");
   const regionalToggle = screen.getByRole("button", { name: /\u90e1\u3001\u5e9c\u3001\u5dde/ });
   expect(regionalToggle).toHaveAttribute("aria-pressed", "true");
   expect(map).toHaveAttribute("data-co-located-group-count", "1");
@@ -506,6 +533,7 @@ test("manual layer toggle updates point and co-location counts and persists acro
 test("the timeline supports arbitrary CE, BCE, and rapid exact-year changes without year zero", async () => {
   installFetchMock();
   const map = await renderReadyApp();
+  await enableFamilies("regional_admin");
   const timeline = screen.getByTestId("timeline-range");
   expect(timeline).toHaveAttribute("min", String(yearToOrdinal(-201)));
   expect(timeline).toHaveAttribute("max", String(yearToOrdinal(1911)));
@@ -531,6 +559,7 @@ test("the timeline supports arbitrary CE, BCE, and rapid exact-year changes with
 test("co-located groups contain only members active in the selected exact year", async () => {
   installFetchMock();
   const map = await renderReadyApp();
+  await enableFamilies("regional_admin", "settlement");
   await waitFor(() => expect(map).toHaveAttribute("data-co-located-group-count", "1"));
   const initialGroup = document.querySelector<HTMLElement>(".history-marker--colocated")!;
   expect(initialGroup.dataset.memberIds).toBe("province_1911,hvd_88266,regional_1911,village_1911");
@@ -546,6 +575,7 @@ test("co-located groups contain only members active in the selected exact year",
 test("1911 宣化府 co-location and detail click cannot crash on a year-zero source sentinel", async () => {
   installFetchMock();
   const map = await renderReadyApp();
+  await enableFamilies("regional_admin", "settlement");
   await userEvent.click(document.querySelector<HTMLElement>(".history-marker--colocated")!);
   expect(screen.getByLabelText("同址历史记录")).toBeVisible();
   await userEvent.click(document.querySelector<HTMLElement>("[data-colocated-member-id='hvd_88266']")!);

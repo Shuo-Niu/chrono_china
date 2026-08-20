@@ -92,6 +92,14 @@ test("manual layers, neutral timeline, responsive safe areas, and formal screens
   await page.goto("/");
   await waitForIndex(page);
   const map = page.getByTestId("map");
+  await expect(map).toHaveAttribute("data-snapshot-year", "1911");
+  await expect(map).toHaveAttribute("data-enabled-display-families", "high_admin");
+  const initialBounds = (await map.getAttribute("data-viewport-bbox"))!
+    .split(",").map(Number);
+  expect(initialBounds[0]).toBeLessThanOrEqual(73);
+  expect(initialBounds[1]).toBeLessThanOrEqual(18);
+  expect(initialBounds[2]).toBeGreaterThanOrEqual(135);
+  expect(initialBounds[3]).toBeGreaterThanOrEqual(54);
   const initialIndexRequestCount = await page.evaluate(() => performance.getEntriesByType("resource")
     .filter((entry) => entry.name.includes("/explore/tgaz_compact.json")).length);
 
@@ -105,8 +113,9 @@ test("manual layers, neutral timeline, responsive safe areas, and formal screens
   await page.screenshot({ path: path.join(artifactDir, "02-single-line-complete-legend-all-on.png"), fullPage: true });
 
   const familyIds = ["high_admin", "regional_admin", "county", "settlement", "other"];
-  for (const family of familyIds) {
-    await expect(page.locator(`[data-legend-family="${family}"]`)).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-legend-family="high_admin"]')).toHaveAttribute("aria-pressed", "true");
+  for (const family of ["regional_admin", "county", "settlement", "other"]) {
+    await expect(page.locator(`[data-legend-family="${family}"]`)).toHaveAttribute("aria-pressed", "false");
   }
   expect(await page.locator("[data-legend-family]").evaluateAll((buttons) =>
     buttons.map((button) => [...button.children].find((child) =>
@@ -125,6 +134,13 @@ test("manual layers, neutral timeline, responsive safe areas, and formal screens
     await page.locator(`[data-legend-family="${family}"]`).click();
   }
   const toggleLatencyMs = Date.now() - toggleStart;
+  for (const family of familyIds) {
+    await expect(page.locator(`[data-legend-family="${family}"]`)).toHaveAttribute("aria-pressed", "true");
+  }
+  await page.screenshot({ path: path.join(artifactDir, "02-single-line-complete-legend-all-on.png"), fullPage: true });
+  for (const family of ["regional_admin", "county", "settlement", "other"]) {
+    await page.locator(`[data-legend-family="${family}"]`).click();
+  }
   await expect(map).toHaveAttribute("data-enabled-display-families", "high_admin");
   await page.screenshot({ path: path.join(artifactDir, "03-legend-high-admin-only.png"), fullPage: true });
 

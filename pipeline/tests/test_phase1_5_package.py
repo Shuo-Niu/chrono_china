@@ -23,7 +23,6 @@ def test_manifest_accepts_only_declared_runtime_data_and_distribution_files(
     unpacked = release / "win-unpacked"
     _write(unpacked / "ChronoChina.exe")
     _write(unpacked / "resources" / "app.asar")
-    _write(release / "ChronoChina-0.1.0-x64-setup.exe")
     _write(release / "ChronoChina-0.1.0-x64-portable.exe")
     _write(release / "README_FIRST.txt", b"start")
 
@@ -44,6 +43,18 @@ def test_manifest_accepts_only_declared_runtime_data_and_distribution_files(
         "index.html",
     }
     assert all(len(item["sha256"]) == 64 for item in manifest["packaged_files"])
+
+
+def test_manifest_rejects_installer_artifacts(tmp_path: Path) -> None:
+    release = tmp_path / "release"
+    staging = tmp_path / "dist"
+    _write(release / "ChronoChina-0.1.0-x64-setup.exe")
+    _write(staging / "index.html")
+    _write(staging / "explore" / "tgaz_compact.json", b"{}")
+    _write(staging / "coverage" / "historical_layer_coverage.json", b"{}")
+
+    with pytest.raises(ValueError, match="portable executable"):
+        build_package_manifest(release, staging)
 
 
 @pytest.mark.parametrize(

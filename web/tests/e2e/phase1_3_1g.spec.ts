@@ -30,6 +30,13 @@ test("display controls are orthogonal and timeline updates retain keyed markers"
   await page.goto("/");
   await waitForIndex(page);
   const map = page.getByTestId("map");
+  const initialSequence = Number(await map.getAttribute("data-explore-query-sequence"));
+  await page.evaluate(() => {
+    window.__CHRONOCHINA_QA_MAP__!.jumpTo({ center: [116.39723, 39.9075], zoom: 7.4 });
+    window.__CHRONOCHINA_QA_MAP__!.fire("moveend");
+  });
+  await expect.poll(async () => Number(await map.getAttribute("data-explore-query-sequence")))
+    .toBeGreaterThan(initialSequence);
 
   const initial = {
     year: await map.getAttribute("data-snapshot-year"),
@@ -41,7 +48,6 @@ test("display controls are orthogonal and timeline updates retain keyed markers"
   const highDensityVisiblePoints = Number(await map.getAttribute("data-historical-point-count"));
 
   const settlementToggle = page.locator('[data-legend-family="settlement"]');
-  await settlementToggle.click();
   await expect(settlementToggle).toHaveAttribute("aria-pressed", "false");
   const familiesWithSettlementOff = await map.getAttribute("data-enabled-display-families");
   await page.getByRole("button", { name: "仅点" }).click();
@@ -86,6 +92,10 @@ test("display controls are orthogonal and timeline updates retain keyed markers"
   }).toEqual(historicalStateBeforeBasemap);
 
   await settlementToggle.click();
+  for (const family of ["regional_admin", "county", "other"]) {
+    const toggle = page.locator(`[data-legend-family="${family}"]`);
+    if (await toggle.getAttribute("aria-pressed") === "false") await toggle.click();
+  }
   await setYear(page, 1900);
   await page.locator(".history-marker").evaluateAll((elements) => {
     for (const element of elements) {
@@ -175,6 +185,6 @@ test("display controls are orthogonal and timeline updates retain keyed markers"
 
   expect(initial.year).toBe("1911");
   expect(initial.ids).toBeTruthy();
-  expect(initial.families).toContain("settlement");
+  expect(initial.families).toBe("high_admin");
   expect(initial.bbox).toBeTruthy();
 });

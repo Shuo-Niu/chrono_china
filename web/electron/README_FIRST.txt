@@ -5,8 +5,7 @@ ChronoChina Phase 1.5 — Windows 真人可用性测试版
 
 如何启动
 --------
-安装版：双击 ChronoChina-Phase1.5-Setup-0.1.0-x64.exe，按提示安装后启动 ChronoChina。
-便携版：双击 ChronoChina-Phase1.5-Portable-0.1.0-x64.exe。首次启动可能稍慢。
+双击 ChronoChina-Phase1.5-Portable-0.1.0-x64.exe。它不需要安装，首次启动可能稍慢。
 
 网络
 ----

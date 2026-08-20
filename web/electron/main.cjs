@@ -4,6 +4,7 @@ const {
   app,
   BrowserWindow,
   dialog,
+  net,
   protocol,
   session,
 } = require("electron");
@@ -16,11 +17,12 @@ const {
 } = require("./runtime.cjs");
 
 const APP_ORIGIN = "chronochina://app";
+const OPENFREEMAP_TILEJSON_URL = "https://tiles.openfreemap.org/planet";
 const CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://tiles.openfreemap.org",
   "font-src 'self' data: https://tiles.openfreemap.org",
   "connect-src 'self' https://tiles.openfreemap.org",
   "worker-src 'self' blob:",
@@ -58,13 +60,34 @@ function assetRoot() {
   return path.join(app.getAppPath(), "dist");
 }
 
-function createWindow() {
+async function currentOpenFreeMapTileTemplate() {
+  try {
+    const response = await net.fetch(OPENFREEMAP_TILEJSON_URL, {
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok) throw new Error(`TileJSON HTTP ${response.status}`);
+    const payload = await response.json();
+    const template = Array.isArray(payload.tiles) ? payload.tiles[0] : null;
+    if (typeof template !== "string") throw new Error("TileJSON has no tile URL");
+    const parsed = new URL(template);
+    if (parsed.protocol !== "https:" || parsed.hostname !== "tiles.openfreemap.org" ||
+      !template.includes("{z}") || !template.includes("{x}") || !template.includes("{y}")) {
+      throw new Error("TileJSON returned an unexpected tile template");
+    }
+    return template;
+  } catch (error) {
+    writeLog("reference_tilejson_failed", error);
+    return null;
+  }
+}
+
+async function createWindow() {
   const window = new BrowserWindow({
     width: 1440,
     height: 900,
     minWidth: 900,
     minHeight: 700,
-    show: false,
+    show: true,
     backgroundColor: "#eee9df",
     autoHideMenuBar: true,
     webPreferences: {
@@ -81,8 +104,12 @@ function createWindow() {
   window.webContents.on("render-process-gone", (_event, details) => {
     writeLog("renderer_process_gone", details.reason);
   });
-  window.once("ready-to-show", () => window.show());
-  void window.loadURL(`${APP_ORIGIN}/index.html`).catch((error) => {
+  const parameters = new URLSearchParams();
+  if (process.env.CHRONOCHINA_PACKAGED_SMOKE === "1") parameters.set("qa", "1");
+  const tileTemplate = await currentOpenFreeMapTileTemplate();
+  if (tileTemplate) parameters.set("referenceTiles", tileTemplate);
+  const query = parameters.size > 0 ? `?${parameters}` : "";
+  void window.loadURL(`${APP_ORIGIN}/index.html${query}`).catch((error) => {
     writeLog("window_load_failed", error);
     dialog.showErrorBox(
       "ChronoChina 启动失败",
@@ -118,9 +145,9 @@ app.whenReady().then(async () => {
   });
   session.defaultSession.setPermissionCheckHandler(() => false);
 
-  createWindow();
+  await createWindow();
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) void createWindow();
   });
 }).catch((error) => {
   writeLog("application_ready_failed", error);

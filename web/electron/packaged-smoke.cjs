@@ -43,10 +43,32 @@ async function launchAndVerify(reopen = false) {
     const page = await application.firstWindow({ timeout: 60_000 });
     const requests = [];
     page.on("request", (request) => requests.push(request.url()));
+    const failedRequests = [];
+    page.on("requestfailed", (request) => {
+      failedRequests.push(`${request.url()} :: ${request.failure()?.errorText ?? "unknown"}`);
+    });
+    const errorResponses = [];
+    page.on("response", (response) => {
+      if (response.status() >= 400) errorResponses.push(`${response.status()} ${response.url()}`);
+    });
     const errors = [];
     page.on("pageerror", (error) => errors.push(String(error)));
+    const consoleMessages = [];
+    page.on("console", (message) => consoleMessages.push(`${message.type()}: ${message.text()}`));
 
     await page.getByTestId("map").waitFor({ state: "visible", timeout: 60_000 });
+    await page.waitForTimeout(3_000);
+    const preFallbackState = await page.evaluate(() => {
+      const map = window.__CHRONOCHINA_QA_MAP__;
+      if (!map) return null;
+      return {
+        sourceLoaded: map.isSourceLoaded("chronochina-modern-reference"),
+        tilesLoaded: map.areTilesLoaded(),
+        sourceFeatureCount: map.querySourceFeatures("chronochina-modern-reference").length,
+        renderedWaterCount: map.queryRenderedFeatures({ layers: ["reference-water"] }).length,
+        waterVisibility: map.getLayoutProperty("reference-water", "visibility"),
+      };
+    });
     await page.waitForFunction(() => {
       const map = document.querySelector('[data-testid="map"]');
       return map?.getAttribute("data-explore-index-status") === "ready" &&
@@ -61,11 +83,84 @@ async function launchAndVerify(reopen = false) {
       "packaged application must not request a development server",
     );
 
+    await page.waitForFunction(() => {
+      const status = document.querySelector('[data-testid="map"]')
+        ?.getAttribute("data-reference-source-status");
+      return status === "ready" || status === "degraded" || status === "failed";
+    }, null, { timeout: 20_000 });
+    const referenceStatus = await page.getByTestId("map").getAttribute("data-reference-source-status");
+    const canvasState = await page.evaluate(() => {
+      const canvas = document.querySelector(".maplibregl-canvas");
+      return canvas ? {
+        width: canvas.width,
+        height: canvas.height,
+        clientWidth: canvas.clientWidth,
+        clientHeight: canvas.clientHeight,
+        webgl2: Boolean(canvas.getContext("webgl2")),
+      } : null;
+    });
+    const maplibreState = await page.evaluate(() => {
+      const map = window.__CHRONOCHINA_QA_MAP__;
+      if (!map) return null;
+      const source = map.getSource("chronochina-modern-reference");
+      return {
+        sourceExists: Boolean(source),
+        sourceLoaded: map.isSourceLoaded("chronochina-modern-reference"),
+        tilesLoaded: map.areTilesLoaded(),
+        styleSource: map.getStyle().sources["chronochina-modern-reference"],
+        waterVisibility: map.getLayoutProperty("reference-water", "visibility"),
+        rasterVisibility: map.getLayoutProperty("reference-lowzoom-geography", "visibility"),
+        rasterSourceLoaded: map.isSourceLoaded("chronochina-natural-earth-reference"),
+        sourceFeatureCount: map.querySourceFeatures("chronochina-modern-reference").length,
+      };
+    });
+    assert.equal(referenceStatus, "ready", JSON.stringify({
+      referenceStatus,
+      remoteRequests: requests.filter((url) => url.startsWith("https://tiles.openfreemap.org/")),
+      failedRequests,
+      errorResponses,
+      consoleMessages,
+      lastError: await page.getByTestId("map").getAttribute("data-reference-last-error"),
+      viewportBbox: await page.getByTestId("map").getAttribute("data-viewport-bbox"),
+      mapCenter: await page.getByTestId("map").getAttribute("data-map-center"),
+      mapZoom: await page.getByTestId("map").getAttribute("data-map-zoom"),
+      canvasState,
+      maplibreState,
+      preFallbackState,
+      failedCriticalLayers: await page.getByTestId("map")
+        .getAttribute("data-reference-failed-critical-layers"),
+    }));
+    assert.equal(maplibreState.rasterVisibility, "visible");
+    assert.equal(maplibreState.rasterSourceLoaded, true);
+    assert.equal(await page.getByTestId("map").getAttribute("data-snapshot-year"), "1911");
+    assert.equal(
+      await page.getByTestId("map").getAttribute("data-enabled-display-families"),
+      "high_admin",
+    );
+    const initialBounds = (await page.getByTestId("map").getAttribute("data-viewport-bbox"))
+      .split(",").map(Number);
+    assert.ok(
+      initialBounds[0] <= 73 && initialBounds[1] <= 18 &&
+        initialBounds[2] >= 135 && initialBounds[3] >= 54,
+      `initial viewport must contain China bounds: ${initialBounds.join(",")}`,
+    );
+
+    if (!reopen) {
+      await page.screenshot({
+        path: path.join(projectRoot, "artifacts", "phase1_5", "portable-default.png"),
+        fullPage: true,
+      });
+    }
+
     if (!reopen) {
       await setYear(page, 1911);
       const highDensity = Number(await page.getByTestId("map").getAttribute("data-explore-active-record-count"));
       assert.ok(highDensity > 0, "1911 viewport must contain real historical records");
 
+      const settlement = page.locator('[data-legend-family="settlement"]');
+      assert.equal(await settlement.getAttribute("aria-pressed"), "false");
+      await settlement.click();
+      assert.equal(await settlement.getAttribute("aria-pressed"), "true");
       await setYear(page, 1820);
       await page.getByTestId("coverage-settlement").waitFor({ state: "visible" });
       assert.match(await page.getByTestId("coverage-settlement").innerText(), /1820 村镇快照/);
@@ -73,10 +168,11 @@ async function launchAndVerify(reopen = false) {
       assert.match(await page.getByTestId("coverage-settlement").innerText(), /来源无资料/);
 
       const county = page.locator('[data-legend-family="county"]');
-      await county.click();
       assert.equal(await county.getAttribute("aria-pressed"), "false");
       await county.click();
       assert.equal(await county.getAttribute("aria-pressed"), "true");
+      await county.click();
+      assert.equal(await county.getAttribute("aria-pressed"), "false");
 
       await page.getByRole("button", { name: "仅点" }).click();
       assert.equal(await page.getByTestId("map").getAttribute("data-historical-display-mode"), "point_only");
