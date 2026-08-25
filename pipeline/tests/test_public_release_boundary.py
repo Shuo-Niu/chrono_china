@@ -49,3 +49,7 @@ def test_public_tests_exclude_only_new_real_data_dependencies_from_full_suites()
     assert "--exclude src/coverage/sourceCoverage.test.ts" not in public_command
     assert "--exclude src/display/sourceHierarchy.real-data.test.ts" in public_command
     assert "sourceCoverage.test.ts" not in full_command
+
+    vite_config = (PROJECT_ROOT / "web/vite.config.ts").read_text(encoding="utf-8")
+    assert "CHRONOCHINA_PUBLIC_BUILD" in public_script
+    assert "if (!publicBuild)" in vite_config

@@ -14,6 +14,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const publicBuild = process.env.CHRONOCHINA_PUBLIC_BUILD === "1";
 const referenceArchive = resolve(__dirname, "../data/processed/reference/china_z9.pmtiles");
 const referenceAssets = resolve(__dirname, "../data/processed/reference/assets");
 const mapLibreRuntimeAssets = new Map([
@@ -120,22 +121,24 @@ export default defineConfig({
           ["../data/processed/coverage/historical_layer_coverage.json", "dist/coverage/historical_layer_coverage.json"],
           ["../data/processed/knowledge/qing_late_institution_notes_v0.1.json", "dist/knowledge/qing_late_institution_notes_v0.1.json"],
         ];
-        for (const [source, destination] of files) {
-          const output = resolve(__dirname, destination);
-          mkdirSync(dirname(output), { recursive: true });
-          copyFileSync(resolve(__dirname, source), output);
+        if (!publicBuild) {
+          for (const [source, destination] of files) {
+            const output = resolve(__dirname, destination);
+            mkdirSync(dirname(output), { recursive: true });
+            copyFileSync(resolve(__dirname, source), output);
+          }
         }
         for (const [requestPath, source] of mapLibreRuntimeAssets) {
           const output = resolve(__dirname, "dist/" + requestPath.replace(/^\/+/, ""));
           mkdirSync(dirname(output), { recursive: true });
           copyFileSync(source, output);
         }
-        if (existsSync(referenceArchive) && existsSync(referenceAssets)) {
+        if (!publicBuild && existsSync(referenceArchive) && existsSync(referenceAssets)) {
           const archiveOutput = resolve(__dirname, "dist/reference/china_z9.pmtiles");
           mkdirSync(dirname(archiveOutput), { recursive: true });
           copyFileSync(referenceArchive, archiveOutput);
           cpSync(referenceAssets, resolve(__dirname, "dist/reference/assets"), { recursive: true });
-        } else {
+        } else if (!publicBuild) {
           console.warn("Offline reference assets are absent; run scripts/download_offline_basemap.ps1 before packaging.");
         }
       },

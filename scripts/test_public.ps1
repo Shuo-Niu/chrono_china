@@ -43,9 +43,21 @@ try {
         throw "Public desktop packaging tests failed."
     }
 
-    npm.cmd run build
-    if ($LASTEXITCODE -ne 0) {
-        throw "Production build failed."
+    $PreviousPublicBuild = $env:CHRONOCHINA_PUBLIC_BUILD
+    try {
+        $env:CHRONOCHINA_PUBLIC_BUILD = "1"
+        npm.cmd run build
+        if ($LASTEXITCODE -ne 0) {
+            throw "Production build failed."
+        }
+    }
+    finally {
+        if ($null -eq $PreviousPublicBuild) {
+            Remove-Item Env:CHRONOCHINA_PUBLIC_BUILD -ErrorAction SilentlyContinue
+        }
+        else {
+            $env:CHRONOCHINA_PUBLIC_BUILD = $PreviousPublicBuild
+        }
     }
 }
 finally {
