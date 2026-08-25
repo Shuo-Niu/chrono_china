@@ -10,9 +10,13 @@ import {
 
 class ReadinessMapStub {
   rendered = new Set<string>();
+  loadedSources = new Set<string>();
+  zoom = 7.4;
   handlers = new Map<string, Set<(event: { sourceId?: string }) => void>>();
 
   getLayer() { return {}; }
+  getZoom() { return this.zoom; }
+  isSourceLoaded(id: string) { return this.loadedSources.has(id); }
   queryRenderedFeatures(options?: { layers?: string[] }) {
     return options?.layers?.some((layerId) => this.rendered.has(layerId)) ? [{}] : [];
   }
@@ -36,11 +40,22 @@ afterEach(() => vi.useRealTimers());
 test("R2 starts loading and becomes ready only after rendered geometry and labels exist", () => {
   const stub = new ReadinessMapStub();
   expect(assessR2Reference(asMap(stub)).state).toBe("loading");
-  stub.rendered.add("reference-major-road");
+  stub.rendered.add("reference-roads_major");
   expect(assessR2Reference(asMap(stub)).state).toBe("loading");
-  stub.rendered.add("reference-settlement-label");
+  stub.rendered.add("reference-places_locality");
   expect(assessR2Reference(asMap(stub))).toMatchObject({
     state: "ready",
+    fallbackActive: false,
+  });
+});
+
+test("nationwide low zoom is ready when packaged earth geometry is rendered", () => {
+  const stub = new ReadinessMapStub();
+  stub.zoom = 2.8;
+  stub.rendered.add("reference-earth");
+  expect(assessR2Reference(asMap(stub))).toMatchObject({
+    state: "ready",
+    loadedCriticalLayerIds: ["reference-earth"],
     fallbackActive: false,
   });
 });
@@ -51,8 +66,8 @@ test("monitor publishes ready from actual critical content", () => {
   const states: ReferenceReadinessSnapshot[] = [];
   const monitor = startR2ReferenceMonitor(asMap(stub), (state) => states.push(state), 100);
   expect(states.at(-1)?.state).toBe("loading");
-  stub.rendered.add("reference-major-road");
-  stub.rendered.add("reference-settlement-label");
+  stub.rendered.add("reference-roads_major");
+  stub.rendered.add("reference-places_locality");
   stub.emit("idle");
   expect(states.at(-1)?.state).toBe("ready");
   vi.advanceTimersByTime(100);
@@ -101,8 +116,8 @@ test("one tile error stays loading and can recover when critical content renders
     fallbackActive: false,
     lastError: "Error: one tile request failed",
   });
-  stub.rendered.add("reference-major-road");
-  stub.rendered.add("reference-settlement-label");
+  stub.rendered.add("reference-roads_major");
+  stub.rendered.add("reference-places_locality");
   stub.emit("idle");
   expect(states.at(-1)).toMatchObject({
     state: "ready",

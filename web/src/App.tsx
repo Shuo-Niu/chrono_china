@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import * as maplibregl from "maplibre-gl";
 import type { Map as MapLibreMap, Marker } from "maplibre-gl";
+import { FetchSource, PMTiles, Protocol as PMTilesProtocol } from "pmtiles";
 import type {
   AnchorManifest,
   DetailCard,
@@ -17,24 +18,35 @@ import {
 import {
   DISPLAY_FAMILY_REGISTRY,
   displayFamily,
-  familyConfig,
+  displayFamilyFromRawType,
   isVisibleForMode,
-  markerVariables,
-  type DisplayFamily,
 } from "./display/hierarchy";
 import {
   selectSemanticZoomUnits,
   stableLabelPlacement,
   type DisplayUnit,
 } from "./display/semanticZoom";
+import {
+  activeDirectSubordinates,
+  buildSourceHierarchyIndex,
+  hierarchyBreadcrumb,
+} from "./display/sourceHierarchy";
+import {
+  HISTORICAL_UNIT_CATEGORY_REGISTRY,
+  historicalUnitCategory,
+  historicalUnitCategoryFromRawType,
+  unitCategoryConfig,
+  unitCategoryMarkerVariables,
+  type HistoricalUnitCategory,
+} from "./display/unitCategories";
 import { diffDisplayUnits } from "./display/unitDiff";
 import { prioritizeHistoricalLabelsAgainstAnchor } from "./map/labelPriority";
 import {
   applyReferenceMode,
   isModernReferenceMapError,
-  MODERN_REFERENCE_GLYPHS_URL,
   MODERN_REFERENCE_SOURCE_ID,
   REFERENCE_MODES,
+  offlineReferenceArchiveAssetUrl,
   referenceMode,
   type ReferenceModeId,
   type ReferenceSourceStatus,
@@ -49,13 +61,20 @@ import { ContinuousTimeline } from "./temporal/ContinuousTimeline";
 import { formatHistoricalYear } from "./temporal/temporal";
 import {
   compactIndexYearRange,
-  coverageStatusLabel,
   parseCompactIndex,
   queryCompactIndex,
   type CompactHistoricalIndex,
-  type ViewportCoverageStatus,
   type ViewportQueryResult,
 } from "./explore/viewportQuery";
+import {
+  assessSourceCoverage,
+  componentCountEvidence,
+  parseCoverageMetadata,
+  resolveViewportResult,
+  userCoverageMessages,
+  type CoverageMetadata,
+  type ViewportResult,
+} from "./coverage/sourceCoverage";
 import { DetailErrorBoundary } from "./detail/DetailErrorBoundary";
 import {
   detailFromActiveFeature,
@@ -64,6 +83,12 @@ import {
   normalizeDetailPayload,
   sourceNotePresentation,
 } from "./detail/detailSafety";
+
+import {
+  parseInstitutionNotes,
+  selectInstitutionNote,
+  type InstitutionNotePublication,
+} from "./knowledge/institutionNotes";
 
 export { sourceNotePresentation } from "./detail/detailSafety";
 
@@ -83,7 +108,6 @@ const ANCHORS = [
 
 const blankStyle: maplibregl.StyleSpecification = {
   version: 8,
-  glyphs: MODERN_REFERENCE_GLYPHS_URL,
   sources: {},
   layers: [
     {
@@ -104,6 +128,16 @@ export function confidenceLabel(value: string): string {
 
 type HistoricalDisplayMode = "point_label" | "point_only";
 
+const INITIAL_CHINA_BOUNDS: [[number, number], [number, number]] = [
+  [73, 18],
+  [135, 54],
+];
+
+async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
 function knownValue(value: string | null): string {
   return value && value !== "\\N" ? value : "上级未知 / 未加载";
 }
@@ -119,7 +153,7 @@ export default function App() {
   const previousRenderedUnits = useRef<DisplayUnit[]>([]);
   const previousMarkerElements = useRef<Map<string, Element>>(new Map());
   const [mapReady, setMapReady] = useState(false);
-  const [mapZoom, setMapZoom] = useState(7.4);
+  const [mapZoom, setMapZoom] = useState(3.5);
   const [mapRevision, setMapRevision] = useState(0);
   const [viewMode] = useState<"focus" | "explore">("explore");
   const [searchAnchorId, setSearchAnchorId] = useState("beijing");
@@ -129,10 +163,16 @@ export default function App() {
   const [exploreIndex, setExploreIndex] = useState<CompactHistoricalIndex | null>(null);
   const [exploreIndexStatus, setExploreIndexStatus] = useState<"idle" | "loading" | "ready" | "failed">("idle");
   const [exploreIndexLoadMs, setExploreIndexLoadMs] = useState<number | null>(null);
+  const [exploreIndexSha256, setExploreIndexSha256] = useState<string | null>(null);
   const [exploreResult, setExploreResult] = useState<ViewportQueryResult | null>(null);
-  const [exploreCoverageStatus, setExploreCoverageStatus] =
-    useState<ViewportCoverageStatus>("insufficient_source_coverage");
-  const [exploreCoverageReason, setExploreCoverageReason] = useState("视口数据尚未查询");
+  const [coverageMetadata, setCoverageMetadata] = useState<CoverageMetadata | null>(null);
+  const [coverageMetadataStatus, setCoverageMetadataStatus] =
+    useState<"idle" | "loading" | "ready" | "failed">("idle");
+  const [coverageMetadataError, setCoverageMetadataError] = useState<string | null>(null);
+  const [institutionNotes, setInstitutionNotes] = useState<InstitutionNotePublication | null>(null);
+  const [institutionNotesStatus, setInstitutionNotesStatus] =
+    useState<"idle" | "loading" | "ready" | "failed">("idle");
+  const [institutionNotesError, setInstitutionNotesError] = useState<string | null>(null);
   const [exploreCommittedSequence, setExploreCommittedSequence] = useState(0);
   const [exploreCancelledCount, setExploreCancelledCount] = useState(0);
   const [exploreStaleCommitCount, setExploreStaleCommitCount] = useState(0);
@@ -152,10 +192,8 @@ export default function App() {
   const [referenceModeId, setReferenceModeId] =
     useState<ReferenceModeId>("r2_minimal_modern");
   const [developerMode, setDeveloperMode] = useState(false);
-  const [enabledFamilies, setEnabledFamilies] = useState<Set<DisplayFamily>>(
-    () => new Set(
-      DISPLAY_FAMILY_REGISTRY.filter((config) => config.userVisible).map((config) => config.id),
-    ),
+  const [enabledCategories, setEnabledCategories] = useState<Set<HistoricalUnitCategory>>(
+    () => new Set(["province"]),
   );
   const [referenceSourceStatus, setReferenceSourceStatus] =
     useState<ReferenceSourceStatus>("off");
@@ -181,11 +219,22 @@ export default function App() {
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
+    maplibregl.setWorkerUrl(new URL("/assets/maplibre-gl-worker.mjs", window.location.href).toString());
+    const pmtilesProtocol = new PMTilesProtocol();
+    const localArchiveSource = new FetchSource(offlineReferenceArchiveAssetUrl());
+    // PMTiles adds `cache: no-store` for Windows Chromium. Electron custom
+    // protocols reject that cache mode even though byte-range requests work.
+    localArchiveSource.chromeWindowsNoCache = false;
+    pmtilesProtocol.add(new PMTiles(localArchiveSource));
+    maplibregl.addProtocol("pmtiles", pmtilesProtocol.tile);
     const instance = new maplibregl.Map({
       container: mapContainer.current,
       style: blankStyle,
-      center: [116.39723, 39.9075],
-      zoom: 7.4,
+      bounds: INITIAL_CHINA_BOUNDS,
+      fitBoundsOptions: {
+        padding: { top: 30, right: 30, bottom: 190, left: 30 },
+        maxZoom: 4.3,
+      },
       attributionControl: false,
     });
     instance.addControl(
@@ -247,16 +296,14 @@ export default function App() {
       ) {
         if (mapContainer.current?.dataset.referenceMode === "r2_minimal_modern") {
           referenceMonitor.current?.handleError(event.error ?? event);
-        } else if (mapContainer.current?.dataset.referenceMode === "r4_color_geography") {
-          setReferenceSourceStatus("unavailable");
-          setReferenceModeId("r2_minimal_modern");
         } else {
           setReferenceSourceStatus("unavailable");
+          setReferenceModeId("r2_minimal_modern");
         }
       }
     });
     map.current = instance;
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV || new URLSearchParams(window.location.search).has("qa")) {
       window.__CHRONOCHINA_QA_MAP__ = instance;
     }
     return () => {
@@ -265,6 +312,7 @@ export default function App() {
       if (markerAnimationFrame !== null) window.cancelAnimationFrame(markerAnimationFrame);
       instance.remove();
       map.current = null;
+      maplibregl.removeProtocol("pmtiles");
       if (window.__CHRONOCHINA_QA_MAP__ === instance) {
         delete window.__CHRONOCHINA_QA_MAP__;
       }
@@ -277,21 +325,23 @@ export default function App() {
     setExploreIndexStatus("loading");
     const started = performance.now();
     void fetch("/explore/tgaz_compact.json")
-      .then((response) => {
+      .then(async (response) => {
         if (!response.ok) throw new Error(`compact index HTTP ${response.status}`);
-        return response.json();
+        const bytes = await response.arrayBuffer();
+        const payload = JSON.parse(new TextDecoder().decode(bytes));
+        return { payload, sha256: await sha256Hex(bytes) };
       })
-      .then((payload) => {
+      .then(({ payload, sha256 }) => {
         if (cancelled) return;
         setExploreIndex(parseCompactIndex(payload));
+        setExploreIndexSha256(sha256);
         setExploreIndexLoadMs(performance.now() - started);
         setExploreIndexStatus("ready");
       })
       .catch((reason) => {
         if (cancelled) return;
         setExploreIndexStatus("failed");
-        setExploreCoverageStatus("query_failed");
-        setExploreCoverageReason(String(reason));
+        setExploreIndexSha256(null);
       });
     return () => {
       cancelled = true;
@@ -299,6 +349,57 @@ export default function App() {
   }, [exploreIndex]);
 
   useEffect(() => {
+    if (!exploreIndex || !exploreIndexSha256 || coverageMetadataStatus !== "idle") return;
+    let cancelled = false;
+    setCoverageMetadataStatus("loading");
+    void fetch("/coverage/historical_layer_coverage.json")
+      .then((response) => {
+        if (!response.ok) throw new Error(`coverage metadata HTTP ${response.status}`);
+        return response.json();
+      })
+      .then((payload) => {
+        if (cancelled) return;
+        setCoverageMetadata(parseCoverageMetadata(payload, exploreIndex, exploreIndexSha256));
+        setCoverageMetadataStatus("ready");
+        setCoverageMetadataError(null);
+      })
+      .catch((reason) => {
+        if (cancelled) return;
+        setCoverageMetadata(null);
+        setCoverageMetadataStatus("failed");
+        setCoverageMetadataError(String(reason));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [exploreIndex, exploreIndexSha256]);
+
+  useEffect(() => {
+    if (institutionNotesStatus !== "idle") return;
+    let cancelled = false;
+    setInstitutionNotesStatus("loading");
+    void fetch("/knowledge/qing_late_institution_notes_v0.1.json")
+      .then((response) => {
+        if (!response.ok) throw new Error(`institution notes HTTP ${response.status}`);
+        return response.json();
+      })
+      .then((payload) => {
+        if (cancelled) return;
+        setInstitutionNotes(parseInstitutionNotes(payload));
+        setInstitutionNotesStatus("ready");
+        setInstitutionNotesError(null);
+      })
+      .catch((reason) => {
+        if (cancelled) return;
+        setInstitutionNotes(null);
+        setInstitutionNotesStatus("failed");
+        setInstitutionNotesError(String(reason));
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+
     if (!exploreIndex || !viewportBbox) return;
     const sequence = ++exploreQuerySequence.current;
     let completed = false;
@@ -311,8 +412,6 @@ export default function App() {
           return;
         }
         setExploreResult(result);
-        setExploreCoverageStatus(result.coverageStatus);
-        setExploreCoverageReason(result.coverageReason);
         setExploreCommittedSequence(sequence);
         if (exploreInputAt.current !== null) {
           setExploreInputToMapLatencyMs(performance.now() - exploreInputAt.current);
@@ -324,8 +423,7 @@ export default function App() {
           return;
         }
         setExploreResult(null);
-        setExploreCoverageStatus("query_failed");
-        setExploreCoverageReason(String(reason));
+        console.error("[ChronoChina viewport query]", reason);
         setExploreCommittedSequence(sequence);
         if (exploreInputAt.current !== null) {
           setExploreInputToMapLatencyMs(performance.now() - exploreInputAt.current);
@@ -355,7 +453,11 @@ export default function App() {
     setReferenceSourceStatus(result.status);
     setEffectiveReferenceModeId(referenceModeId);
     setReferenceReadiness(null);
-    if (referenceModeId === "r4_color_geography" && result.status === "unavailable") {
+    if (
+      referenceModeId !== "r0_grid" &&
+      referenceModeId !== "r2_minimal_modern" &&
+      result.status === "unavailable"
+    ) {
       setReferenceModeId("r2_minimal_modern");
       return;
     }
@@ -398,6 +500,7 @@ export default function App() {
   }, [mapReady, referenceModeId]);
 
   useEffect(() => {
+    if (viewMode !== "focus") return;
     let cancelled = false;
     setManifest(null);
     setTemporalContext(null);
@@ -445,10 +548,10 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [activeAnchorId]);
+  }, [activeAnchorId, viewMode]);
 
   useEffect(() => {
-    if (!manifest || year === null) return;
+    if (viewMode !== "focus" || !manifest || year === null) return;
     if (!manifest.slices[String(year)]) {
       setCollection(null);
       setStatus("该时期尚未接入；没有沿用其他年份的数据");
@@ -480,7 +583,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [manifest, year]);
+  }, [manifest, viewMode, year]);
 
   const rankedSelection = useMemo(
     () =>
@@ -564,6 +667,10 @@ export default function App() {
     );
   }, [developerMode, displaySelection, manifest]);
 
+  const sourceHierarchy = useMemo(
+    () => exploreIndex ? buildSourceHierarchyIndex(exploreIndex) : null,
+    [exploreIndex],
+  );
   const semanticSelection = useMemo(
     () =>
       selectSemanticZoomUnits(
@@ -571,9 +678,10 @@ export default function App() {
         semanticCenter,
         semanticRadiusKm,
         mapZoom,
-        enabledFamilies,
+        enabledCategories,
+        sourceHierarchy,
       ),
-    [activeCollection, enabledFamilies, mapZoom, semanticCenter, semanticRadiusKm],
+    [activeCollection, enabledCategories, mapZoom, semanticCenter, semanticRadiusKm, sourceHierarchy],
   );
 
   const renderedUnits = useMemo<DisplayUnit[]>(() => {
@@ -617,18 +725,58 @@ export default function App() {
     previousRenderedUnits.current = renderedUnits;
     previousMarkerElements.current = currentElements;
   }, [renderedUnits]);
-  const visibleLegendFamilies = useMemo(
-    () => DISPLAY_FAMILY_REGISTRY.filter((config) =>
-      config.legend && config.userVisible,
-    ),
+  const visibleUnitCategories = useMemo(
+    () => HISTORICAL_UNIT_CATEGORY_REGISTRY.filter((config) => config.userVisible),
     [],
   );
+  const coverageFamilyStates = useMemo(() => {
+    const matchingResult = exploreResult?.collection.metadata.year === exploreYear
+      ? exploreResult
+      : null;
+    return DISPLAY_FAMILY_REGISTRY.map((config) => {
+      const assessment = assessSourceCoverage(coverageMetadata, config.id, exploreYear);
+      const enabled = true;
+      const viewportResult: ViewportResult | "PENDING" = !enabled
+        ? "NO_RECORDS"
+        : matchingResult
+          ? resolveViewportResult(matchingResult.collection.features, config.id)
+          : "PENDING";
+      const viewportCount = enabled && matchingResult
+        ? matchingResult.collection.features.filter((feature) =>
+          displayFamily(feature) === config.id).length
+        : 0;
+      return {
+        family: config.id,
+        assessment,
+        viewportResult,
+        messages: userCoverageMessages(
+          assessment,
+          viewportResult === "PENDING" ? "HAS_RECORDS" : viewportResult,
+          enabled,
+        ),
+        viewportCount,
+        globalActiveCount: exploreIndex?.records.filter((record) =>
+          record[3] <= exploreYear && exploreYear <= record[4] &&
+          displayFamilyFromRawType(record[7]) === config.id).length ?? 0,
+      };
+    });
+  }, [coverageMetadata, exploreIndex, exploreResult, exploreYear]);
 
-  const toggleFamily = useCallback((family: DisplayFamily) => {
-    setEnabledFamilies((current) => {
+  const serializedCoverageFamilyStates = useMemo(() => JSON.stringify(
+    Object.fromEntries(coverageFamilyStates.map((state) => [state.family, {
+      support: state.assessment.support,
+      temporalModels: state.assessment.temporalModels,
+      viewportResult: state.viewportResult,
+      globalActiveCount: state.globalActiveCount,
+      viewportCount: state.viewportCount,
+    }])),
+  ), [coverageFamilyStates]);
+
+  const toggleCategory = useCallback((category: HistoricalUnitCategory) => {
+    setEnabledCategories((current) => {
       const next = new Set(current);
-      if (next.has(family)) next.delete(family);
-      else next.add(family);
+      if (next.has(category)) next.delete(category);
+      else next.add(category);
       return next;
     });
     setDetail(null);
@@ -743,28 +891,58 @@ export default function App() {
     setDeveloperMode(nextDeveloperMode);
     if (!nextDeveloperMode) {
       setDisplayStrategy("type_diverse_spatial");
-      if (referenceModeId !== "r2_minimal_modern" && referenceModeId !== "r4_color_geography") {
+      if (!["r1_physical", "r2_minimal_modern", "r4_color_geography"].includes(referenceModeId)) {
         setReferenceModeId("r2_minimal_modern");
       }
     }
   }
 
   const detailSourceNote = sourceNotePresentation(detail?.source?.source_note ?? null);
+  const detailContext = useMemo(() => {
+    if (!detail) return null;
+    const selectedFeature = activeCollection?.features.find((feature) =>
+      feature.properties.source_record_id === detail.source_record_id,
+    ) ?? null;
+    const category = selectedFeature
+      ? historicalUnitCategory(selectedFeature)
+      : historicalUnitCategoryFromRawType(detail.feature_type);
+    const breadcrumb = hierarchyBreadcrumb(sourceHierarchy, detail.source_record_id, detail.snapshot_year);
+    const subordinates = activeDirectSubordinates(
+      sourceHierarchy,
+      detail.source_record_id,
+      detail.snapshot_year,
+    );
+    const coLocatedCount = selectedFeature
+      ? activeCollection?.features.filter((feature) =>
+          feature.geometry.coordinates[0] === selectedFeature.geometry.coordinates[0] &&
+          feature.geometry.coordinates[1] === selectedFeature.geometry.coordinates[1]
+        ).length ?? 1
+      : 1;
+    return {
+      category,
+      classification: sourceHierarchy?.classifications.get(detail.source_record_id) ?? null,
+      breadcrumb,
+      subordinates,
+      coLocatedCount,
+    };
+  }, [activeCollection, detail, sourceHierarchy]);
+
+  const detailInstitutionNote = useMemo(
+    () => detail
+      ? selectInstitutionNote(institutionNotes, detail.feature_type, detail.snapshot_year)
+      : null,
+    [detail, institutionNotes],
+  );
 
   return (
+
     <main className="app-shell">
-      <header className="masthead">
-        <div>
-          <p className="eyebrow">CHRONOCHINA · VIEWPORT + FIVE-ANCHOR MVP</p>
-          <h1>中国历史地理时间地图</h1>
-          <p className="subtitle">
-            移动地图，以精确年份查看当前视口内的历史地名。
-          </p>
-        </div>
-        <div className="masthead__actions">
+
+      <section className={`map-stage map-stage--${developerMode ? "developer" : "user"}`} aria-label="历史地图">
+        <div className={`developer-entry ${developerMode ? "developer-entry--open" : ""}`}>
           {developerMode && (
             <div className="anchor-select">
-              <label htmlFor="anchor-select">现代地点</label>
+              <label htmlFor="anchor-select">QA 定位</label>
               <select
                 id="anchor-select"
                 value={searchAnchorId}
@@ -774,7 +952,6 @@ export default function App() {
                   <option key={anchor.id} value={anchor.id}>{anchor.name}</option>
                 ))}
               </select>
-              <span>Developer QA fly-to</span>
             </div>
           )}
           <button
@@ -783,12 +960,9 @@ export default function App() {
             aria-pressed={developerMode}
             onClick={() => setMode(!developerMode)}
           >
-            {developerMode ? "返回用户模式" : "开发者模式"}
+            {developerMode ? "退出开发者模式" : "开发者模式"}
           </button>
         </div>
-      </header>
-
-      <section className={`map-stage map-stage--${developerMode ? "developer" : "user"}`} aria-label="历史地图">
         <div
           ref={mapContainer}
           className="map"
@@ -816,6 +990,14 @@ export default function App() {
           data-snapshot-year={activeYear ?? ""}
           data-query-result-year={activeCollection?.metadata.year ?? ""}
           data-explore-index-status={exploreIndexStatus}
+          data-coverage-metadata-status={coverageMetadataStatus}
+          data-institution-notes-status={institutionNotesStatus}
+          data-coverage-family-states={serializedCoverageFamilyStates}
+          data-explore-viewport-result={
+            exploreResult?.collection.metadata.year === exploreYear
+              ? exploreResult.viewportResult
+              : "PENDING"
+          }
           data-explore-index-record-count={exploreIndex?.source.record_count ?? 0}
           data-explore-index-load-ms={exploreIndexLoadMs?.toFixed(3) ?? ""}
           data-explore-query-sequence={exploreCommittedSequence}
@@ -823,7 +1005,6 @@ export default function App() {
           data-stale-commit-count={exploreStaleCommitCount}
           data-explore-query-latency-ms={exploreResult?.queryLatencyMs.toFixed(3) ?? ""}
           data-timeline-input-to-map-latency-ms={exploreInputToMapLatencyMs?.toFixed(3) ?? ""}
-          data-explore-coverage-status={exploreCoverageStatus}
           data-explore-active-record-count={exploreResult?.activeRecordCount ?? 0}
           data-explore-spatial-record-count={exploreResult?.spatialRecordCount ?? 0}
           data-viewport-bbox={viewportBbox?.map((value) => value.toFixed(6)).join(",") ?? ""}
@@ -835,7 +1016,9 @@ export default function App() {
           }
           data-active-feature-count={activeCollection?.features.length ?? 0}
           data-eligible-record-count={semanticSelection.eligibleFeatureCount}
-          data-enabled-display-families={[...enabledFamilies].sort().join(",")}
+          data-enabled-display-categories={[...enabledCategories].sort().join(",")}
+          data-enabled-display-tiers={[...enabledCategories].sort().join(",")}
+          data-enabled-display-families={semanticSelection.eligibleFamilies.join(",")}
           data-strategy-ranked-point-count={rankedSelection.points.length}
           data-strategy-ranked-point-ids={rankedSelection.points.map((feature) => feature.id).join(",")}
           data-historical-point-count={renderedUnits.length}
@@ -845,7 +1028,10 @@ export default function App() {
           data-display-unit-ids={renderedUnits.map((unit) => unit.id).join(",")}
           data-active-display-families={semanticSelection.activeFamilies.join(",")}
           data-eligible-display-families={semanticSelection.eligibleFamilies.join(",")}
-          data-visible-display-families={visibleLegendFamilies.map((config) => config.id).join(",")}
+          data-visible-display-families={semanticSelection.visibleFamilies.join(",")}
+          data-active-display-tiers={semanticSelection.activeCategories.join(",")}
+          data-eligible-display-tiers={semanticSelection.eligibleCategories.join(",")}
+          data-visible-display-tiers={semanticSelection.visibleCategories.join(",")}
           data-semantic-hidden-feature-count={semanticSelection.semanticHiddenFeatureCount}
           data-co-located-group-count={renderedUnits.filter((unit) => unit.kind === "colocated_group").length}
           data-anchor-hidden-label-count={labelPresentation.hiddenLabelIds.size}
@@ -871,7 +1057,7 @@ export default function App() {
               "--history-marker-stack-order": String(renderedUnits.length - displayIndex),
               "--history-label-offset-x": `${placement.offsetX}px`,
               "--history-label-offset-y": `${placement.offsetY}px`,
-              ...markerVariables(unit.family, mapZoom),
+              ...unitCategoryMarkerVariables(unit.category, mapZoom),
             } as CSSProperties;
             return (
               <button
@@ -880,7 +1066,7 @@ export default function App() {
                 className={
                   `history-marker history-marker--${feature.properties.location_confidence} ` +
                   `history-marker--family-${unit.family} ` +
-                  `history-marker--shape-${familyConfig(unit.family).shape} ` +
+                  `history-marker--shape-${unitCategoryConfig(unit.category).shape} ` +
                   `${unit.kind === "colocated_group" ? "history-marker--colocated " : ""}` +
                   `history-marker--placement-${placement.placement}`
                 }
@@ -897,6 +1083,8 @@ export default function App() {
                 data-marker-anchor="center"
                 data-maplibre-anchor="center"
                 data-display-family={unit.family}
+                data-display-category={unit.category}
+                data-display-tier={unit.category}
                 data-label-placement={placement.placement}
                 data-label-offset={`${placement.offsetX},${placement.offsetY}`}
                 title={unit.label}
@@ -932,34 +1120,6 @@ export default function App() {
           })}
         </div>
 
-        <div className="map-display-controls" data-testid="map-display-controls">
-          <fieldset aria-label="历史点显示模式">
-            <legend>历史点</legend>
-            <button
-              type="button"
-              aria-pressed={historicalDisplayMode === "point_label"}
-              onClick={() => setHistoricalDisplayMode("point_label")}
-            >点 + 标签</button>
-            <button
-              type="button"
-              aria-pressed={historicalDisplayMode === "point_only"}
-              onClick={() => setHistoricalDisplayMode("point_only")}
-            >仅点</button>
-          </fieldset>
-          <fieldset aria-label="背景地图模式">
-            <legend>底图</legend>
-            <button
-              type="button"
-              aria-pressed={referenceModeId === "r2_minimal_modern"}
-              onClick={() => setReferenceModeId("r2_minimal_modern")}
-            >简洁</button>
-            <button
-              type="button"
-              aria-pressed={referenceModeId === "r4_color_geography"}
-              onClick={() => setReferenceModeId("r4_color_geography")}
-            >彩色地理</button>
-          </fieldset>
-        </div>
 
         {viewMode === "focus" && (
         <section className="period-control" aria-label="代表时期">
@@ -1144,10 +1304,51 @@ export default function App() {
                 <button type="button" onClick={applyExploreYear}>应用年份</button>
               </div>
             </div>
-            <p className={`coverage-status coverage-status--${exploreCoverageStatus}`} data-testid="explore-coverage-status">
-              {coverageStatusLabel(exploreCoverageStatus)}
+            <p className="coverage-status" data-testid="explore-coverage-status">
+              viewport {exploreResult?.viewportResult ?? "NO_RECORDS"}
             </p>
-            <p className="coverage-reason">{exploreCoverageReason}</p>
+            <p className="coverage-reason" data-testid="coverage-metadata-diagnostic">
+              coverage metadata {coverageMetadataStatus}
+              {coverageMetadataError ? ` · ${coverageMetadataError}` : ""}
+            </p>
+            {coverageMetadata && (
+              <div className="coverage-diagnostics" data-testid="coverage-family-diagnostics">
+                {coverageFamilyStates.map((state) => {
+                  const displayedCount = renderedUnits.flatMap((unit) => unit.members)
+                    .filter((feature) => displayFamily(feature) === state.family).length;
+                  return (
+                    <details key={state.family}>
+                      <summary>
+                        {state.family} · {state.assessment.support} ·
+                        {` ${state.assessment.temporalModels.join(",") || "NONE"} · ${state.viewportResult}`}
+                      </summary>
+                      <p>{coverageMetadata.families[state.family].developerModeExplanation}</p>
+                      <p>global {state.globalActiveCount} · viewport {state.viewportCount} · displayed {displayedCount}</p>
+                      {coverageMetadata.families[state.family].components.map((component) => (
+                        <p key={component.id}>
+                          {component.id} · {component.rawTypes.join(",")} · {component.temporalModel} ·
+                          {` ${component.support}`}
+                          {component.snapshotYears.length > 0
+                            ? ` · snapshots ${component.snapshotYears.join(",")}`
+                            : ""}
+                          {component.supportedPeriods.length > 0
+                            ? ` · supported ${component.supportedPeriods.map(([start, end]) => `${start}..${end}`).join(";")}`
+                            : ""}
+                          {component.observedPeriods.length > 0
+                            ? ` · observed ${component.observedPeriods.map(([start, end]) => `${start}..${end}`).join(";")}`
+                            : ""}
+                          {` · ${component.evidenceStrength} · ${component.sourceEvidence}`}
+                          {exploreIndex && (() => {
+                            const counts = componentCountEvidence(component, exploreIndex, exploreYear);
+                            return ` · active ${counts.currentYearActiveCount} · source-supported ${counts.sourceSupportedCount ?? "unknown"} · ${counts.evidenceLabel}`;
+                          })()}
+                        </p>
+                      ))}
+                    </details>
+                  );
+                })}
+              </div>
+            )}
             <dl className="explore-query-stats">
               <div><dt>索引匹配记录</dt><dd>{exploreResult?.activeRecordCount ?? 0}</dd></div>
               <div><dt>可交互历史位置</dt><dd>{renderedUnits.length}</dd></div>
@@ -1165,17 +1366,9 @@ export default function App() {
           </section>
         )}
 
-        {referenceModeId !== "r0_grid" && (
+        {developerMode && referenceModeId !== "r0_grid" && (
           <div className="reference-badge" data-testid="reference-badge">
-            {referenceModeId === "r2_minimal_modern" && referenceSourceStatus === "failed"
-              ? "现代地图参考未加载"
-              : referenceModeId === "r4_color_geography"
-              ? "彩色地理参考 · 非卫星影像"
-              : referenceModeId === "r3_modern_admin"
-              ? "现代行政参考 · 非历史边界"
-              : developerMode
-                ? `${activeReferenceMode.code} · 现代地理参考`
-                : "现代地理参考"}
+            {activeReferenceMode.code} · {activeReferenceMode.label}
           </div>
         )}
 
@@ -1194,28 +1387,49 @@ export default function App() {
           </div>
         )}
 
-        <aside className="legend" aria-label="地图图例" data-testid="layer-switcher">
-          {visibleLegendFamilies.map((config) => (
+        <aside className="legend map-toolbar" aria-label="历史单位类别与地图显示" data-testid="layer-switcher">
+          {visibleUnitCategories.map((config) => (
             <button
               key={config.id}
               type="button"
-              data-legend-family={config.id}
-              aria-pressed={enabledFamilies.has(config.id)}
-              aria-label={`${config.labelZh}：${enabledFamilies.has(config.id) ? "已显示" : "已隐藏"}`}
-              onClick={() => toggleFamily(config.id)}
+              data-legend-category={config.id}
+              data-legend-tier={config.id}
+              aria-pressed={enabledCategories.has(config.id)}
+              aria-label={`${config.labelZh}：${enabledCategories.has(config.id) ? "已显示" : "已隐藏"}`}
+              title={`包含：${config.descriptionZh}`}
+              onClick={() => toggleCategory(config.id)}
             >
               <i
                 className={`legend__dot history-marker--shape-${config.shape}`}
-                style={markerVariables(config.id, mapZoom) as CSSProperties}
+                style={unitCategoryMarkerVariables(config.id, mapZoom) as CSSProperties}
               />
               <span>{config.labelZh}</span>
             </button>
           ))}
-          <small className="legend__counts" data-testid="layer-counts">
-            源 {activeCollection?.features.length ?? 0} · 已启用 {semanticSelection.eligibleFeatureCount} · 位置 {renderedUnits.length}
+          <fieldset className="map-toolbar__group" aria-label="历史点显示模式" data-testid="map-display-controls">
+            <legend>历史点</legend>
+            <button type="button" aria-pressed={historicalDisplayMode === "point_label"}
+              onClick={() => setHistoricalDisplayMode("point_label")}>点/标签</button>
+            <button type="button" aria-pressed={historicalDisplayMode === "point_only"}
+              onClick={() => setHistoricalDisplayMode("point_only")}>仅点</button>
+          </fieldset>
+          <fieldset className="map-toolbar__group" aria-label="背景地图模式">
+            <legend>底图</legend>
+            <button type="button" aria-pressed={referenceModeId === "r1_physical"}
+              onClick={() => setReferenceModeId("r1_physical")}>极简</button>
+            <button type="button" aria-pressed={referenceModeId === "r2_minimal_modern"}
+              onClick={() => setReferenceModeId("r2_minimal_modern")}>标准</button>
+            <button type="button" aria-pressed={referenceModeId === "r4_color_geography"}
+              onClick={() => setReferenceModeId("r4_color_geography")}>丰富</button>
+          </fieldset>
+          <small
+            className="legend__counts"
+            data-testid="layer-counts"
+            title={`当前范围源记录 ${activeCollection?.features.length ?? 0}；已启用候选 ${semanticSelection.eligibleFeatureCount}；实际显示位置 ${renderedUnits.length}`}
+          >
+            源{activeCollection?.features.length ?? 0}/选{semanticSelection.eligibleFeatureCount}/显{renderedUnits.length}
           </small>
         </aside>
-
         <ContinuousTimeline
           minYear={timelineRange.minYear}
           maxYear={timelineRange.maxYear}
@@ -1259,7 +1473,7 @@ export default function App() {
                       {feature.properties.feature_type} · {formatDetailYear(feature.properties.valid_from)}—
                       {formatDetailYear(feature.properties.valid_to)}
                     </span>
-                    <small>{feature.properties.tgaz_id}</small>
+                    {developerMode && <small>{feature.properties.tgaz_id}</small>}
                   </button>
                 </li>
               ))}
@@ -1279,50 +1493,104 @@ export default function App() {
               onClick={() => setDetail(null)}
               aria-label="关闭详情"
             >×</button>
-            <p className="detail-card__kicker">
-              {viewMode === "explore" ? "当前视口内的历史地点" : "现代地点附近的历史地点"} · {detail.feature_type}
-            </p>
+            <p className="detail-card__kicker">历史单位记录</p>
             <h2>{detail.name}</h2>
             {detail.name_pinyin && <p className="pinyin">{detail.name_pinyin}</p>}
             <dl>
-              <div><dt>当前快照</dt><dd>{formatDetailYear(detail.snapshot_year)}</dd></div>
               <div><dt>有效时期</dt><dd>{formatDetailYear(detail.valid_from)} — {formatDetailYear(detail.valid_to)}</dd></div>
-              <div><dt>上级</dt><dd>{knownValue(detail.parent_name)}</dd></div>
-              <div>
-                <dt>{viewMode === "explore" ? "距视口中心" : "距现代锚点"}</dt>
-                <dd>{formatDetailDistance(detail.distance_to_anchor_km)}</dd>
-              </div>
-              <div><dt>位置可信度</dt><dd>{confidenceLabel(detail.location_confidence)}</dd></div>
-              <div><dt>TGAZ ID</dt><dd>{detail.source_record_id}</dd></div>
-              <div>
-                <dt>来源 / 许可</dt>
-                <dd>
-                  {detail.source?.data_source || detail.source?.system || "来源信息暂不可用"} · {detail.license ?? "许可未逐条重新获取"}
-                </dd>
-              </div>
+              <div><dt>历史单位类型</dt><dd>{detail.feature_type}</dd></div>
+              <div><dt>历史单位类别</dt><dd>{detailContext ? unitCategoryConfig(detailContext.category).labelZh : "未分类"}</dd></div>
+              <div><dt>来源所记上级</dt><dd>{knownValue(detail.parent_name)}</dd></div>
             </dl>
-            {detailSourceNote.text ? (
-              <section className="source-note" aria-label="完整来源说明">
-                <h3>来源说明（完整）</h3>
-                <p data-testid="source-note-full">{detailSourceNote.text}</p>
-                {detailSourceNote.rawDiffers && (
-                  <details>
-                    <summary>查看未经改写的源文本</summary>
-                    <pre data-testid="source-note-raw">{detailSourceNote.raw}</pre>
-                  </details>
+            {detailInstitutionNote && (
+              <section className="detail-card__institution" aria-label="制度小识" data-testid="institution-note">
+                <p className="detail-card__institution-kicker">制度小识</p>
+                <h3>{detailInstitutionNote.titleZh}</h3>
+                <p>{detailInstitutionNote.bodyZh}</p>
+              </section>
+            )}
+            {detailContext && detailContext.breadcrumb.length > 0 && (
+              <section className="detail-card__context" aria-label="来源记录中的上级关系">
+                <h3>来源记录中的上级关系</h3>
+                <ol>
+                  {detailContext.breadcrumb.map((node) => (
+                    <li key={node.sourceRecordId}>
+                      {node.name}（{node.featureType}）
+                      {!node.activeAtSelectedYear && <em> 当前年未生效</em>}
+                    </li>
+                  ))}
+                </ol>
+                {detailContext.breadcrumb[0] && !detailContext.breadcrumb[0].activeAtSelectedYear && (
+                  <p>来源记录给出了此上级关系，但该上级记录的有效期不含当前年份。</p>
                 )}
               </section>
-            ) : (
-              <p className="source-note source-note--empty">源记录未提供来源说明。</p>
             )}
-            <a href={detail.canonical_uri} target="_blank" rel="noreferrer">
-              查看 TGAZ canonical record
-            </a>
-            <p className="semantic-notice">
-              {viewMode === "explore"
-                ? "这里仅表示记录位于当前视口；地图不建立地点之间的同一实体、前身、后继或改名关系。"
-                : "这些地点只是位于现代地点附近；地图不表示它们是现代城市的前身或旧称。"}
-            </p>
+            <section className="detail-card__context" aria-label="当前年直属下级">
+              <h3>当前年直属下级 · {detailContext?.subordinates.length ?? 0}</h3>
+              {detailContext && detailContext.subordinates.length > 0 ? (
+                <p>
+                  {detailContext.subordinates.slice(0, 8).map((node) =>
+                    `${node.name}（${node.featureType}）`
+                  ).join("、")}
+                  {detailContext.subordinates.length > 8 ? `，另 ${detailContext.subordinates.length - 8} 条` : ""}
+                </p>
+              ) : (
+                <p>当前年份未加载到直属下级记录。</p>
+              )}
+            </section>
+            {detailContext && detailContext.coLocatedCount > 1 && (
+              <p className="detail-card__colocation">同一来源坐标还有 {detailContext.coLocatedCount - 1} 条独立记录。</p>
+            )}
+            {developerMode && (
+              <details className="detail-card__developer" open>
+                <summary>开发者诊断</summary>
+                <dl>
+                  <div>
+                    <dt>{viewMode === "explore" ? "距视口中心" : "距现代锚点"}</dt>
+                    <dd>{formatDetailDistance(detail.distance_to_anchor_km)}</dd>
+                  </div>
+                  <div><dt>位置可信度</dt><dd>{confidenceLabel(detail.location_confidence)}</dd></div>
+                  <div><dt>TGAZ ID</dt><dd>{detail.source_record_id}</dd></div>
+                  <div>
+                    <dt>来源 / 许可</dt>
+                    <dd>
+                      {detail.source?.data_source || detail.source?.system || "来源信息暂不可用"} · {detail.license ?? "许可未逐条重新获取"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>来源父链诊断</dt>
+                    <dd>
+                      {detailContext?.classification?.method ?? "unresolved"} ·
+                      {` ${detailContext?.classification?.issue ?? "none"}`}
+                    </dd>
+                  </div>
+                </dl>
+                <p className="detail-card__developer-note" data-testid="institution-note-diagnostic">
+                  <strong>制度小识诊断：</strong>{institutionNotesStatus}
+                  {detailInstitutionNote ? ` · ${detailInstitutionNote.noteId}` : " · no exact match"}
+                  {` · ${detail.feature_type} · ${detail.snapshot_year}`}
+                  {institutionNotesError ? ` · ${institutionNotesError}` : ""}
+                </p>
+
+                {detailSourceNote.text ? (
+                  <section className="source-note" aria-label="完整来源说明">
+                    <h3>来源说明（完整）</h3>
+                    <p data-testid="source-note-full">{detailSourceNote.text}</p>
+                    {detailSourceNote.rawDiffers && (
+                      <details>
+                        <summary>查看未经改写的源文本</summary>
+                        <pre data-testid="source-note-raw">{detailSourceNote.raw}</pre>
+                      </details>
+                    )}
+                  </section>
+                ) : (
+                  <p className="source-note source-note--empty">源记录未提供来源说明。</p>
+                )}
+                <a href={detail.canonical_uri} target="_blank" rel="noreferrer">
+                  查看 TGAZ canonical record
+                </a>
+              </details>
+            )}
           </article>
           </DetailErrorBoundary>
         )}
@@ -1343,8 +1611,7 @@ export default function App() {
         </span>
         {referenceModeId !== "r0_grid" && (
           <span className="reference-attribution">
-            现代参考：<a href="https://openfreemap.org/" target="_blank" rel="noreferrer">OpenFreeMap</a>
-            {" · "}<a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">© OpenMapTiles</a>
+            离线现代参考：<a href="https://protomaps.com/" target="_blank" rel="noreferrer">Protomaps</a>
             {" · "}<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a>
           </span>
         )}

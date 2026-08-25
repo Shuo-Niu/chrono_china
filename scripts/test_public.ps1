@@ -12,6 +12,7 @@ if (-not (Test-Path $VenvPython)) {
 Set-Location $ProjectRoot
 
 $DataDependentTests = @(
+    "pipeline/tests/test_coverage_metadata.py",
     "pipeline/tests/test_phase1_3_1.py",
     "pipeline/tests/test_phase1_3_1a.py",
     "pipeline/tests/test_phase1_3_1b.py",
@@ -37,9 +38,26 @@ try {
         throw "Public Web tests failed."
     }
 
-    npm.cmd run build
+    npm.cmd run test:desktop
     if ($LASTEXITCODE -ne 0) {
-        throw "Production build failed."
+        throw "Public desktop packaging tests failed."
+    }
+
+    $PreviousPublicBuild = $env:CHRONOCHINA_PUBLIC_BUILD
+    try {
+        $env:CHRONOCHINA_PUBLIC_BUILD = "1"
+        npm.cmd run build
+        if ($LASTEXITCODE -ne 0) {
+            throw "Production build failed."
+        }
+    }
+    finally {
+        if ($null -eq $PreviousPublicBuild) {
+            Remove-Item Env:CHRONOCHINA_PUBLIC_BUILD -ErrorAction SilentlyContinue
+        }
+        else {
+            $env:CHRONOCHINA_PUBLIC_BUILD = $PreviousPublicBuild
+        }
     }
 }
 finally {

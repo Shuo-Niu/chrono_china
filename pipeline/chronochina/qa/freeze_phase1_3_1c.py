@@ -112,7 +112,10 @@ def _strategy_c_point_ranking() -> str:
 
 def _legend_configuration() -> str:
     source = (PROJECT_ROOT / "web/src/App.tsx").read_text(encoding="utf-8")
-    start = source.index('<aside className="legend"')
+    marker = source.index('data-testid="layer-switcher"')
+    start = source.rfind("<aside", 0, marker)
+    if start < 0:
+        raise ValueError("layer-switcher is not inside an aside element")
     end = source.index("</aside>", start) + len("</aside>")
     return source[start:end]
 

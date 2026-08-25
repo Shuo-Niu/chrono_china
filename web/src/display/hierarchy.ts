@@ -80,7 +80,7 @@ export const DISPLAY_FAMILY_REGISTRY: readonly DisplayFamilyConfig[] = [
     stroke: "#713d2b",
     halo: "#fffaf0",
     labelPriority: 3,
-    userVisible: true,
+    userVisible: false,
     developerVisible: true,
     legend: true,
   },
@@ -133,7 +133,11 @@ export function familyConfig(family: DisplayFamily): DisplayFamilyConfig {
 }
 
 export function displayFamily(feature: HistoricalFeature): DisplayFamily {
-  return FAMILY_BY_RAW_TYPE.get(feature.properties.feature_type) ?? "other";
+  return displayFamilyFromRawType(feature.properties.feature_type);
+}
+
+export function displayFamilyFromRawType(rawType: string): DisplayFamily {
+  return FAMILY_BY_RAW_TYPE.get(rawType) ?? "other";
 }
 
 export function displayFamilyPriority(feature: HistoricalFeature): number {

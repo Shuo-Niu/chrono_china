@@ -1,0 +1,75 @@
+{
+  "schema_version": "0.1",
+  "review_set_id": "qing_late_institution_notes_source_review_v0_1",
+  "draft_set_id": "qing_late_institution_notes_v0_1",
+  "reviewed_at": "2026-08-24",
+  "reviewer": "OpenAI Codex",
+  "overall_verdict": "VERIFIED",
+  "review_policy": "每条正文至少由可直接阅读的原典或机构全文支持；无法完整读取的扫描件不作为通过依据。",
+  "note_reviews": [
+    {
+      "note_id": "qing_late_system_overview",
+      "verdict": "VERIFIED",
+      "verified_source_ids": ["fudan_qing_volume", "ruc_qing_local_officials", "cssn_qing_dao"],
+      "evidence": "复旦清代卷目录覆盖省、府厅州县；人大全文区分内地与边疆制度及内地政区层次；社科院全文说明道的派出、办事机构性质。",
+      "caveat": "总体制度导读，不用于判定任何具体地点的层级或实体关系。"
+    },
+    {
+      "note_id": "qing_late_province",
+      "verdict": "VERIFIED",
+      "verified_source_ids": ["qingshigao_116", "fudan_qing_volume", "ruc_qing_local_officials"],
+      "evidence": "《清史稿》卷116总督、巡抚条及建省记载，结合复旦清代卷和人大制度概述，支持清末省制、总督巡抚职掌与特殊区域差异。",
+      "caveat": "来源 raw type“省级”不自动等同现代省。"
+    },
+    {
+      "note_id": "qing_late_dao",
+      "verdict": "VERIFIED",
+      "verified_source_ids": ["qingshigao_116", "cssn_qing_dao", "fudan_qing_volume"],
+      "evidence": "《清史稿》卷116列分守、分巡及河粮盐关等职掌；朱东安全文明确论证道多为省级政权派出或办事机构。",
+      "caveat": "不同道的职能、辖区与存废差异较大。"
+    },
+    {
+      "note_id": "qing_late_fu",
+      "verdict": "VERIFIED",
+      "verified_source_ids": ["qingshigao_116", "fudan_qing_volume", "ruc_qing_local_officials"],
+      "evidence": "《清史稿》卷116府条记知府总领属县、宣理风化、考察属吏及不同隶属设置；两份机构资料交叉支持制度层次。",
+      "caveat": "制度概述不建立具体府与其他地点的前身、后继或同一实体关系。"
+    },
+    {
+      "note_id": "qing_late_direct_prefecture",
+      "verdict": "VERIFIED",
+      "verified_source_ids": ["qingshigao_116", "fudan_qing_volume", "ruc_qing_local_officials"],
+      "evidence": "《清史稿》卷116州条明确记“直隶州视府”；复旦清代卷与人大制度概述用于交叉核对。",
+      "caveat": "“直隶”在此表示隶属关系，不等同直隶省。"
+    },
+    {
+      "note_id": "qing_late_zhou",
+      "verdict": "VERIFIED",
+      "verified_source_ids": ["qingshigao_116", "fudan_qing_volume", "ruc_qing_local_officials"],
+      "evidence": "《清史稿》卷116州条明确记“属州视县，直隶州视府”；机构资料确认州并非单一层级。",
+      "caveat": "raw type 只有“州”时，不进一步猜测直隶州或属州。"
+    },
+    {
+      "note_id": "qing_late_ting",
+      "verdict": "VERIFIED",
+      "verified_source_ids": ["ruc_qing_ting_research", "ruc_qing_local_officials", "fudan_qing_volume"],
+      "evidence": "王泉伟全文明确区分分防厅与政区厅，并说明直隶厅近府级、属厅近县级；人大另一篇全文与复旦目录交叉核对。",
+      "caveat": "北大学报扫描件无文本层且本地视觉 helper 无法显示，故只作书目参考，不作为 VERIFIED 判据。"
+    },
+    {
+      "note_id": "qing_late_county",
+      "verdict": "VERIFIED",
+      "verified_source_ids": ["qingshigao_116", "fudan_qing_volume", "ruc_qing_local_officials"],
+      "evidence": "《清史稿》卷116县条记知县掌一县治理及讼狱、劝农、赈贫、治安、教化等职掌；机构资料交叉支持县的基层制度位置。",
+      "caveat": "历史县不自动对应现代县，也不建立实体继承关系。"
+    }
+  ],
+  "unresolved_material_issues": [],
+  "documented_limitations": [
+    {
+      "source_id": "pku_qing_ting",
+      "status": "BIBLIOGRAPHIC_ONLY",
+      "reason": "下载的六页扫描 PDF 无文本层；本地图片 helper 无法显示渲染页。厅条目由独立可读全文完成复核，因此该限制不阻塞候选生成。"
+    }
+  ]
+}

@@ -1,0 +1,472 @@
+import type { HistoricalFeature } from "../types";
+import {
+  displayFamilyFromRawType,
+  type DisplayFamily,
+} from "../display/hierarchy";
+import type { CompactHistoricalIndex } from "../explore/viewportQuery";
+
+export type TemporalModel = "TIME_SERIES" | "TIME_SLICE";
+export type SourceSupport = "SUPPORTED" | "UNSUPPORTED" | "LIMITED" | "UNKNOWN";
+export type ViewportResult = "HAS_RECORDS" | "NO_RECORDS";
+
+export interface SourceCoverageComponent {
+  id: string;
+  rawTypes: readonly string[];
+  temporalModel: TemporalModel;
+  support: SourceSupport;
+  snapshotYears: readonly number[];
+  supportedPeriods: readonly (readonly [number, number])[];
+  observedPeriods: readonly (readonly [number, number])[];
+  recordCount: number;
+  snapshotRecordCounts: Readonly<Record<string, number>>;
+  periodRecordCounts: Readonly<Record<string, number>>;
+  provenance: Readonly<Record<string, unknown>>;
+  sourceEvidence: string;
+  evidenceStrength: string;
+}
+
+export interface SourceCoverageFamily {
+  defaultSupport: SourceSupport;
+  components: readonly SourceCoverageComponent[];
+  userModeCopy: Readonly<Record<string, string>>;
+  developerModeExplanation: string;
+}
+
+export interface CoverageMetadata {
+  schemaVersion: "1.0";
+  canonicalIndex: {
+    path: string;
+    bytes: number;
+    recordCount: number;
+    sha256: string;
+    observedEnvelope: { minYear: number; maxYear: number };
+  };
+  provenance: Readonly<Record<string, unknown>>;
+  families: Readonly<Record<DisplayFamily, SourceCoverageFamily>>;
+}
+
+export interface SourceCoverageAssessment {
+  family: DisplayFamily;
+  year: number;
+  support: SourceSupport;
+  temporalModels: readonly TemporalModel[];
+  activeComponents: readonly SourceCoverageComponent[];
+  userModeCopy: Readonly<Record<string, string>>;
+  diagnostic: string | null;
+}
+
+export interface CoverageMessage {
+  kind: "snapshot" | "unsupported" | "limited" | "unknown" | "viewport_empty";
+  text: string;
+  explanation: string;
+}
+
+const FAMILIES: readonly DisplayFamily[] = [
+  "high_admin", "regional_admin", "county", "settlement", "other", "polity",
+];
+const TEMPORAL_MODELS: readonly TemporalModel[] = ["TIME_SERIES", "TIME_SLICE"];
+const SUPPORT_VALUES: readonly SourceSupport[] = [
+  "SUPPORTED", "UNSUPPORTED", "LIMITED", "UNKNOWN",
+];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function asInteger(value: unknown, field: string): number {
+  if (!Number.isInteger(value)) throw new Error(`invalid coverage metadata schema: ${field}`);
+  return value as number;
+}
+
+function asString(value: unknown, field: string): string {
+  if (typeof value !== "string") throw new Error(`invalid coverage metadata schema: ${field}`);
+  return value;
+}
+
+function asSupport(value: unknown, field: string): SourceSupport {
+  if (!SUPPORT_VALUES.includes(value as SourceSupport)) {
+    throw new Error(`invalid coverage metadata schema: ${field}`);
+  }
+  return value as SourceSupport;
+}
+
+function asPeriods(value: unknown, field: string): readonly (readonly [number, number])[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) throw new Error(`invalid coverage metadata schema: ${field}`);
+  return value.map((period, index) => {
+    if (!Array.isArray(period) || period.length !== 2) {
+      throw new Error(`invalid coverage metadata schema: ${field}[${index}]`);
+    }
+    const start = asInteger(period[0], `${field}[${index}][0]`);
+    const end = asInteger(period[1], `${field}[${index}][1]`);
+    if (start > end) throw new Error(`invalid coverage metadata schema: ${field}[${index}] order`);
+    return [start, end] as const;
+  });
+}
+
+function asCount(value: unknown, field: string): number {
+  const count = asInteger(value, field);
+  if (count < 0) throw new Error(`invalid coverage metadata schema: ${field}`);
+  return count;
+}
+
+function asCountMap(
+  value: unknown,
+  expectedKeys: readonly string[],
+  field: string,
+): Readonly<Record<string, number>> {
+  const actualKeys = isRecord(value) ? Object.keys(value) : [];
+  if (!isRecord(value) ||
+      actualKeys.length !== expectedKeys.length ||
+      expectedKeys.some((key) => !Object.hasOwn(value, key))) {
+    throw new Error(`invalid coverage metadata schema: ${field}`);
+  }
+  return Object.fromEntries(expectedKeys.map((key) => {
+    const rawCount = value[key];
+    const count = asInteger(rawCount, `${field}.${key}`);
+    if (count < 0) throw new Error(`invalid coverage metadata schema: ${field}.${key}`);
+    return [key, count];
+  }));
+}
+
+function parseComponent(
+  value: unknown,
+  family: DisplayFamily,
+  field: string,
+): SourceCoverageComponent {
+  if (!isRecord(value) || !Array.isArray(value.raw_types)) {
+    throw new Error(`invalid coverage metadata schema: ${field}`);
+  }
+  const temporalModel = value.temporal_model;
+  if (!TEMPORAL_MODELS.includes(temporalModel as TemporalModel)) {
+    throw new Error(`invalid coverage metadata schema: ${field}.temporal_model`);
+  }
+  if (value.snapshot_years !== undefined && !Array.isArray(value.snapshot_years)) {
+    throw new Error(`invalid coverage metadata schema: ${field}.snapshot_years`);
+  }
+  const snapshotYears = value.snapshot_years === undefined
+    ? []
+    : value.snapshot_years.map((year, index) =>
+      asInteger(year, `${field}.snapshot_years[${index}]`));
+  const rawTypes = value.raw_types.map((rawType, index) =>
+    asString(rawType, `${field}.raw_types[${index}]`));
+  if (rawTypes.length === 0 || rawTypes.some((rawType) =>
+    displayFamilyFromRawType(rawType) !== family)) {
+    throw new Error(`invalid coverage metadata schema: ${field}.raw_types family`);
+  }
+  const supportedPeriods = asPeriods(value.supported_periods, `${field}.supported_periods`);
+  const observedPeriods = asPeriods(value.observed_periods, `${field}.observed_periods`);
+  const periodKeys = [...supportedPeriods, ...observedPeriods]
+    .map(([start, end]) => `${start}..${end}`);
+  const recordCount = asCount(value.record_count, `${field}.record_count`);
+  const support = asSupport(value.support, `${field}.support`);
+  if (temporalModel === "TIME_SLICE" && snapshotYears.length === 0) {
+    throw new Error(`invalid coverage metadata schema: ${field}.snapshot_years required`);
+  }
+  if (temporalModel === "TIME_SERIES" &&
+      supportedPeriods.length === 0 && observedPeriods.length === 0) {
+    throw new Error(`invalid coverage metadata schema: ${field}.periods required`);
+  }
+  let snapshotRecordCounts: Readonly<Record<string, number>> = {};
+  let periodRecordCounts: Readonly<Record<string, number>> = {};
+  if (temporalModel === "TIME_SLICE") {
+    if (value.period_record_counts !== undefined) {
+      throw new Error(`invalid coverage metadata schema: ${field}.period_record_counts`);
+    }
+    snapshotRecordCounts = asCountMap(
+      value.snapshot_record_counts,
+      snapshotYears.map(String),
+      `${field}.snapshot_record_counts`,
+    );
+    const snapshotTotal = Object.values(snapshotRecordCounts)
+      .reduce((total, count) => total + count, 0);
+    if (snapshotTotal !== recordCount) {
+      throw new Error(`invalid coverage metadata schema: ${field}.record_count total`);
+    }
+  } else {
+    if (value.snapshot_record_counts !== undefined) {
+      throw new Error(`invalid coverage metadata schema: ${field}.snapshot_record_counts`);
+    }
+    periodRecordCounts = asCountMap(
+      value.period_record_counts,
+      periodKeys,
+      `${field}.period_record_counts`,
+    );
+    const periodTotal = Object.values(periodRecordCounts)
+      .reduce((total, count) => total + count, 0);
+    if (periodTotal !== recordCount) {
+      throw new Error(`invalid coverage metadata schema: ${field}.record_count total`);
+    }
+  }
+  if (support === "UNSUPPORTED") {
+    throw new Error(`invalid coverage metadata schema: ${field}.covered component unsupported`);
+  }
+  if (!isRecord(value.provenance)) {
+    throw new Error(`invalid coverage metadata schema: ${field}.provenance`);
+  }
+  return {
+    id: asString(value.id, `${field}.id`),
+    rawTypes,
+    temporalModel: temporalModel as TemporalModel,
+    support,
+    snapshotYears,
+    supportedPeriods,
+    observedPeriods,
+    recordCount,
+    snapshotRecordCounts,
+    periodRecordCounts,
+    provenance: { ...value.provenance },
+    sourceEvidence: asString(value.source_evidence, `${field}.source_evidence`),
+    evidenceStrength: asString(value.evidence_strength, `${field}.evidence_strength`),
+  };
+}
+
+export interface ComponentCountEvidence {
+  currentYearActiveCount: number;
+  sourceSupportedCount: number;
+  evidenceLabel: string;
+}
+
+export function componentCountEvidence(
+  component: SourceCoverageComponent,
+  index: CompactHistoricalIndex,
+  year: number,
+): ComponentCountEvidence {
+  const currentYearActiveCount = index.records.filter((record) =>
+    record[3] <= year && year <= record[4] && component.rawTypes.includes(record[7])).length;
+  if (component.temporalModel === "TIME_SLICE" && component.snapshotYears.includes(year)) {
+    return {
+      currentYearActiveCount,
+      sourceSupportedCount: component.snapshotRecordCounts[String(year)] ?? component.recordCount,
+      evidenceLabel: `snapshot ${year}`,
+    };
+  }
+  const periods = component.supportedPeriods.length > 0
+    ? component.supportedPeriods
+    : component.observedPeriods;
+  const activePeriod = periods.find(([start, end]) => start <= year && year <= end);
+  if (activePeriod) {
+    const key = `${activePeriod[0]}..${activePeriod[1]}`;
+    return {
+      currentYearActiveCount,
+      sourceSupportedCount: component.periodRecordCounts[key] ?? component.recordCount,
+      evidenceLabel: `period ${key}`,
+    };
+  }
+  return {
+    currentYearActiveCount,
+    sourceSupportedCount: component.recordCount,
+    evidenceLabel: "outside evidenced periods",
+  };
+}
+
+function compactEnvelope(index: CompactHistoricalIndex): { minYear: number; maxYear: number } {
+  if (index.records.length === 0) {
+    throw new Error("coverage metadata identity cannot be checked against an empty index");
+  }
+  return index.records.reduce(
+    (range, record) => ({
+      minYear: Math.min(range.minYear, record[3]),
+      maxYear: Math.max(range.maxYear, record[4]),
+    }),
+    { minYear: Infinity, maxYear: -Infinity },
+  );
+}
+
+export function parseCoverageMetadata(
+  value: unknown,
+  index: CompactHistoricalIndex,
+  verifiedCompactSha256: string,
+): CoverageMetadata {
+  if (!/^[0-9a-f]{64}$/i.test(verifiedCompactSha256)) {
+    throw new Error("coverage metadata requires a verified SHA for the compact index response");
+  }
+  if (!isRecord(value) || value.schema_version !== "1.0" ||
+      !isRecord(value.canonical_index) || !isRecord(value.provenance) ||
+      !isRecord(value.families)) {
+    throw new Error("invalid coverage metadata schema");
+  }
+  const canonical = value.canonical_index;
+  if (!isRecord(canonical.observed_envelope)) {
+    throw new Error("invalid coverage metadata schema: canonical_index.observed_envelope");
+  }
+  const observedEnvelope = {
+    minYear: asInteger(canonical.observed_envelope.min_year, "canonical_index.min_year"),
+    maxYear: asInteger(canonical.observed_envelope.max_year, "canonical_index.max_year"),
+  };
+  const actualEnvelope = compactEnvelope(index);
+  const recordCount = asInteger(canonical.record_count, "canonical_index.record_count");
+  const sha256 = asString(canonical.sha256, "canonical_index.sha256");
+  if (
+    recordCount !== index.records.length ||
+    observedEnvelope.minYear !== actualEnvelope.minYear ||
+    observedEnvelope.maxYear !== actualEnvelope.maxYear ||
+    !/^[0-9a-f]{64}$/i.test(sha256) ||
+    verifiedCompactSha256.toLowerCase() !== sha256.toLowerCase()
+  ) {
+    throw new Error("coverage metadata identity does not match compact index");
+  }
+
+  const families = {} as Record<DisplayFamily, SourceCoverageFamily>;
+  for (const family of FAMILIES) {
+    const rawFamily = value.families[family];
+    if (!isRecord(rawFamily) || !Array.isArray(rawFamily.components) ||
+        (family !== "polity" && !isRecord(rawFamily.user_mode_copy))) {
+      throw new Error(`invalid coverage metadata schema: families.${family}`);
+    }
+    const userModeCopy: Record<string, string> = {};
+    for (const [key, copy] of Object.entries(rawFamily.user_mode_copy ?? {})) {
+      userModeCopy[key] = asString(copy, `families.${family}.user_mode_copy.${key}`);
+    }
+    families[family] = {
+      defaultSupport: asSupport(rawFamily.default_support, `families.${family}.default_support`),
+      components: rawFamily.components.map((component, index) =>
+        parseComponent(component, family, `families.${family}.components[${index}]`)),
+      userModeCopy,
+      developerModeExplanation: asString(
+        rawFamily.developer_mode_explanation,
+        `families.${family}.developer_mode_explanation`,
+      ),
+    };
+  }
+
+  return {
+    schemaVersion: "1.0",
+    canonicalIndex: {
+      path: asString(canonical.path, "canonical_index.path"),
+      bytes: asInteger(canonical.bytes, "canonical_index.bytes"),
+      recordCount,
+      sha256,
+      observedEnvelope,
+    },
+    provenance: { ...value.provenance },
+    families,
+  };
+}
+
+function includesYear(periods: readonly (readonly [number, number])[], year: number): boolean {
+  return periods.some(([start, end]) => start <= year && year <= end);
+}
+
+function componentActive(component: SourceCoverageComponent, year: number): boolean {
+  if (component.temporalModel === "TIME_SLICE") {
+    return component.snapshotYears.includes(year);
+  }
+  const periods = component.supportedPeriods.length > 0
+    ? component.supportedPeriods
+    : component.observedPeriods;
+  return includesYear(periods, year);
+}
+
+export function assessSourceCoverage(
+  metadata: CoverageMetadata | null,
+  family: DisplayFamily,
+  year: number,
+): SourceCoverageAssessment {
+  if (metadata === null) {
+    return {
+      family,
+      year,
+      support: "UNKNOWN",
+      temporalModels: [],
+      activeComponents: [],
+      userModeCopy: {},
+      diagnostic: "coverage metadata unavailable or invalid",
+    };
+  }
+  const sourceFamily = metadata.families[family];
+  const activeComponents = sourceFamily.components.filter((component) =>
+    componentActive(component, year));
+  const temporalModels = TEMPORAL_MODELS.filter((model) =>
+    activeComponents.some((component) => component.temporalModel === model));
+  if (activeComponents.some((component) => component.support === "UNSUPPORTED")) {
+    return {
+      family,
+      year,
+      support: "UNKNOWN",
+      temporalModels,
+      activeComponents,
+      userModeCopy: sourceFamily.userModeCopy,
+      diagnostic: "active coverage component cannot declare UNSUPPORTED",
+    };
+  }
+  let support = sourceFamily.defaultSupport;
+  if (activeComponents.length > 0) {
+    if (sourceFamily.defaultSupport === "LIMITED" ||
+        activeComponents.some((component) => component.support === "LIMITED")) {
+      support = "LIMITED";
+    } else if (activeComponents.some((component) => component.support === "UNKNOWN")) {
+      support = "UNKNOWN";
+    } else {
+      support = "SUPPORTED";
+    }
+  }
+  return {
+    family,
+    year,
+    support,
+    temporalModels,
+    activeComponents,
+    userModeCopy: sourceFamily.userModeCopy,
+    diagnostic: null,
+  };
+}
+
+export function resolveViewportResult(
+  features: readonly HistoricalFeature[],
+  family: DisplayFamily,
+): ViewportResult {
+  return features.some((feature) =>
+    displayFamilyFromRawType(feature.properties.feature_type) === family)
+    ? "HAS_RECORDS"
+    : "NO_RECORDS";
+}
+
+function message(
+  kind: CoverageMessage["kind"],
+  text: string | undefined,
+): CoverageMessage | null {
+  return text ? {
+    kind,
+    text,
+    explanation: `${text}；此状态描述当前来源或视口结果，不代表历史上不存在该类地点。`,
+  } : null;
+}
+
+export function userCoverageMessages(
+  assessment: SourceCoverageAssessment,
+  viewport: ViewportResult,
+  enabled: boolean,
+): readonly CoverageMessage[] {
+  if (!enabled || assessment.family === "polity" || assessment.diagnostic !== null) return [];
+  const messages: CoverageMessage[] = [];
+  const snapshot = assessment.activeComponents.find((component) =>
+    component.temporalModel === "TIME_SLICE");
+  if (snapshot) {
+    const copy = assessment.userModeCopy.snapshot_template?.replace("{year}", String(assessment.year));
+    const item = message("snapshot", copy);
+    if (item) messages.push(item);
+  }
+  const key = assessment.support === "UNSUPPORTED"
+    ? "unsupported"
+    : assessment.support === "LIMITED"
+      ? "limited"
+      : assessment.support === "UNKNOWN"
+        ? "unknown"
+        : null;
+  const coverageItem = key === null ? null : message(key, assessment.userModeCopy[key]);
+  if (coverageItem) messages.push(coverageItem);
+  if (
+    viewport === "NO_RECORDS" &&
+    assessment.support !== "UNSUPPORTED" &&
+    (assessment.activeComponents.length > 0 ||
+      assessment.support === "SUPPORTED" || assessment.support === "LIMITED")
+  ) {
+    messages.push({
+      kind: "viewport_empty",
+      text: "当前范围无记录",
+      explanation: "当前来源状态与所选年份允许查询，但当前视口没有符合条件的记录；这不代表历史上不存在。",
+    });
+  }
+  return messages;
+}

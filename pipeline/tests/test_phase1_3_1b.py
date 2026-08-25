@@ -13,7 +13,12 @@ def test_phase1_3_1b_frozen_inputs_are_unchanged() -> None:
         for item in group["files"]
         if not item["unchanged"]
     }
-    assert changed_paths == {"web/src/map/referenceLayers.ts"}
+    # Phase 1.5 explicitly fixes packaged modern-reference layers and their
+    # readiness classification; no historical source or coordinate input changed.
+    assert changed_paths == {
+        "web/src/map/referenceLayers.ts",
+        "web/src/map/referenceReadiness.ts",
+    }
 
 
 def test_phase1_3_1b_audits_preserve_source_semantics() -> None:

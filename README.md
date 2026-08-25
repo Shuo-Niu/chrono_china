@@ -9,10 +9,10 @@ ChronoChina is an open-source research prototype for exploring Chinese historica
 ## What it does
 
 - Queries historical places by exact year in the current viewport.
-- Lets users explicitly control historical display families instead of changing them automatically with zoom.
+- Lets users explicitly control source-relative historical hierarchy tiers instead of changing them automatically with zoom.
 - Switches between Point + Label and Point Only display modes.
-- Shows co-located records, provenance, validity periods, and basic details.
-- Switches modern reference basemaps without making the historical layer depend on them.
+- Shows co-located records, validity periods, source-recorded hierarchy, and current-year subordinate context; technical provenance stays in Developer Mode.
+- Switches bundled offline modern-reference basemaps without changing historical state.
 - Downloads, normalizes, validates, and builds Web data through a reproducible Python pipeline.
 
 ## Historical-data semantics
@@ -63,6 +63,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_phase0.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\run_phase1.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\run_phase1_1.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\run_phase1_3_1c.ps1
+
+# Reproducible offline modern-reference extract for Web/portable builds
+powershell -ExecutionPolicy Bypass -File .\scripts\download_offline_basemap.ps1
 ```
 
 The pipeline writes source files to `data/raw/`, normalized data to `data/intermediate/`, Web datasets to `data/processed/`, and QA evidence to `data/qa/`. Generated contents in those directories are excluded from Git. See [data/README.md](data/README.md).
@@ -92,6 +95,18 @@ After generating the complete authorized local dataset, run the full suite and E
 powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -E2E
 ```
 
+## Build the Windows usability candidate
+
+After generating the authorized local processed data, a maintainer can build the unsigned Windows 10/11 x64 portable candidate:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\build_phase1_5_windows.ps1
+```
+
+Artifacts are written under `artifacts/phase1_5/windows/` and are intentionally excluded from Git. The build validates the allowlisted runtime data and bundles a China-bounded Protomaps PMTiles extract (zoom 0–9), fonts, and sprites. It does not require Internet access, Vite, Node, or Python at runtime; zooming beyond the bundled maximum cannot reveal additional modern-map detail. Run the packaged-binary smoke test with `Set-Location web; npm.cmd run smoke:windows`.
+
+This command creates a technical testing candidate, not distribution permission. Do not send or publicly host a package containing CHGIS/TGAZ-derived records until the applicable redistribution rights have been confirmed in writing. The candidate is unsigned, so SmartScreen may warn.
+
 ## Data rights and commercial use
 
 Open-source code does not make upstream data open data. The project-authored code and documentation are Apache-2.0 and may be used commercially under that license. The principal data sources have separate conditions:
@@ -100,7 +115,7 @@ Open-source code does not make upstream data open data. The project-authored cod
 |---|---|---|
 | CHGIS/TGAZ historical content | **Not cleared.** Published CHGIS terms restrict use to non-commercial academic/educational purposes; commercial use requires a separate agreement. | Bulk or Internet redistribution requires written permission. Do not commit raw, normalized, processed, cached, or record-level QA data. |
 | GeoNames | Allowed under CC BY 4.0. | Allowed with attribution, a license link, and change notices where applicable. |
-| OpenStreetMap/OpenMapTiles/OpenFreeMap | Commercial use is supported. | ODbL, attribution, share-alike obligations for derivative databases, and hosted-service terms still apply. |
+| Protomaps basemap extract / OpenStreetMap | Commercial use is supported. | The portable includes a produced map extract; preserve OpenStreetMap attribution and comply with ODbL obligations for the underlying database. No hosted tile service is used at runtime. |
 | CHGIS V6 and other research candidates | Not cleared for this product. | Conflicting or source-specific terms require a separate rights review and often permission. |
 
 Accordingly, the repository can be open source, but a public or commercial deployment containing CHGIS/TGAZ historical records is **not legally cleared by this repository**. Obtain written permission or replace the historical dataset with a commercially compatible source before commercial launch. This is an engineering rights assessment, not legal advice.

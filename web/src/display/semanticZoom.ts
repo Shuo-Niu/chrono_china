@@ -2,9 +2,15 @@ import type { HistoricalFeature } from "../types";
 import {
   displayFamily,
   familyConfig,
-  isVisibleForMode,
   type DisplayFamily,
 } from "./hierarchy";
+import type { SourceHierarchyIndex } from "./sourceHierarchy";
+import {
+  historicalUnitCategory,
+  isHistoricalUnitVisibleForUser,
+  unitCategoryConfig,
+  type HistoricalUnitCategory,
+} from "./unitCategories";
 import type { AnchorCoordinate } from "./ranking";
 
 export interface DisplayUnit {
@@ -12,6 +18,7 @@ export interface DisplayUnit {
   kind: "feature" | "colocated_group";
   coordinate: [number, number];
   family: DisplayFamily;
+  category: HistoricalUnitCategory;
   label: string;
   representative: HistoricalFeature;
   members: HistoricalFeature[];
@@ -22,6 +29,9 @@ export interface SemanticZoomSelection {
   activeFamilies: DisplayFamily[];
   eligibleFamilies: DisplayFamily[];
   visibleFamilies: DisplayFamily[];
+  activeCategories: HistoricalUnitCategory[];
+  eligibleCategories: HistoricalUnitCategory[];
+  visibleCategories: HistoricalUnitCategory[];
   eligibleFeatureCount: number;
   semanticHiddenFeatureCount: number;
   collisionHiddenUnitCount: number;
@@ -31,10 +41,14 @@ function compareText(first: string, second: string): number {
   return first < second ? -1 : first > second ? 1 : 0;
 }
 
-function featureOrder(first: HistoricalFeature, second: HistoricalFeature): number {
+function featureOrder(
+  first: HistoricalFeature,
+  second: HistoricalFeature,
+  hierarchy: SourceHierarchyIndex | null,
+): number {
   return (
-    familyConfig(displayFamily(first)).labelPriority -
-      familyConfig(displayFamily(second)).labelPriority ||
+    unitCategoryConfig(historicalUnitCategory(first)).labelPriority -
+      unitCategoryConfig(historicalUnitCategory(second)).labelPriority ||
     compareText(first.properties.tgaz_id, second.properties.tgaz_id)
   );
 }
@@ -46,6 +60,7 @@ function coordinateKey(feature: HistoricalFeature): string {
 
 export function groupCoLocatedFeatures(
   features: readonly HistoricalFeature[],
+  hierarchy: SourceHierarchyIndex | null = null,
 ): DisplayUnit[] {
   const groups = new Map<string, HistoricalFeature[]>();
   for (const feature of features) {
@@ -54,7 +69,9 @@ export function groupCoLocatedFeatures(
   }
   return [...groups.entries()]
     .map(([key, members]) => {
-      const ordered = [...members].sort(featureOrder);
+      const ordered = [...members].sort((first, second) =>
+        featureOrder(first, second, hierarchy),
+      );
       const representative = ordered[0];
       const memberIds = ordered.map((item) => item.properties.tgaz_id).sort();
       return {
@@ -62,6 +79,7 @@ export function groupCoLocatedFeatures(
         kind: memberIds.length === 1 ? "feature" as const : "colocated_group" as const,
         coordinate: representative.geometry.coordinates,
         family: displayFamily(representative),
+        category: historicalUnitCategory(representative),
         label: memberIds.length === 1
           ? representative.properties.name
           : `${representative.properties.name}等 · 同址 ${memberIds.length} 条`,
@@ -70,9 +88,9 @@ export function groupCoLocatedFeatures(
       };
     })
     .sort((first, second) =>
-      familyConfig(first.family).labelPriority - familyConfig(second.family).labelPriority ||
+      unitCategoryConfig(first.category).labelPriority - unitCategoryConfig(second.category).labelPriority ||
       Number(second.kind === "colocated_group") - Number(first.kind === "colocated_group") ||
-      featureOrder(first.representative, second.representative),
+      featureOrder(first.representative, second.representative, hierarchy),
     );
 }
 
@@ -82,28 +100,44 @@ function orderedFamilies(families: Iterable<DisplayFamily>): DisplayFamily[] {
   );
 }
 
+function orderedCategories(categories: Iterable<HistoricalUnitCategory>): HistoricalUnitCategory[] {
+  return [...new Set(categories)].sort(
+    (first, second) => unitCategoryConfig(first).labelPriority - unitCategoryConfig(second).labelPriority,
+  );
+}
+
 export function selectSemanticZoomUnits(
   features: readonly HistoricalFeature[],
   _anchor: AnchorCoordinate,
   _radiusKm: number,
   _zoom: number,
-  enabledFamilies?: ReadonlySet<DisplayFamily>,
+  enabledCategories?: ReadonlySet<HistoricalUnitCategory>,
+  hierarchy: SourceHierarchyIndex | null = null,
 ): SemanticZoomSelection {
-  const userFeatures = features.filter((feature) => isVisibleForMode(feature, false));
-  const activeFamilies = orderedFamilies(userFeatures.map(displayFamily));
-  const enabled = enabledFamilies ?? new Set(
-    activeFamilies,
+  const userFeatures = features.filter((feature) =>
+    isHistoricalUnitVisibleForUser(feature),
   );
+  const activeFamilies = orderedFamilies(userFeatures.map(displayFamily));
+  const activeCategories = orderedCategories(userFeatures.map((feature) =>
+    historicalUnitCategory(feature),
+  ));
+  const enabled = enabledCategories ?? new Set(activeCategories);
   const eligibleFeatures = userFeatures.filter((feature) =>
-    enabled.has(displayFamily(feature)),
+    enabled.has(historicalUnitCategory(feature)),
   );
   const eligibleFamilies = orderedFamilies(eligibleFeatures.map(displayFamily));
-  const units = groupCoLocatedFeatures(eligibleFeatures);
+  const eligibleCategories = orderedCategories(eligibleFeatures.map((feature) =>
+    historicalUnitCategory(feature),
+  ));
+  const units = groupCoLocatedFeatures(eligibleFeatures, hierarchy);
   return {
     units,
     activeFamilies,
     eligibleFamilies,
     visibleFamilies: orderedFamilies(units.map((unit) => unit.family)),
+    activeCategories,
+    eligibleCategories,
+    visibleCategories: orderedCategories(units.map((unit) => unit.category)),
     eligibleFeatureCount: eligibleFeatures.length,
     semanticHiddenFeatureCount: userFeatures.length - eligibleFeatures.length,
     collisionHiddenUnitCount: 0,

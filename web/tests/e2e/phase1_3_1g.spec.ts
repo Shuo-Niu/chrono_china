@@ -30,20 +30,26 @@ test("display controls are orthogonal and timeline updates retain keyed markers"
   await page.goto("/");
   await waitForIndex(page);
   const map = page.getByTestId("map");
+  const initialSequence = Number(await map.getAttribute("data-explore-query-sequence"));
+  await page.evaluate(() => {
+    window.__CHRONOCHINA_QA_MAP__!.jumpTo({ center: [116.39723, 39.9075], zoom: 7.4 });
+    window.__CHRONOCHINA_QA_MAP__!.fire("moveend");
+  });
+  await expect.poll(async () => Number(await map.getAttribute("data-explore-query-sequence")))
+    .toBeGreaterThan(initialSequence);
 
   const initial = {
     year: await map.getAttribute("data-snapshot-year"),
     ids: await map.getAttribute("data-historical-point-ids"),
-    families: await map.getAttribute("data-enabled-display-families"),
+    families: await map.getAttribute("data-enabled-display-tiers"),
     bbox: await map.getAttribute("data-viewport-bbox"),
   };
   const highDensityActiveRecords = Number(await map.getAttribute("data-explore-active-record-count"));
   const highDensityVisiblePoints = Number(await map.getAttribute("data-historical-point-count"));
 
-  const settlementToggle = page.locator('[data-legend-family="settlement"]');
-  await settlementToggle.click();
-  await expect(settlementToggle).toHaveAttribute("aria-pressed", "false");
-  const familiesWithSettlementOff = await map.getAttribute("data-enabled-display-families");
+  const settlementToggle = page.locator('[data-legend-tier="unclassified"]');
+  await expect(settlementToggle).toHaveCount(0);
+  const familiesWithSettlementOff = await map.getAttribute("data-enabled-display-tiers");
   await page.getByRole("button", { name: "仅点" }).click();
   await expect(map).toHaveAttribute("data-historical-display-mode", "point_only");
   await expect(map).toHaveAttribute("data-historical-label-count", "0");
@@ -63,29 +69,32 @@ test("display controls are orthogonal and timeline updates retain keyed markers"
   await safeMarker.click();
   await expect(page.locator(".detail-card, .colocated-card")).toBeVisible();
   await page.getByRole("button", { name: /关闭/ }).click();
-  expect(await map.getAttribute("data-enabled-display-families")).toBe(familiesWithSettlementOff);
+  expect(await map.getAttribute("data-enabled-display-tiers")).toBe(familiesWithSettlementOff);
 
-  await page.getByRole("button", { name: "点 + 标签" }).click();
+  await page.getByRole("button", { name: "点/标签" }).click();
   await expect(map).toHaveAttribute("data-historical-display-mode", "point_label");
-  await expect(settlementToggle).toHaveAttribute("aria-pressed", "false");
+  await expect(settlementToggle).toHaveCount(0);
 
   const historicalStateBeforeBasemap = {
     year: await map.getAttribute("data-snapshot-year"),
     ids: await map.getAttribute("data-historical-point-ids"),
-    families: await map.getAttribute("data-enabled-display-families"),
+    families: await map.getAttribute("data-enabled-display-tiers"),
     bbox: await map.getAttribute("data-viewport-bbox"),
   };
-  await page.getByRole("button", { name: "彩色地理" }).click();
+  await page.getByRole("button", { name: "丰富" }).click();
   await expect.poll(async () => await map.getAttribute("data-reference-effective-mode"))
     .toMatch(/r4_color_geography|r2_minimal_modern/);
   expect({
     year: await map.getAttribute("data-snapshot-year"),
     ids: await map.getAttribute("data-historical-point-ids"),
-    families: await map.getAttribute("data-enabled-display-families"),
+    families: await map.getAttribute("data-enabled-display-tiers"),
     bbox: await map.getAttribute("data-viewport-bbox"),
   }).toEqual(historicalStateBeforeBasemap);
 
-  await settlementToggle.click();
+  for (const family of ["dao_lu", "prefecture", "commandery", "county", "military_special"]) {
+    const toggle = page.locator(`[data-legend-tier="${family}"]`);
+    if (await toggle.getAttribute("aria-pressed") === "false") await toggle.click();
+  }
   await setYear(page, 1900);
   await page.locator(".history-marker").evaluateAll((elements) => {
     for (const element of elements) {
@@ -175,6 +184,6 @@ test("display controls are orthogonal and timeline updates retain keyed markers"
 
   expect(initial.year).toBe("1911");
   expect(initial.ids).toBeTruthy();
-  expect(initial.families).toContain("settlement");
+  expect(initial.families).toBe("province");
   expect(initial.bbox).toBeTruthy();
 });

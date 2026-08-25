@@ -17,7 +17,7 @@ terms before any public deployment, redistribution, or commercial use.
 | CHGIS V6 | County/prefecture parity research | Harvard Dataverse API | Archive README/EULA is stricter than repository metadata: academic/non-commercial and no redistribution; commercial license required | Not cleared; separate commercial agreement required | No |
 | Hartwell China Historical GIS | Static administrative snapshot research | Harvard Dataverse API | Archive terms conflict with metadata; apply the stricter non-commercial/share-alike/EULA interpretation | Not permitted by the stricter archive terms | No |
 | CCTS | Candidate historical GIS source research | Account/application-based system | Published agreement restricts transfer and redistribution | Not permitted by published terms | No |
-| OpenFreeMap / OpenMapTiles / OpenStreetMap | Optional modern reference layer | Remote vector tiles at runtime | Preserve attribution; OpenStreetMap data is ODbL and hosted-service terms apply | Allowed with attribution, ODbL, and service-term compliance | No |
+| Protomaps basemap extract / OpenStreetMap | Bundled offline modern reference | Official dated PMTiles build, regional `pmtiles extract`, pinned basemap-assets commit | Produced map includes ODbL OpenStreetMap data; preserve attribution. Noto Sans assets are SIL OFL. | Allowed with attribution and applicable ODbL compliance | Generated locally; included in portable, not Git |
 
 ## Verified official terms
 
@@ -27,7 +27,8 @@ The following official pages were rechecked on 2026-08-11:
 - [TGAZ source repository](https://github.com/cga-harvard/tgaz): its GPL-3.0 statement applies to TGAZ software. It is not treated as a commercial or redistribution license for the historical record content obtained through CHGIS/TGAZ.
 - [GeoNames export terms](https://www.geonames.org/export/): CC BY, attribution required, commercial use allowed.
 - [OpenStreetMap copyright and license](https://www.openstreetmap.org/copyright): ODbL attribution and share-alike requirements apply to the map database.
-- [OpenFreeMap terms](https://openfreemap.org/tos/): use of the hosted service accepts its current service terms; availability is not guaranteed.
+- [Protomaps downloads](https://docs.protomaps.com/basemaps/downloads) and [PMTiles CLI](https://docs.protomaps.com/pmtiles/cli): the project creates a dated, bounded local extract rather than calling a hosted tile API at runtime.
+- [Protomaps MapLibre assets](https://docs.protomaps.com/basemaps/maplibre): the project pins the asset revision and bundles only the required font/sprite files.
 
 Where dataset metadata, archive-internal terms, and source-site terms conflict, ChronoChina applies the stricter interpretation until the rights holder gives written clarification.
 

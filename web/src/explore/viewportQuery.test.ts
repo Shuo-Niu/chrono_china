@@ -41,15 +41,14 @@ describe("viewport query", () => {
     expect(() => queryCompactIndex(source, [115, 35, 117, 37], 0)).toThrow("non-zero");
   });
 
-  test("distinguishes covered empty, insufficient coverage, and known source gap", () => {
+  test("reports viewport records independently from source coverage", () => {
     const source = index([
       ["a", "A", null, 100, 200, 116, 36, "县", null, null, "source_point"],
     ]);
-    expect(queryCompactIndex(source, [115, 35, 117, 37], 50).coverageStatus).toBe("unsupported_year");
-    expect(queryCompactIndex(source, [115, 35, 117, 37], 100).coverageStatus).toBe("covered_with_active_records");
-    expect(queryCompactIndex(source, [120, 30, 121, 31], 100).coverageStatus).toBe("insufficient_source_coverage");
-    expect(queryCompactIndex(source, [84, 40, 86, 42], 100).coverageStatus).toBe("outside_source_scope");
-    expect(queryCompactIndex(source, [89.1, 28.9, 93.1, 30.4], 100).coverageStatus).toBe("outside_source_scope");
+    expect(queryCompactIndex(source, [115, 35, 117, 37], 50).viewportResult).toBe("NO_RECORDS");
+    expect(queryCompactIndex(source, [115, 35, 117, 37], 100).viewportResult).toBe("HAS_RECORDS");
+    expect(queryCompactIndex(source, [120, 30, 121, 31], 100).viewportResult).toBe("NO_RECORDS");
+    expect(queryCompactIndex(source, [84, 40, 86, 42], 100).viewportResult).toBe("NO_RECORDS");
   });
 
   test("real compact index parses and post-load Beijing query stays below 100 ms", () => {

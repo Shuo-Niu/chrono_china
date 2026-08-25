@@ -24,9 +24,12 @@ vi.mock("maplibre-gl", () => {
       return this;
     }
     getSource(id: string) { return this.sources.get(id); }
+    getStyle() { return { sources: Object.fromEntries(this.sources), glyphs: undefined, sprite: undefined }; }
+    setGlyphs() { return this; }
+    setSprite() { return this; }
     addLayer(layer: { id: string }) {
       if (
-        layer.id.startsWith("reference-color") &&
+        layer.id === "reference-landuse_park" &&
         (globalThis as { __CHRONO_TEST_COLOR_BASEMAP_FAILURE__?: boolean })
           .__CHRONO_TEST_COLOR_BASEMAP_FAILURE__
       ) {
@@ -40,8 +43,8 @@ vi.mock("maplibre-gl", () => {
     isSourceLoaded(id: string) { return this.sources.has(id); }
     queryRenderedFeatures(options?: { layers?: string[] }) {
       const visibleInTest = new Set([
-        "reference-major-road",
-        "reference-settlement-label",
+        "reference-roads_major",
+        "reference-places_locality",
       ]);
       return options?.layers?.some((layerId) => visibleInTest.has(layerId)) ? [{}] : [];
     }
@@ -87,17 +90,27 @@ vi.mock("maplibre-gl", () => {
   class MockNavigationControl {}
   class MockScaleControl {}
 
+  const addProtocol = vi.fn();
+  const removeProtocol = vi.fn();
+  const setWorkerUrl = vi.fn();
+
   return {
     default: {
       Map: MockMap,
       Marker: MockMarker,
       NavigationControl: MockNavigationControl,
       ScaleControl: MockScaleControl,
+      addProtocol,
+      removeProtocol,
+      setWorkerUrl,
     },
     Map: MockMap,
     Marker: MockMarker,
     NavigationControl: MockNavigationControl,
     ScaleControl: MockScaleControl,
+    addProtocol,
+    removeProtocol,
+    setWorkerUrl,
   };
 });
 

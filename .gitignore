@@ -29,6 +29,7 @@ data/intermediate/**/*
 data/processed/**/*
 !data/processed/**/
 !data/processed/**/.gitkeep
+!data/processed/knowledge/qing_late_institution_notes_v0.1.json
 data/qa/**/*
 !data/qa/**/
 !data/qa/**/.gitkeep

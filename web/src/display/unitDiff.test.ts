@@ -39,6 +39,7 @@ function unit(id: string, memberIds: string[], coordinate: [number, number] = [1
     representative: members[0],
     coordinate,
     family: "county",
+    category: "county",
     label: memberIds.join("、"),
   };
 }

@@ -35,32 +35,33 @@ function feature(id: string, type: string, lon: number, lat = 0): HistoricalFeat
 }
 
 describe("manual historical layer display units", () => {
-  test("zoom never mutates family eligibility and explicit toggles are the only family filter", () => {
+  test("zoom never mutates tier eligibility and explicit toggles are the only tier filter", () => {
     const features = [
       feature("province", "\u7701", -0.5),
       feature("prefecture", "\u90e1", 0),
       feature("county", "\u53bf", 0.5),
       feature("village", "\u6751\u9547", 1),
     ];
-    const enabled = new Set(["high_admin", "county"] as const);
+    const enabled = new Set(["province", "county"] as const);
     const low = selectSemanticZoomUnits(features, { lon: 0, lat: 0 }, 200, 6.2, enabled);
     const maximum = selectSemanticZoomUnits(features, { lon: 0, lat: 0 }, 200, 11, enabled);
     expect(low.eligibleFamilies).toEqual(["high_admin", "county"]);
     expect(low.units.map((unit) => unit.id)).toEqual(["province", "county"]);
     expect(maximum.units.map((unit) => unit.id)).toEqual(low.units.map((unit) => unit.id));
-    expect(maximum.semanticHiddenFeatureCount).toBe(2);
+    expect(maximum.semanticHiddenFeatureCount).toBe(1);
+    expect(maximum.activeFamilies).not.toContain("settlement");
   });
 
-  test("co-location membership is recalculated after a family is turned off", () => {
+  test("co-location membership is recalculated after a tier is turned off", () => {
     const features = [
       feature("province", "省", 1, 1),
       feature("prefecture", "郡", 1, 1),
     ];
     const all = selectSemanticZoomUnits(
-      features, { lon: 1, lat: 1 }, 75, 8, new Set(["high_admin", "regional_admin"]),
+      features, { lon: 1, lat: 1 }, 75, 8, new Set(["province", "commandery"]),
     );
     const highOnly = selectSemanticZoomUnits(
-      features, { lon: 1, lat: 1 }, 75, 8, new Set(["high_admin"]),
+      features, { lon: 1, lat: 1 }, 75, 8, new Set(["province"]),
     );
     expect(all.units[0].members).toHaveLength(2);
     expect(highOnly.units[0].members.map((item) => item.id)).toEqual(["province"]);

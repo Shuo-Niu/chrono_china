@@ -16,7 +16,17 @@ data/qa/
 artifacts/
 ```
 
-Only directory placeholders and `data/README.md` are versioned.
+Directory placeholders, `data/README.md`, and the specifically reviewed
+project-authored artifacts are versioned:
+
+- `data/metadata/historical_layer_coverage.json`, containing aggregate coverage
+  semantics and counts;
+- the three exact Qing institution-note draft, source-review, and published
+  JSON files listed by `scripts/release_audit.ps1`, containing original
+  explanatory prose, citations, review decisions, and matching rules.
+
+These files contain no CHGIS/TGAZ source rows. No other file below `data/` is
+approved by these exceptions.
 
 ## Files that must not be committed
 
@@ -35,6 +45,11 @@ Small, project-authored aggregate counts may be described in documentation
 after a rights review. Publishing an aggregate does not authorize publishing
 the source rows used to calculate it. Record-level samples are treated as data
 and remain local by default.
+
+The reviewed coverage metadata is the sole aggregate-data exception. The
+institution-note files are project-authored content rather than aggregate
+historical data. Publishing either class does not relax the record-level ban
+above.
 
 ## Contributor responsibility
 

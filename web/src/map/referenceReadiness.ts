@@ -2,6 +2,7 @@ import type { Map as MapLibreMap } from "maplibre-gl";
 
 import {
   MODERN_REFERENCE_SOURCE_ID,
+  MODERN_REFERENCE_RASTER_SOURCE_ID,
   R2_REFERENCE_COMPLETENESS_CONTRACT,
 } from "./referenceLayers";
 
@@ -32,6 +33,9 @@ function renderedLayerIds(map: MapLibreMap): string[] {
   ];
   return layerIds.filter((layerId) => {
     if (!map.getLayer(layerId)) return false;
+    if (layerId === "reference-lowzoom-geography") {
+      return map.isSourceLoaded(MODERN_REFERENCE_RASTER_SOURCE_ID);
+    }
     try {
       return map.queryRenderedFeatures({ layers: [layerId] }).length > 0;
     } catch {
@@ -50,7 +54,7 @@ export function assessR2Reference(
   const hasGeometry = R2_REFERENCE_COMPLETENESS_CONTRACT.geometryLayerIds.some(
     (layerId) => loaded.has(layerId),
   );
-  const hasLabels = R2_REFERENCE_COMPLETENESS_CONTRACT.labelLayerIds.some(
+  const hasLabels = map.getZoom() < 3 || R2_REFERENCE_COMPLETENESS_CONTRACT.labelLayerIds.some(
     (layerId) => loaded.has(layerId),
   );
   const timedOut = cause === "timeout";
@@ -97,7 +101,10 @@ export function startR2ReferenceMonitor(
   };
   const onIdle = () => publish("progress");
   const onSourceData = (event: { sourceId?: string }) => {
-    if (event.sourceId === MODERN_REFERENCE_SOURCE_ID) publish("progress");
+    if (
+      event.sourceId === MODERN_REFERENCE_SOURCE_ID ||
+      event.sourceId === MODERN_REFERENCE_RASTER_SOURCE_ID
+    ) publish("progress");
   };
 
   map.on("idle", onIdle);
