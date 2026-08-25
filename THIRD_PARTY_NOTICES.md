@@ -42,7 +42,11 @@ downloading, using, publishing, or redistributing any generated dataset.
 
 ## Map reference layer
 
-The optional modern reference layer uses OpenFreeMap-hosted OpenMapTiles data
-derived from OpenStreetMap. The application preserves the required on-map
-attribution to OpenFreeMap, OpenMapTiles, and OpenStreetMap contributors.
-OpenStreetMap data is available under the Open Database License (ODbL).
+The Windows portable and locally generated Web build can include a China-bounded
+PMTiles produced map extracted from an official Protomaps daily build, together
+with Protomaps basemap fonts and sprites. The underlying map database includes
+OpenStreetMap data under the Open Database License (ODbL); the application keeps
+visible attribution to Protomaps and OpenStreetMap contributors. Bundled Noto
+Sans font assets are distributed under the SIL Open Font License included with
+the package. These assets remain under their upstream terms and are not
+relicensed under Apache-2.0.
