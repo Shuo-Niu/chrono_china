@@ -7,9 +7,14 @@ $WebRoot = Join-Path $ProjectRoot "web"
 $ReleaseRoot = Join-Path $ProjectRoot "artifacts\phase1_5\windows"
 $ManifestPath = Join-Path $ProjectRoot "data\qa\phase1_5_package_manifest.json"
 $VenvPython = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
+$OfflineMap = Join-Path $ProjectRoot "data\processed\reference\china_z9.pmtiles"
+$OfflineAssets = Join-Path $ProjectRoot "data\processed\reference\assets"
 
 if (-not (Test-Path $VenvPython -PathType Leaf)) {
     throw "Missing project .venv. Run scripts/bootstrap.ps1 first."
+}
+if (-not (Test-Path $OfflineMap -PathType Leaf) -or -not (Test-Path $OfflineAssets -PathType Container)) {
+    throw "Missing packaged offline map. Run scripts/download_offline_basemap.ps1 first."
 }
 
 $ResolvedProject = [IO.Path]::GetFullPath($ProjectRoot)

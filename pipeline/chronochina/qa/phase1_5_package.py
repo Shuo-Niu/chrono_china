@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path, PurePosixPath
 import argparse
+import re
 
 from chronochina.io import sha256_file, utc_now, write_json
 
@@ -9,6 +10,16 @@ from chronochina.io import sha256_file, utc_now, write_json
 RUNTIME_ASSET_ALLOWLIST = (
     "coverage/historical_layer_coverage.json",
     "explore/tgaz_compact.json",
+    "knowledge/qing_late_institution_notes_v0.1.json",
+)
+
+OFFLINE_REFERENCE_ASSET = re.compile(
+    r"reference/(?:"
+    r"china_z9\.pmtiles|"
+    r"assets/fonts/OFL\.txt|"
+    r"assets/fonts/(?:Noto Sans Regular|Noto Sans Medium)/[0-9]+-[0-9]+\.pbf|"
+    r"assets/sprites/v4/light(?:@2x)?\.(?:json|png)"
+    r")"
 )
 
 FORBIDDEN_SEGMENTS = {
@@ -50,14 +61,18 @@ def build_package_manifest(release_root: Path, staging_root: Path) -> dict[str, 
         relative = PurePosixPath(path.relative_to(staging_root).as_posix())
         if _has_forbidden_segment(relative):
             raise ValueError(f"forbidden packaged path: {relative}")
-        if relative.parts[0] not in {"assets"} and relative.as_posix() not in {
-            "index.html",
-            *RUNTIME_ASSET_ALLOWLIST,
-        }:
+        is_offline_reference = OFFLINE_REFERENCE_ASSET.fullmatch(relative.as_posix()) is not None
+        if (
+            relative.parts[0] not in {"assets"}
+            and relative.as_posix() not in {"index.html", *RUNTIME_ASSET_ALLOWLIST}
+            and not is_offline_reference
+        ):
             raise ValueError(f"runtime asset is not allowlisted: {relative}")
         purpose = (
             "historical runtime data"
             if relative.as_posix() in RUNTIME_ASSET_ALLOWLIST
+            else "offline modern reference"
+            if is_offline_reference
             else "compiled application asset"
         )
         runtime_assets.append(_entry(path, staging_root, purpose))

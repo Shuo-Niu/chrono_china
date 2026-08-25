@@ -2,7 +2,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createHash } from "node:crypto";
 import { expect, test, vi } from "vitest";
-import App, { confidenceLabel, formatYear, sourceNotePresentation } from "./App";
+import App, {
+  confidenceLabel,
+  formatYear,
+  sourceNotePresentation,
+} from "./App";
 import { yearToOrdinal } from "./temporal/timelineScale";
 
 const TYPES = {
@@ -29,17 +33,19 @@ function manifest(anchorId = "beijing") {
     },
     available_periods: [1911],
     default_period: 1911,
-    periods: [{
-      year: 1911,
-      reason: "frozen regression fixture",
-      active_feature_count: 0,
-      added_since_previous: 0,
-      removed_since_previous: 0,
-      change_since_previous: 0,
-      snapshot_signature_sha256: "fixture",
-      rendered_feature_count: 0,
-      slice_path: `anchors/${anchorId}/slices/1911.geojson`,
-    }],
+    periods: [
+      {
+        year: 1911,
+        reason: "frozen regression fixture",
+        active_feature_count: 0,
+        added_since_previous: 0,
+        removed_since_previous: 0,
+        change_since_previous: 0,
+        snapshot_signature_sha256: "fixture",
+        rendered_feature_count: 0,
+        slice_path: `anchors/${anchorId}/slices/1911.geojson`,
+      },
+    ],
     default_radius_km: 75,
     coverage: { through_1911: "available" },
     history_source: {
@@ -66,34 +72,40 @@ function temporalManifest(anchorId = "beijing") {
     timeline_scale_scope: "per_anchor",
     timeline_display_algorithm: "frozen_fixture",
     semantic_notice: "supported snapshots only",
-    snapshots: [{
-      snapshot_id: `${anchorId}:1911`,
-      anchor_id: anchorId,
-      snapshot_year: 1911,
-      display_year: formatYear(1911),
-      broad_era_label: "\u6e05\u672b",
-      shortcut_label: "\u6e05",
-      regional_context_label: null,
-      context_confidence: "high",
-      source_status: "supported",
-      source_ids: ["test_source"],
-      notes: "fixture",
-      whether_context_is_manual_reviewed: true,
-      whether_context_is_safe_for_user_display: true,
-      unresolved_conflicts: [],
-      sequence_index: 0,
-      sequence_count: 1,
-      previous_snapshot_year: null,
-      changes_from_previous: { added_records: 0, removed_records: 0, mechanical_only: true },
-      timeline: {
-        year: 1911,
-        linear_normalized_position: 1,
-        display_normalized_position: 1,
-        position_adjusted: false,
-        scale_scope: "per_anchor",
-        display_algorithm: "frozen_fixture",
+    snapshots: [
+      {
+        snapshot_id: `${anchorId}:1911`,
+        anchor_id: anchorId,
+        snapshot_year: 1911,
+        display_year: formatYear(1911),
+        broad_era_label: "\u6e05\u672b",
+        shortcut_label: "\u6e05",
+        regional_context_label: null,
+        context_confidence: "high",
+        source_status: "supported",
+        source_ids: ["test_source"],
+        notes: "fixture",
+        whether_context_is_manual_reviewed: true,
+        whether_context_is_safe_for_user_display: true,
+        unresolved_conflicts: [],
+        sequence_index: 0,
+        sequence_count: 1,
+        previous_snapshot_year: null,
+        changes_from_previous: {
+          added_records: 0,
+          removed_records: 0,
+          mechanical_only: true,
+        },
+        timeline: {
+          year: 1911,
+          linear_normalized_position: 1,
+          display_normalized_position: 1,
+          position_adjusted: false,
+          scale_scope: "per_anchor",
+          display_algorithm: "frozen_fixture",
+        },
       },
-    }],
+    ],
   };
 }
 
@@ -101,32 +113,152 @@ const compactIndex = {
   schema_version: "1.0",
   generated_at: "2026-08-10T00:00:00Z",
   fields: [
-    "tgaz_id", "name", "name_pinyin", "valid_from", "valid_to", "lon", "lat",
-    "feature_type", "parent_source_id", "parent_name", "location_confidence",
+    "tgaz_id",
+    "name",
+    "name_pinyin",
+    "valid_from",
+    "valid_to",
+    "lon",
+    "lat",
+    "feature_type",
+    "parent_source_id",
+    "parent_name",
+    "location_confidence",
   ],
   source: {
     dataset: "TGAZ / CHGIS CSV spatial index",
     normalized_path: "data/intermediate/tgaz_points.jsonl",
     normalized_sha256: "abc",
     record_count: 9,
-    canonical_uri_template: "http://maps.cga.harvard.edu/tgaz/placename/{TGAZ_ID}",
+    canonical_uri_template:
+      "http://maps.cga.harvard.edu/tgaz/placename/{TGAZ_ID}",
     license: null,
   },
   records: [
-    ["province_1911", "\u7701\u7ea7\u8bb0\u5f55", null, 1911, 1911, 116.4, 39.9, TYPES.province, null, null, "source_point"],
-    ["regional_1911", "\u533a\u57df\u8bb0\u5f55", null, 1911, 1911, 116.4, 39.9, TYPES.regional, null, null, "source_point"],
-    ["bce_record", "\u5148\u79e6\u8bb0\u5f55", null, -201, -201, 116.4, 39.9, TYPES.regional, null, null, "source_point"],
-    ["arbitrary_record", "\u4efb\u610f\u5e74\u8bb0\u5f55", null, 100, 200, 116.4, 39.9, TYPES.regional, null, null, "source_point"],
-    ["hvd_88266", "\u5ba3\u5316\u5e9c", "Xuanhua Fu", 0, 1911, 116.4, 39.9, "\u5e9c", null, null, "source_point"],
-    ["pavilion_14", "\u53e4\u4ead", null, 14, 22, 116.5, 39.9, TYPES.pavilion, null, null, "source_point"],
-    ["pavilion_623", "\u675c\u90ae\u4ead", null, 623, 959, 116.5, 39.9, TYPES.pavilion, null, null, "source_point"],
-    ["village_1820", "\u4e00\u516b\u4e8c\u96f6\u6751\u9547", null, 1820, 1820, 116.4, 39.9, TYPES.village, null, null, "source_point"],
-    ["village_1911", "\u4e00\u4e5d\u4e00\u4e00\u6751\u9547", null, 1911, 1911, 116.4, 39.9, TYPES.village, null, null, "source_point"],
+    [
+      "province_1911",
+      "\u7701\u7ea7\u8bb0\u5f55",
+      null,
+      1911,
+      1911,
+      116.4,
+      39.9,
+      TYPES.province,
+      null,
+      null,
+      "source_point",
+    ],
+    [
+      "regional_1911",
+      "\u533a\u57df\u8bb0\u5f55",
+      null,
+      1911,
+      1911,
+      116.4,
+      39.9,
+      TYPES.regional,
+      null,
+      null,
+      "source_point",
+    ],
+    [
+      "bce_record",
+      "\u5148\u79e6\u8bb0\u5f55",
+      null,
+      -201,
+      -201,
+      116.4,
+      39.9,
+      TYPES.regional,
+      null,
+      null,
+      "source_point",
+    ],
+    [
+      "arbitrary_record",
+      "\u4efb\u610f\u5e74\u8bb0\u5f55",
+      null,
+      100,
+      200,
+      116.4,
+      39.9,
+      TYPES.regional,
+      null,
+      null,
+      "source_point",
+    ],
+    [
+      "hvd_88266",
+      "\u5ba3\u5316\u5e9c",
+      "Xuanhua Fu",
+      0,
+      1911,
+      116.4,
+      39.9,
+      "\u5e9c",
+      null,
+      null,
+      "source_point",
+    ],
+    [
+      "pavilion_14",
+      "\u53e4\u4ead",
+      null,
+      14,
+      22,
+      116.5,
+      39.9,
+      TYPES.pavilion,
+      null,
+      null,
+      "source_point",
+    ],
+    [
+      "pavilion_623",
+      "\u675c\u90ae\u4ead",
+      null,
+      623,
+      959,
+      116.5,
+      39.9,
+      TYPES.pavilion,
+      null,
+      null,
+      "source_point",
+    ],
+    [
+      "village_1820",
+      "\u4e00\u516b\u4e8c\u96f6\u6751\u9547",
+      null,
+      1820,
+      1820,
+      116.4,
+      39.9,
+      TYPES.village,
+      null,
+      null,
+      "source_point",
+    ],
+    [
+      "village_1911",
+      "\u4e00\u4e5d\u4e00\u4e00\u6751\u9547",
+      null,
+      1911,
+      1911,
+      116.4,
+      39.9,
+      TYPES.village,
+      null,
+      null,
+      "source_point",
+    ],
   ],
 };
 
 const compactIndexText = `\n${JSON.stringify(compactIndex, null, 2)}\n`;
-const compactIndexSha256 = createHash("sha256").update(compactIndexText, "utf8").digest("hex");
+const compactIndexSha256 = createHash("sha256")
+  .update(compactIndexText, "utf8")
+  .digest("hex");
 
 function coverageMetadata(sha256 = compactIndexSha256) {
   const component = (
@@ -161,23 +293,36 @@ function coverageMetadata(sha256 = compactIndexSha256) {
     families: {
       high_admin: {
         default_support: "LIMITED",
-        components: [{
-          ...component("province", [TYPES.province], [[1911, 1911]]),
-          record_count: 79,
-          period_record_counts: { "1911..1911": 79 },
-        }],
-        user_mode_copy: { limited: "\u9ad8\u5c42\u7ea7\u8d44\u6599\u6709\u9650" },
+        components: [
+          {
+            ...component("province", [TYPES.province], [[1911, 1911]]),
+            record_count: 79,
+            period_record_counts: { "1911..1911": 79 },
+          },
+        ],
+        user_mode_copy: {
+          limited: "\u9ad8\u5c42\u7ea7\u8d44\u6599\u6709\u9650",
+        },
         developer_mode_explanation: "High-admin coverage is limited.",
       },
       regional_admin: {
         default_support: "SUPPORTED",
-        components: [component("regional", [TYPES.regional, "\u5e9c"], [[-201, 1911]], "SUPPORTED")],
+        components: [
+          component(
+            "regional",
+            [TYPES.regional, "\u5e9c"],
+            [[-201, 1911]],
+            "SUPPORTED",
+          ),
+        ],
         user_mode_copy: {},
         developer_mode_explanation: "Regional fixture coverage.",
       },
       county: {
         default_support: "SUPPORTED",
-        components: [component("county", ["\u53bf"], [[-201, 1911]], "SUPPORTED")],
+        components: [
+          component("county", ["\u53bf"], [[-201, 1911]], "SUPPORTED"),
+        ],
         user_mode_copy: {},
         developer_mode_explanation: "County fixture coverage.",
       },
@@ -197,16 +342,25 @@ function coverageMetadata(sha256 = compactIndexSha256) {
             evidence_strength: "TEST",
           },
           {
-            ...component("raw_pavilion_intervals", [TYPES.pavilion], [[14, 22], [623, 959]]),
+            ...component(
+              "raw_pavilion_intervals",
+              [TYPES.pavilion],
+              [
+                [14, 22],
+                [623, 959],
+              ],
+            ),
             record_count: 2,
           },
         ],
         user_mode_copy: {
           snapshot_template: "{year} \u6751\u9547\u5feb\u7167",
-          unsupported: "\u5f53\u524d\u6765\u6e90\u65e0\u8be5\u65f6\u671f\u8d44\u6599",
+          unsupported:
+            "\u5f53\u524d\u6765\u6e90\u65e0\u8be5\u65f6\u671f\u8d44\u6599",
           unknown: "\u6765\u6e90\u8986\u76d6\u672a\u660e",
         },
-        developer_mode_explanation: "Village snapshots and pavilion intervals stay independent.",
+        developer_mode_explanation:
+          "Village snapshots and pavilion intervals stay independent.",
       },
       other: {
         default_support: "UNKNOWN",
@@ -221,6 +375,30 @@ function coverageMetadata(sha256 = compactIndexSha256) {
         developer_mode_explanation: "Developer-only polity coverage.",
       },
     },
+  };
+}
+
+function institutionNotes() {
+  return {
+    schema_version: "0.1",
+    publication_status: "PUBLISHED",
+    ui_enabled: true,
+    notes: [
+      {
+        note_id: "qing_late_fu",
+        note_kind: "UNIT_TYPE",
+        title_zh: "清末的府",
+        body_zh: "府通常处在省与所属州县之间。知府总领属县、传达政令、处理地方要务，并考察属吏。",
+        matching: {
+          raw_types: ["府"],
+          year_from: 1901,
+          year_to: 1911,
+          auto_match_enabled: true,
+        },
+        source_ids: ["qingshigao_116"],
+        status: "PUBLISHED",
+      },
+    ],
   };
 }
 
@@ -252,15 +430,20 @@ function jsonResponse(value: unknown, rawText = JSON.stringify(value)) {
   } as Response;
 }
 
-function installFetchMock(options: { malformedCoverage?: boolean } = {}) {
+function installFetchMock(options: { malformedCoverage?: boolean; malformedInstitutionNotes?: boolean } = {}) {
   const responses: Record<string, unknown> = {
     "/coverage/historical_layer_coverage.json": options.malformedCoverage
       ? (() => {
-        const malformed = coverageMetadata() as Record<string, any>;
-        malformed.families.settlement.components[0].snapshot_record_counts["1911"] = -1;
-        return malformed;
-      })()
+          const malformed = coverageMetadata() as Record<string, any>;
+          malformed.families.settlement.components[0].snapshot_record_counts[
+            "1911"
+          ] = -1;
+          return malformed;
+        })()
       : coverageMetadata(),
+    "/knowledge/qing_late_institution_notes_v0.1.json": options.malformedInstitutionNotes
+      ? {}
+      : institutionNotes(),
     "/anchors/beijing/manifest.json": manifest("beijing"),
     "/anchors/xian/manifest.json": manifest("xian"),
     "/temporal_context/beijing.json": temporalManifest("beijing"),
@@ -282,16 +465,25 @@ function installFetchMock(options: { malformedCoverage?: boolean } = {}) {
 async function renderReadyApp() {
   render(<App />);
   const map = screen.getByTestId("map");
-  await waitFor(() => expect(map).toHaveAttribute("data-explore-index-status", "ready"));
-  await waitFor(() => expect(map).toHaveAttribute("data-snapshot-year", "1911"));
-  await waitFor(() => expect(map).toHaveAttribute("data-historical-point-count", "1"));
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-explore-index-status", "ready"),
+  );
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-snapshot-year", "1911"),
+  );
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-historical-point-count", "1"),
+  );
   return map;
 }
 
-async function enableFamilies(...families: string[]) {
-  for (const family of families) {
-    const toggle = document.querySelector<HTMLElement>(`[data-legend-family="${family}"]`)!;
-    if (toggle.getAttribute("aria-pressed") === "false") await userEvent.click(toggle);
+async function enableCategories(...categories: string[]) {
+  for (const category of categories) {
+    const toggle = document.querySelector<HTMLElement>(
+      `[data-legend-category="${category}"]`,
+    )!;
+    if (toggle.getAttribute("aria-pressed") === "false")
+      await userEvent.click(toggle);
   }
 }
 
@@ -299,7 +491,9 @@ test("formatters preserve BCE, confidence, and complete source-note semantics", 
   expect(formatYear(-221)).toBe("\u516c\u5143\u524d 221 \u5e74");
   expect(() => formatYear(0)).toThrow("\u4e0d\u5b58\u5728 0 \u5e74");
   expect(confidenceLabel("source_point")).toBe("\u6765\u6e90\u5750\u6807");
-  expect(confidenceLabel("unresolved_conflict")).toBe("\u5750\u6807\u5b58\u5728\u672a\u89e3\u51b2\u7a81");
+  expect(confidenceLabel("unresolved_conflict")).toBe(
+    "\u5750\u6807\u5b58\u5728\u672a\u89e3\u51b2\u7a81",
+  );
   const raw = "<p>complete note</p>\nsecond line";
   expect(sourceNotePresentation(raw)).toEqual({
     text: "complete note second line",
@@ -313,73 +507,98 @@ test("User Mode exposes manual single-line layers, a concise timeline, and no mo
   const map = await renderReadyApp();
   expect(map).toHaveAttribute("data-view-mode", "unified_viewport");
   expect(screen.getByTestId("continuous-timeline")).toBeVisible();
-  expect(screen.queryByLabelText("\u4ee3\u8868\u65f6\u671f")).not.toBeInTheDocument();
-  expect(screen.queryByLabelText("\u81ea\u7531\u63a2\u7d22\u65f6\u95f4\u4e0e\u8303\u56f4")).not.toBeInTheDocument();
-  expect(document.querySelector(".maplibregl-ctrl-scale")).toHaveTextContent("100 km");
-  expect(document.querySelectorAll("[data-legend-family]")).toHaveLength(4);
-  expect(screen.getByLabelText("\u5730\u56fe\u56fe\u4f8b")).toHaveTextContent("\u90e1\u3001\u5e9c\u3001\u5dde");
-  expect(screen.queryByLabelText("\u73b0\u4ee3\u5730\u70b9")).not.toBeInTheDocument();
-  expect(screen.getByLabelText("\u5730\u56fe\u56fe\u4f8b")).not.toHaveTextContent("\u7701\u7ea7 / \u738b\u757f");
-  expect(screen.getByTestId("continuous-timeline")).not.toHaveTextContent("\u7cbe\u786e\u5e74\u4efd");
-  expect(screen.getByTestId("continuous-timeline")).not.toHaveTextContent("\u62d6\u52a8\u67e5\u770b\u4efb\u610f\u6574\u6570\u5e74\u4efd");
-  expect(screen.getByTestId("continuous-timeline")).not.toHaveTextContent("\u516c\u5143\u7eaa\u5e74\u65e0 0 \u5e74");
-  expect(screen.getByLabelText("历史点显示模式")).toBeVisible();
-  expect(screen.getByLabelText("背景地图模式")).toBeVisible();
-  expect(map).toHaveAttribute("data-snapshot-year", "1911");
-  expect(map).toHaveAttribute("data-enabled-display-families", "high_admin");
-  expect(screen.getByRole("button", { name: /省、行省、省级、王畿/ })).toHaveAttribute(
-    "aria-pressed",
-    "true",
+  expect(
+    screen.queryByLabelText("\u4ee3\u8868\u65f6\u671f"),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByLabelText(
+      "\u81ea\u7531\u63a2\u7d22\u65f6\u95f4\u4e0e\u8303\u56f4",
+    ),
+  ).not.toBeInTheDocument();
+  expect(document.querySelector(".maplibregl-ctrl-scale")).toHaveTextContent(
+    "100 km",
   );
+  expect(document.querySelectorAll("[data-legend-category]")).toHaveLength(6);
+  const toolbar = screen.getByLabelText("历史单位类别与地图显示");
+  for (const label of ["省与行省", "道与路", "府州厅", "郡与侯国", "县", "军政特殊"]) {
+    expect(toolbar).toHaveTextContent(label);
+  }
+  expect(screen.queryByLabelText("\u73b0\u4ee3\u5730\u70b9")).not.toBeInTheDocument();
+  expect(toolbar).not.toHaveTextContent("村镇、亭");
+  expect(screen.getByTestId("continuous-timeline")).not.toHaveTextContent(
+    "\u7cbe\u786e\u5e74\u4efd",
+  );
+  expect(screen.getByTestId("continuous-timeline")).not.toHaveTextContent(
+    "\u62d6\u52a8\u67e5\u770b\u4efb\u610f\u6574\u6570\u5e74\u4efd",
+  );
+  expect(screen.getByTestId("continuous-timeline")).not.toHaveTextContent(
+    "\u516c\u5143\u7eaa\u5e74\u65e0 0 \u5e74",
+  );
+  expect(screen.getByLabelText("历史点显示模式")).toBeVisible();
+  expect(screen.getByLabelText("背景地图模式")).toHaveTextContent("极简标准丰富");
+  expect(map).toHaveAttribute("data-snapshot-year", "1911");
+  expect(map).toHaveAttribute("data-enabled-display-categories", "province");
+  expect(screen.getByRole("button", { name: /省与行省：已显示/ }))
+    .toHaveAttribute("aria-pressed", "true");
   expect(screen.queryByRole("button", { name: /村镇、亭/ })).not.toBeInTheDocument();
-  expect(screen.getByLabelText("地图图例")).not.toHaveTextContent("村镇、亭");
-  for (const family of ["regional_admin", "county", "other"]) {
-    expect(document.querySelector(`[data-legend-family="${family}"]`)).toHaveAttribute(
-      "aria-pressed",
-      "false",
-    );
+  for (const category of ["dao_lu", "prefecture", "commandery", "county", "military_special"]) {
+    expect(document.querySelector(`[data-legend-category="${category}"]`))
+      .toHaveAttribute("aria-pressed", "false");
   }
 });
 
 test("User Mode hides settlement while retaining independent coverage diagnostics", async () => {
   installFetchMock();
   const map = await renderReadyApp();
-  await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"));
-  expect(screen.queryByTestId("coverage-settlement")).not.toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: /村镇、亭/ })).not.toBeInTheDocument();
-  expect(screen.getByTestId("coverage-high_admin")).toHaveTextContent("\u6709\u9650");
-  expect(screen.getByTestId("coverage-high_admin")).toHaveAttribute(
-    "title",
-    expect.stringContaining("\u9ad8\u5c42\u7ea7\u8d44\u6599\u6709\u9650"),
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"),
   );
+  expect(screen.queryByTestId("coverage-settlement")).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: /村镇、亭/ }),
+  ).not.toBeInTheDocument();
+  expect(document.querySelectorAll("[data-coverage-family]")).toHaveLength(0);
   expect(map.dataset.coverageFamilyStates).toContain('"settlement"');
   expect(map).toHaveAttribute("data-explore-viewport-result", "HAS_RECORDS");
 
   const disabled = JSON.parse(map.dataset.coverageFamilyStates!);
-  expect(disabled.settlement).toMatchObject({ viewportResult: "NO_RECORDS", viewportCount: 0 });
+  expect(disabled.settlement).toMatchObject({
+    viewportResult: "HAS_RECORDS",
+    viewportCount: 1,
+  });
 });
 
 test("a pending exact-year query never combines new source coverage with stale viewport results", async () => {
   installFetchMock();
   const map = await renderReadyApp();
-  await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"));
-  fireEvent.change(screen.getByTestId("timeline-range"), { target: { value: yearToOrdinal(750) } });
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"),
+  );
+  fireEvent.change(screen.getByTestId("timeline-range"), {
+    target: { value: yearToOrdinal(750) },
+  });
   expect(map).toHaveAttribute("data-query-pending", "true");
   expect(map).toHaveAttribute("data-explore-viewport-result", "PENDING");
-  expect(screen.getByTestId("coverage-high_admin")).not.toHaveTextContent("\u5f53\u524d\u8303\u56f4\u65e0\u8bb0\u5f55");
-  await waitFor(() => expect(map).toHaveAttribute("data-query-result-year", "750"));
+  expect(document.querySelectorAll("[data-coverage-family]")).toHaveLength(0);
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-query-result-year", "750"),
+  );
   expect(map).not.toHaveAttribute("data-explore-viewport-result", "PENDING");
 });
 
 test("hidden settlement records never render in User Mode across snapshot and interval years", async () => {
   installFetchMock();
   const map = await renderReadyApp();
-  await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"));
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-coverage-metadata-status", "ready"),
+  );
   const timeline = screen.getByTestId("timeline-range");
 
   for (const year of [14, 626, 750, 1819, 1820, 1821, 1910, 1911]) {
     fireEvent.change(timeline, { target: { value: yearToOrdinal(year) } });
-    await waitFor(() => expect(map).toHaveAttribute("data-query-result-year", String(year)));
+    await waitFor(() =>
+      expect(map).toHaveAttribute("data-query-result-year", String(year)),
+    );
     expect(map.dataset.historicalPointIds).not.toContain("pavilion_");
     expect(map.dataset.historicalPointIds).not.toContain("village_");
     expect(screen.queryByTestId("coverage-settlement")).not.toBeInTheDocument();
@@ -389,85 +608,135 @@ test("hidden settlement records never render in User Mode across snapshot and in
 test("invalid coverage metadata fails open without removing historical interaction", async () => {
   installFetchMock({ malformedCoverage: true });
   const map = await renderReadyApp();
-  await waitFor(() => expect(map).toHaveAttribute("data-coverage-metadata-status", "failed"));
-  await enableFamilies("regional_admin");
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-coverage-metadata-status", "failed"),
+  );
+  await enableCategories("prefecture", "commandery");
   expect(document.querySelectorAll("[data-coverage-family]")).toHaveLength(0);
   expect(map.dataset.historicalPointIds).toContain("regional_1911");
-  await userEvent.click(document.querySelector<HTMLElement>(".history-marker--colocated")!);
-  expect(screen.getByLabelText("\u540c\u5740\u5386\u53f2\u8bb0\u5f55")).toBeVisible();
+  await userEvent.click(
+    document.querySelector<HTMLElement>(".history-marker--colocated")!,
+  );
+  expect(
+    screen.getByLabelText("\u540c\u5740\u5386\u53f2\u8bb0\u5f55"),
+  ).toBeVisible();
 
-  await userEvent.click(screen.getByRole("button", { name: "\u5f00\u53d1\u8005\u6a21\u5f0f" }));
-  expect(screen.getByTestId("coverage-metadata-diagnostic")).toHaveTextContent("failed");
+  await userEvent.click(
+    screen.getByRole("button", { name: "\u5f00\u53d1\u8005\u6a21\u5f0f" }),
+  );
+  expect(screen.getByTestId("coverage-metadata-diagnostic")).toHaveTextContent(
+    "failed",
+  );
 });
 
 test("Developer Mode exposes component evidence and both coverage axes", async () => {
   installFetchMock();
   await renderReadyApp();
-  await userEvent.click(screen.getByRole("button", { name: "\u5f00\u53d1\u8005\u6a21\u5f0f" }));
+  await userEvent.click(
+    screen.getByRole("button", { name: "\u5f00\u53d1\u8005\u6a21\u5f0f" }),
+  );
   const diagnostics = await screen.findByTestId("coverage-family-diagnostics");
-  expect(diagnostics).toHaveTextContent("settlement · SUPPORTED · TIME_SLICE · NO_RECORDS");
-  expect(diagnostics).toHaveTextContent("province · \u7701 · TIME_SERIES · UNKNOWN");
-  expect(diagnostics).toHaveTextContent("active 1 · source-supported 79 · period 1911..1911");
-  expect(diagnostics).toHaveTextContent("raw_town_snapshots · \u6751\u9547 · TIME_SLICE · SUPPORTED");
-  expect(diagnostics).toHaveTextContent("active 1 · source-supported 1 · snapshot 1911");
-  expect(diagnostics).toHaveTextContent("raw_pavilion_intervals · \u4ead · TIME_SERIES · UNKNOWN");
-  expect(diagnostics).toHaveTextContent("active 0 · source-supported 2 · outside evidenced periods");
+  expect(diagnostics).toHaveTextContent(
+    "settlement · SUPPORTED · TIME_SLICE · HAS_RECORDS",
+  );
+  expect(diagnostics).toHaveTextContent(
+    "province · \u7701 · TIME_SERIES · UNKNOWN",
+  );
+  expect(diagnostics).toHaveTextContent(
+    "active 1 · source-supported 79 · period 1911..1911",
+  );
+  expect(diagnostics).toHaveTextContent(
+    "raw_town_snapshots · \u6751\u9547 · TIME_SLICE · SUPPORTED",
+  );
+  expect(diagnostics).toHaveTextContent(
+    "active 1 · source-supported 1 · snapshot 1911",
+  );
+  expect(diagnostics).toHaveTextContent(
+    "raw_pavilion_intervals · \u4ead · TIME_SERIES · UNKNOWN",
+  );
+  expect(diagnostics).toHaveTextContent(
+    "active 0 · source-supported 2 · outside evidenced periods",
+  );
   expect(diagnostics).toHaveTextContent("snapshots 1820,1911");
   expect(diagnostics).toHaveTextContent("observed 14..22;623..959");
   expect(diagnostics).toHaveTextContent("Named village snapshots.");
-  expect(diagnostics).toHaveTextContent("global 1 · viewport 0 · displayed 0");
-  expect(diagnostics).toHaveTextContent("polity · UNKNOWN · TIME_SERIES · NO_RECORDS");
-  expect(document.querySelector('[data-coverage-family="polity"]')).not.toBeInTheDocument();
+  expect(diagnostics).toHaveTextContent("global 1 · viewport 1 · displayed 0");
+  expect(diagnostics).toHaveTextContent(
+    "polity · UNKNOWN · TIME_SERIES · NO_RECORDS",
+  );
+  expect(
+    document.querySelector('[data-coverage-family="polity"]'),
+  ).not.toBeInTheDocument();
 });
 
 test("point-only mode removes persistent labels without changing layers or interaction", async () => {
   installFetchMock();
   const map = await renderReadyApp();
-  await enableFamilies("regional_admin");
-  const regionalToggle = screen.getByRole("button", { name: /郡、府、州/ });
-  const enabledBefore = map.dataset.enabledDisplayFamilies;
+  await enableCategories("prefecture", "commandery");
+  const regionalToggle = screen.getByRole("button", { name: /郡与侯国/ });
+  const enabledBefore = map.dataset.enabledDisplayTiers;
   await userEvent.click(screen.getByRole("button", { name: "仅点" }));
   expect(map).toHaveAttribute("data-historical-display-mode", "point_only");
   expect(map).toHaveAttribute("data-historical-label-count", "0");
-  expect(document.querySelector(".history-marker__label--persistent")).not.toBeInTheDocument();
-  expect(document.querySelector(".history-marker__label--hover")).toBeInTheDocument();
+  expect(
+    document.querySelector(".history-marker__label--persistent"),
+  ).not.toBeInTheDocument();
+  expect(
+    document.querySelector(".history-marker__label--hover"),
+  ).toBeInTheDocument();
   expect(document.querySelector(".history-marker")).toHaveAttribute("title");
-  expect(map.dataset.enabledDisplayFamilies).toBe(enabledBefore);
+  expect(map.dataset.enabledDisplayTiers).toBe(enabledBefore);
   expect(regionalToggle).toHaveAttribute("aria-pressed", "true");
-  await userEvent.click(document.querySelector<HTMLElement>(".history-marker")!);
-  await userEvent.click(document.querySelector<HTMLElement>("[data-colocated-member-id='province_1911']")!);
+  await userEvent.click(
+    document.querySelector<HTMLElement>(".history-marker")!,
+  );
+  await userEvent.click(
+    document.querySelector<HTMLElement>(
+      "[data-colocated-member-id='province_1911']",
+    )!,
+  );
   expect(screen.getByLabelText("历史地点详情")).toBeVisible();
 });
 
 test("basemap switching preserves historical state", async () => {
   installFetchMock();
   const map = await renderReadyApp();
-  await enableFamilies("regional_admin");
+  await enableCategories("prefecture", "commandery");
   const before = {
     year: map.dataset.snapshotYear,
     ids: map.dataset.historicalPointIds,
     families: map.dataset.enabledDisplayFamilies,
     bbox: map.dataset.viewportBbox,
   };
-  await userEvent.click(screen.getByRole("button", { name: "彩色地理" }));
-  await waitFor(() => expect(map).toHaveAttribute("data-reference-effective-mode", "r4_color_geography"));
+  await userEvent.click(screen.getByRole("button", { name: "丰富" }));
+  await waitFor(() =>
+    expect(map).toHaveAttribute(
+      "data-reference-effective-mode",
+      "r4_color_geography",
+    ),
+  );
   expect({
     year: map.dataset.snapshotYear,
     ids: map.dataset.historicalPointIds,
     families: map.dataset.enabledDisplayFamilies,
     bbox: map.dataset.viewportBbox,
   }).toEqual(before);
-
 });
 
 test("colored basemap initialization failure falls back to minimal without clearing history", async () => {
-  (globalThis as { __CHRONO_TEST_COLOR_BASEMAP_FAILURE__?: boolean })
-    .__CHRONO_TEST_COLOR_BASEMAP_FAILURE__ = true;
+  (
+    globalThis as { __CHRONO_TEST_COLOR_BASEMAP_FAILURE__?: boolean }
+  ).__CHRONO_TEST_COLOR_BASEMAP_FAILURE__ = true;
   installFetchMock();
   const map = await renderReadyApp();
   const ids = map.dataset.historicalPointIds;
-  await userEvent.click(screen.getByRole("button", { name: "彩色地理" }));
-  await waitFor(() => expect(map).toHaveAttribute("data-reference-effective-mode", "r2_minimal_modern"));
+  await userEvent.click(screen.getByRole("button", { name: "丰富" }));
+  await waitFor(() =>
+    expect(map).toHaveAttribute(
+      "data-reference-effective-mode",
+      "r2_minimal_modern",
+    ),
+  );
   expect(map).toHaveAttribute("data-reference-mode", "r2_minimal_modern");
   expect(map).toHaveAttribute("data-historical-point-ids", ids);
 });
@@ -475,16 +744,26 @@ test("colored basemap initialization failure falls back to minimal without clear
 test("exact-year updates retain keyed marker instances and never clear the layer while pending", async () => {
   installFetchMock();
   const map = await renderReadyApp();
-  await enableFamilies("regional_admin");
+  await enableCategories("prefecture", "commandery");
   const timeline = screen.getByTestId("timeline-range");
   fireEvent.change(timeline, { target: { value: yearToOrdinal(150) } });
-  await waitFor(() => expect(map).toHaveAttribute("data-query-result-year", "150"));
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-query-result-year", "150"),
+  );
   const retained = document.querySelector<HTMLElement>(".history-marker")!;
   retained.dataset.instanceProbe = "stable";
   fireEvent.change(timeline, { target: { value: yearToOrdinal(151) } });
-  expect(document.querySelector<HTMLElement>(".history-marker")?.dataset.instanceProbe).toBe("stable");
-  await waitFor(() => expect(map).toHaveAttribute("data-query-result-year", "151"));
-  expect(document.querySelector<HTMLElement>(".history-marker")?.dataset.instanceProbe).toBe("stable");
+  expect(
+    document.querySelector<HTMLElement>(".history-marker")?.dataset
+      .instanceProbe,
+  ).toBe("stable");
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-query-result-year", "151"),
+  );
+  expect(
+    document.querySelector<HTMLElement>(".history-marker")?.dataset
+      .instanceProbe,
+  ).toBe("stable");
   expect(map).toHaveAttribute("data-retained-marker-recreation-count", "0");
   expect(map).toHaveAttribute("data-full-historical-layer-clear-count", "0");
   expect(map).toHaveAttribute("data-stale-commit-count", "0");
@@ -493,73 +772,134 @@ test("exact-year updates retain keyed marker instances and never clear the layer
 test("manual layer toggle updates point and co-location counts and persists across year changes", async () => {
   installFetchMock();
   const map = await renderReadyApp();
-  await enableFamilies("regional_admin");
-  const regionalToggle = screen.getByRole("button", { name: /\u90e1\u3001\u5e9c\u3001\u5dde/ });
-  expect(regionalToggle).toHaveAttribute("aria-pressed", "true");
+  await enableCategories("prefecture", "commandery");
+  const commanderyToggle = screen.getByRole("button", { name: /郡与侯国/ });
+  const prefectureToggle = screen.getByRole("button", { name: /府州厅/ });
+  expect(commanderyToggle).toHaveAttribute("aria-pressed", "true");
+  expect(prefectureToggle).toHaveAttribute("aria-pressed", "true");
   expect(map).toHaveAttribute("data-co-located-group-count", "1");
-  await userEvent.click(regionalToggle);
-  await waitFor(() => expect(map).toHaveAttribute("data-eligible-record-count", "1"));
+  await userEvent.click(commanderyToggle);
+  await userEvent.click(prefectureToggle);
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-eligible-record-count", "1"),
+  );
   expect(map).toHaveAttribute("data-historical-point-ids", "province_1911");
   expect(map).toHaveAttribute("data-co-located-group-count", "0");
   fireEvent.change(screen.getByTestId("timeline-range"), {
     target: { value: yearToOrdinal(-201) },
   });
-  await waitFor(() => expect(map).toHaveAttribute("data-snapshot-year", "-201"));
-  expect(regionalToggle).toHaveAttribute("aria-pressed", "false");
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-snapshot-year", "-201"),
+  );
+  expect(commanderyToggle).toHaveAttribute("aria-pressed", "false");
+  expect(prefectureToggle).toHaveAttribute("aria-pressed", "false");
 });
 
 test("the timeline supports arbitrary CE, BCE, and rapid exact-year changes without year zero", async () => {
   installFetchMock();
   const map = await renderReadyApp();
-  await enableFamilies("regional_admin");
+  await enableCategories("prefecture", "commandery");
   const timeline = screen.getByTestId("timeline-range");
   expect(timeline).toHaveAttribute("min", String(yearToOrdinal(-201)));
   expect(timeline).toHaveAttribute("max", String(yearToOrdinal(1911)));
 
   fireEvent.change(timeline, { target: { value: yearToOrdinal(-201) } });
-  await waitFor(() => expect(map).toHaveAttribute("data-snapshot-year", "-201"));
-  await waitFor(() => expect(map).toHaveAttribute("data-historical-point-ids", "bce_record"));
-  expect(screen.getByTestId("timeline-current-year")).toHaveTextContent("\u516c\u5143\u524d 201 \u5e74");
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-snapshot-year", "-201"),
+  );
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-historical-point-ids", "bce_record"),
+  );
+  expect(screen.getByTestId("timeline-current-year")).toHaveTextContent(
+    "\u516c\u5143\u524d 201 \u5e74",
+  );
 
   fireEvent.change(timeline, { target: { value: yearToOrdinal(150) } });
   fireEvent.change(timeline, { target: { value: yearToOrdinal(151) } });
   fireEvent.change(timeline, { target: { value: yearToOrdinal(123) } });
   await waitFor(() => expect(map).toHaveAttribute("data-snapshot-year", "123"));
-  await waitFor(() => expect(map).toHaveAttribute(
-    "data-historical-point-ids",
-    "arbitrary_record,hvd_88266",
-  ));
+  await waitFor(() =>
+    expect(map).toHaveAttribute(
+      "data-historical-point-ids",
+      "hvd_88266,arbitrary_record",
+    ),
+  );
   expect(Number(map.dataset.timelineInputToMapLatencyMs)).toBeLessThan(100);
   expect(Number(map.dataset.exploreCancelledQueryCount)).toBeGreaterThan(0);
-  expect(screen.getByTestId("timeline-current-year")).toHaveTextContent("\u516c\u5143 123 \u5e74");
+  expect(screen.getByTestId("timeline-current-year")).toHaveTextContent(
+    "\u516c\u5143 123 \u5e74",
+  );
 });
 
 test("co-located groups contain only members active in the selected exact year", async () => {
   installFetchMock();
   const map = await renderReadyApp();
-  await enableFamilies("regional_admin");
-  await waitFor(() => expect(map).toHaveAttribute("data-co-located-group-count", "1"));
-  const initialGroup = document.querySelector<HTMLElement>(".history-marker--colocated")!;
-  expect(initialGroup.dataset.memberIds).toBe("province_1911,hvd_88266,regional_1911");
+  await enableCategories("prefecture", "commandery");
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-co-located-group-count", "1"),
+  );
+  const initialGroup = document.querySelector<HTMLElement>(
+    ".history-marker--colocated",
+  )!;
+  expect(initialGroup.dataset.memberIds).toBe(
+    "province_1911,hvd_88266,regional_1911",
+  );
   fireEvent.change(screen.getByTestId("timeline-range"), {
     target: { value: yearToOrdinal(-201) },
   });
-  await waitFor(() => expect(map).toHaveAttribute("data-snapshot-year", "-201"));
-  await waitFor(() => expect(map).toHaveAttribute("data-co-located-group-count", "0"));
-  await waitFor(() => expect(map).toHaveAttribute("data-historical-point-ids", "bce_record"));
-  expect(document.querySelector<HTMLElement>(".history-marker")?.dataset.memberIds).toBe("bce_record");
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-snapshot-year", "-201"),
+  );
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-co-located-group-count", "0"),
+  );
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-historical-point-ids", "bce_record"),
+  );
+  expect(
+    document.querySelector<HTMLElement>(".history-marker")?.dataset.memberIds,
+  ).toBe("bce_record");
 });
 
 test("1911 宣化府 co-location and detail click cannot crash on a year-zero source sentinel", async () => {
   installFetchMock();
   const map = await renderReadyApp();
-  await enableFamilies("regional_admin");
-  await userEvent.click(document.querySelector<HTMLElement>(".history-marker--colocated")!);
+  await enableCategories("prefecture", "commandery");
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-institution-notes-status", "ready"),
+  );
+  await userEvent.click(
+    document.querySelector<HTMLElement>(".history-marker--colocated")!,
+  );
   expect(screen.getByLabelText("同址历史记录")).toBeVisible();
-  await userEvent.click(document.querySelector<HTMLElement>("[data-colocated-member-id='hvd_88266']")!);
+  await userEvent.click(
+    document.querySelector<HTMLElement>(
+      "[data-colocated-member-id='hvd_88266']",
+    )!,
+  );
   expect(screen.getByLabelText("历史地点详情")).toBeVisible();
   expect(screen.getByLabelText("历史地点详情")).toHaveTextContent("宣化府");
-  expect(screen.getByLabelText("历史地点详情")).toHaveTextContent("来源未注明");
+  const userDetail = screen.getByLabelText("历史地点详情");
+  expect(userDetail).toHaveTextContent("来源未注明");
+  expect(userDetail).toHaveTextContent("历史单位类别");
+  expect(userDetail).toHaveTextContent("当前年直属下级");
+  for (const technicalLabel of [
+    "距视口中心", "位置可信度", "TGAZ ID", "来源 / 许可", "来源说明（完整）",
+    "上下级仅按来源记录的明确父链展示",
+  ]) {
+    expect(userDetail).not.toHaveTextContent(technicalLabel);
+  }
+  await userEvent.click(screen.getByRole("button", { name: "开发者模式" }));
+  expect(userDetail).toHaveTextContent("制度小识");
+  expect(userDetail).toHaveTextContent("清末的府");
+  expect(userDetail).toHaveTextContent("府通常处在省与所属州县之间");
+  expect(userDetail).not.toHaveTextContent("清末总览");
+  expect(userDetail).toHaveTextContent("开发者诊断");
+  expect(userDetail).toHaveTextContent("距视口中心");
+  expect(userDetail).toHaveTextContent("位置可信度");
+  expect(userDetail).toHaveTextContent("TGAZ ID");
+  expect(userDetail).toHaveTextContent("来源 / 许可");
+  expect(screen.getByTestId("institution-note-diagnostic")).toHaveTextContent("ready · qing_late_fu · 府 · 1911");
   expect(map).toHaveAttribute("data-snapshot-year", "1911");
   expect(screen.getByTestId("continuous-timeline")).toBeVisible();
 });
@@ -567,20 +907,54 @@ test("1911 宣化府 co-location and detail click cannot crash on a year-zero so
 test("modern-place fly-to is available only after entering Developer Mode", async () => {
   const fetchMock = installFetchMock();
   const map = await renderReadyApp();
-  expect(screen.queryByLabelText("\u73b0\u4ee3\u5730\u70b9")).not.toBeInTheDocument();
-  await userEvent.click(screen.getByRole("button", { name: "\u5f00\u53d1\u8005\u6a21\u5f0f" }));
-  await userEvent.selectOptions(screen.getByLabelText("\u73b0\u4ee3\u5730\u70b9"), "xian");
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/anchors/xian/manifest.json"));
+  expect(
+    screen.queryByLabelText("\u73b0\u4ee3\u5730\u70b9"),
+  ).not.toBeInTheDocument();
+  await userEvent.click(
+    screen.getByRole("button", { name: "\u5f00\u53d1\u8005\u6a21\u5f0f" }),
+  );
+  await userEvent.selectOptions(
+    screen.getByLabelText("QA 定位"),
+    "xian",
+  );
+  await waitFor(() =>
+    expect(fetchMock).toHaveBeenCalledWith("/anchors/xian/manifest.json"),
+  );
   expect(map).toHaveAttribute("data-view-mode", "unified_viewport");
   expect(map).toHaveAttribute("data-snapshot-year", "1911");
 });
 
+test("malformed institution-note metadata fails closed without breaking detail", async () => {
+  installFetchMock({ malformedInstitutionNotes: true });
+  const map = await renderReadyApp();
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-institution-notes-status", "failed"),
+  );
+  await enableCategories("prefecture", "commandery");
+  await userEvent.click(document.querySelector<HTMLElement>(".history-marker--colocated")!);
+  await userEvent.click(
+    document.querySelector<HTMLElement>("[data-colocated-member-id='hvd_88266']")!,
+  );
+  const detail = screen.getByLabelText("历史地点详情");
+  expect(detail).toBeVisible();
+  expect(detail).toHaveTextContent("宣化府");
+  expect(screen.queryByTestId("institution-note")).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "开发者模式" }));
+  expect(screen.getByTestId("institution-note-diagnostic")).toHaveTextContent(
+    "failed · no exact match · 府 · 1911",
+  );
+});
+
 test("reference failure falls back without disabling the unified historical layer", async () => {
-  (globalThis as { __CHRONO_TEST_REFERENCE_FAILURE__?: boolean })
-    .__CHRONO_TEST_REFERENCE_FAILURE__ = true;
+  (
+    globalThis as { __CHRONO_TEST_REFERENCE_FAILURE__?: boolean }
+  ).__CHRONO_TEST_REFERENCE_FAILURE__ = true;
+
   installFetchMock();
   const map = await renderReadyApp();
-  await waitFor(() => expect(map).toHaveAttribute("data-reference-effective-mode", "r0_grid"));
+  await waitFor(() =>
+    expect(map).toHaveAttribute("data-reference-effective-mode", "r0_grid"),
+  );
   expect(map).toHaveAttribute("data-reference-fallback-active", "true");
   expect(map).toHaveAttribute("data-historical-point-count", "1");
   expect(screen.getByTestId("continuous-timeline")).toBeVisible();

@@ -31,6 +31,11 @@ def test_manifest_accepts_only_declared_runtime_data_and_distribution_files(
     _write(staging / "assets" / "app.js")
     _write(staging / "explore" / "tgaz_compact.json", b"{}")
     _write(staging / "coverage" / "historical_layer_coverage.json", b"{}")
+    _write(staging / "reference" / "china_z9.pmtiles", b"pmtiles")
+    _write(staging / "knowledge" / "qing_late_institution_notes_v0.1.json", b"{}")
+    _write(staging / "reference" / "assets" / "fonts" / "OFL.txt", b"ofl")
+    _write(staging / "reference" / "assets" / "fonts" / "Noto Sans Regular" / "0-255.pbf")
+    _write(staging / "reference" / "assets" / "sprites" / "v4" / "light.png")
 
     manifest = build_package_manifest(release, staging)
 
@@ -41,6 +46,11 @@ def test_manifest_accepts_only_declared_runtime_data_and_distribution_files(
         "coverage/historical_layer_coverage.json",
         "explore/tgaz_compact.json",
         "index.html",
+        "knowledge/qing_late_institution_notes_v0.1.json",
+        "reference/china_z9.pmtiles",
+        "reference/assets/fonts/OFL.txt",
+        "reference/assets/fonts/Noto Sans Regular/0-255.pbf",
+        "reference/assets/sprites/v4/light.png",
     }
     assert all(len(item["sha256"]) == 64 for item in manifest["packaged_files"])
 
@@ -91,6 +101,27 @@ def test_manifest_rejects_undeclared_runtime_data(tmp_path: Path) -> None:
     _write(staging / "explore" / "tgaz_compact.json", b"{}")
     _write(staging / "coverage" / "historical_layer_coverage.json", b"{}")
     _write(staging / "anchors" / "index.json", b"{}")
+
+    with pytest.raises(ValueError, match="runtime asset is not allowlisted"):
+        build_package_manifest(release, staging)
+@pytest.mark.parametrize(
+    "undeclared_reference",
+    [
+        "reference/china_z10.pmtiles",
+        "reference/assets/fonts/Unknown Font/0-255.pbf",
+        "reference/assets/sprites/v4/dark.png",
+    ],
+)
+def test_manifest_rejects_undeclared_reference_assets(
+    tmp_path: Path,
+    undeclared_reference: str,
+) -> None:
+    release = tmp_path / "release"
+    staging = tmp_path / "dist"
+    _write(staging / "index.html")
+    _write(staging / "explore" / "tgaz_compact.json", b"{}")
+    _write(staging / "coverage" / "historical_layer_coverage.json", b"{}")
+    _write(staging / undeclared_reference)
 
     with pytest.raises(ValueError, match="runtime asset is not allowlisted"):
         build_package_manifest(release, staging)

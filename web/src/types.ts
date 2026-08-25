@@ -92,6 +92,7 @@ export interface HistoricalProperties {
   display_type_group?: string;
   valid_from: number;
   valid_to: number;
+  parent_source_id?: string | null;
   parent_name: string | null;
   distance_to_anchor_km: number;
   relation_to_anchor: "spatial_nearby" | "viewport_member";

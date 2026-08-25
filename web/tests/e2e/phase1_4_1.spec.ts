@@ -83,11 +83,11 @@ async function overlayState(page: Page) {
     const legend = document.querySelector<HTMLElement>(".legend")!;
     const legendStyle = getComputedStyle(legend);
     const legendBox = legend.getBoundingClientRect();
-    const entries = [...legend.querySelectorAll<HTMLElement>("[data-legend-family]")].map((entry) => {
+    const entries = [...legend.querySelectorAll<HTMLElement>("[data-legend-tier]")].map((entry) => {
       const entryBox = entry.getBoundingClientRect();
       const badgeBox = entry.querySelector<HTMLElement>("[data-coverage-family]")?.getBoundingClientRect();
       return {
-        family: entry.dataset.legendFamily ?? "",
+        family: entry.dataset.legendTier ?? "",
         box: { x: entryBox.x, y: entryBox.y, right: entryBox.right, bottom: entryBox.bottom },
         badge: badgeBox
           ? { x: badgeBox.x, y: badgeBox.y, right: badgeBox.right, bottom: badgeBox.bottom }
@@ -122,7 +122,7 @@ test("settlement facts remain diagnostic-only while User Mode hides their contro
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await waitForIndex(page);
-  await expect(page.locator('[data-legend-family="settlement"]')).toHaveCount(0);
+  await expect(page.locator('[data-legend-tier="unresolved"]')).toHaveCount(0);
   await expect(page.getByTestId("coverage-settlement")).toHaveCount(0);
   await expect(page.getByTestId("layer-switcher")).not.toContainText("村镇、亭");
 
@@ -135,16 +135,20 @@ test("settlement facts remain diagnostic-only while User Mode hides their contro
     support: "UNSUPPORTED", viewportResult: "NO_RECORDS", viewportCount: 0,
   });
   await setYear(page, 1820);
-  expect(await settlementState(page)).toMatchObject({
-    support: "SUPPORTED", temporalModels: ["TIME_SLICE"], viewportResult: "NO_RECORDS", viewportCount: 0,
+  const state1820 = await settlementState(page);
+  expect(state1820).toMatchObject({
+    support: "SUPPORTED", temporalModels: ["TIME_SLICE"], viewportResult: "HAS_RECORDS",
   });
+  expect(state1820.viewportCount).toBeGreaterThan(0);
 
   await setView(page, realRecords.town1911.center);
   await setYear(page, 1911);
   await expect(markerFor(page, realRecords.town1911.id)).toHaveCount(0);
-  expect(await settlementState(page)).toMatchObject({
-    support: "SUPPORTED", temporalModels: ["TIME_SLICE"], viewportResult: "NO_RECORDS", viewportCount: 0,
+  const state1911 = await settlementState(page);
+  expect(state1911).toMatchObject({
+    support: "SUPPORTED", temporalModels: ["TIME_SLICE"], viewportResult: "HAS_RECORDS",
   });
+  expect(state1911.viewportCount).toBeGreaterThan(0);
 
   await setView(page, realRecords.pavilion626.center);
   for (const year of [14, 626, 750]) {
@@ -167,7 +171,7 @@ test("Phase 1.4.1 malformed coverage metadata fails open without an absence clai
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await waitForIndex(page, "failed");
-  await expect(page.locator('[data-legend-family="settlement"]')).toHaveCount(0);
+  await expect(page.locator('[data-legend-tier="unresolved"]')).toHaveCount(0);
   await setView(page, realRecords.highAdmin1911.center);
   await setYear(page, 1911);
   await expect(markerFor(page, realRecords.highAdmin1911.id)).toBeVisible();
@@ -175,15 +179,15 @@ test("Phase 1.4.1 malformed coverage metadata fails open without an absence clai
   await expect(page.getByTestId("layer-switcher")).not.toContainText("来源无资料");
 });
 
-test("Phase 1.4.1 coverage badges preserve responsive overlay safe areas", async ({ page }) => {
+test("Phase 1.4.1 unit-category controls preserve responsive overlay safe areas", async ({ page }) => {
   test.setTimeout(180_000);
   await page.setViewportSize(responsiveViewports[0]);
   await page.goto("/");
   await waitForIndex(page);
-  await expect(page.locator('[data-legend-family="settlement"]')).toHaveCount(0);
+  await expect(page.locator('[data-legend-tier="unclassified"]')).toHaveCount(0);
   await setView(page, realRecords.highAdmin1911.center);
   await setYear(page, 1911);
-  await expect(page.getByTestId("coverage-high_admin")).toContainText("有限");
+  await expect(page.locator("[data-coverage-family]")).toHaveCount(0);
   await markerFor(page, realRecords.highAdmin1911.id).click();
   const colocatedCard = page.locator(".colocated-card");
   if (await colocatedCard.isVisible()) {
@@ -221,7 +225,7 @@ test("Phase 1.4.1 coverage badges preserve responsive overlay safe areas", async
     expect(state.legendLayout.overflowY).not.toMatch(/auto|scroll/);
     expect(state.legendLayout.scrollWidth).toBeLessThanOrEqual(state.legendLayout.clientWidth + 2);
     expect(state.legendLayout.scrollHeight).toBeLessThanOrEqual(state.legendLayout.clientHeight + 2);
-    expect(state.entries).toHaveLength(4);
+    expect(state.entries).toHaveLength(6);
     const firstCenter = (state.entries[0].box.y + state.entries[0].box.bottom) / 2;
     for (const [index, entry] of state.entries.entries()) {
       expect(entry.box.x, `${viewport.width} ${entry.family} left viewport bound`)
@@ -236,7 +240,7 @@ test("Phase 1.4.1 coverage badges preserve responsive overlay safe areas", async
         Math.abs((entry.box.y + entry.box.bottom) / 2 - firstCenter),
         `${viewport.width} ${entry.family} stays on the single legend baseline`,
       ).toBeLessThanOrEqual(1);
-      expect(entry.box.bottom - entry.box.y).toBeLessThanOrEqual(30);
+      expect(entry.box.bottom - entry.box.y).toBeLessThanOrEqual(34);
       if (entry.badge) {
         expect(entry.badge.x).toBeGreaterThanOrEqual(entry.box.x);
         expect(entry.badge.right).toBeLessThanOrEqual(entry.box.right);
@@ -250,7 +254,7 @@ test("Phase 1.4.1 coverage badges preserve responsive overlay safe areas", async
         }
       }
     }
-    const minimumFontSizes = await page.locator("[data-legend-family], [data-coverage-family]")
+    const minimumFontSizes = await page.locator("[data-legend-tier], [data-coverage-family]")
       .evaluateAll((elements) => elements.map((element) => Number.parseFloat(getComputedStyle(element).fontSize)));
     expect(Math.min(...minimumFontSizes), `${viewport.width} legend minimum font size`).toBeGreaterThanOrEqual(9);
   }

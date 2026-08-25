@@ -36,7 +36,7 @@ async function setView(page: Page, center: [number, number], zoom = 10.8) {
   await expect.poll(async () => Number(await mapElement.getAttribute("data-explore-query-sequence"))).toBeGreaterThan(previous);
 }
 
-async function clickRecord(page: Page, record: CompactRecord) {
+async function clickRecord(page: Page, record: CompactRecord, expectedInstitutionTitle?: string) {
   const [id, name, , begin, end, lon, lat] = record;
   await setView(page, [lon, lat]);
   await setYear(page, begin === 0 ? end : begin);
@@ -53,6 +53,15 @@ async function clickRecord(page: Page, record: CompactRecord) {
   const detail = page.getByLabel("历史地点详情");
   await expect(detail).toBeVisible();
   await expect(detail).toContainText(name);
+  if (expectedInstitutionTitle) {
+    const note = detail.getByTestId("institution-note");
+    await expect(note).toContainText(expectedInstitutionTitle);
+    await expect(note).not.toContainText("清末地方制度并非整齐的单一层级");
+    await page.screenshot({
+      path: path.resolve("../artifacts/qing_late_fu_1911.png"),
+      fullPage: true,
+    });
+  }
   await detail.getByRole("button", { name: "关闭详情" }).click();
 }
 
@@ -76,13 +85,14 @@ test("real-record detail clicks are contained and rapid timeline input stays fra
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await waitForIndex(page);
-  await expect(page.locator('[data-legend-family="settlement"]')).toHaveCount(0);
-  for (const family of ["regional_admin", "county", "other"]) {
-    const toggle = page.locator(`[data-legend-family="${family}"]`);
+  await expect(page.locator('[data-legend-tier="unclassified"]')).toHaveCount(0);
+  for (const family of ["dao_lu", "prefecture", "commandery", "county", "military_special"]) {
+    const toggle = page.locator(`[data-legend-tier="${family}"]`);
+  await expect(page.getByTestId("map")).toHaveAttribute("data-institution-notes-status", "ready");
     if (await toggle.getAttribute("aria-pressed") === "false") await toggle.click();
   }
 
-  await clickRecord(page, xuanhua);
+  await clickRecord(page, xuanhua, "清末的府");
   for (const record of records) await clickRecord(page, record);
   expect(pageErrors).toEqual([]);
   await expect(page.getByTestId("continuous-timeline")).toBeVisible();

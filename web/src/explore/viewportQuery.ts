@@ -104,6 +104,7 @@ function toFeature(
       feature_type: record[7],
       valid_from: record[3],
       valid_to: record[4],
+      parent_source_id: record[8],
       parent_name: record[9],
       distance_to_anchor_km: haversineKm(record[5], record[6], center[0], center[1]),
       relation_to_anchor: "viewport_member",

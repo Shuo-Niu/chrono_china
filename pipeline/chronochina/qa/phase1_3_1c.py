@@ -77,8 +77,18 @@ def generate_track_a_gate() -> dict[str, Any]:
         "audited_raw_type_count": len(audited_types),
         "all_audited_raw_types_present": all(f'"{raw_type}"' in registry_source for raw_type in audited_types),
         "legend_generated_from_registry": (
-            "visibleLegendFamilies.map" in app_source and
-            "DISPLAY_FAMILY_REGISTRY.filter" in app_source
+            (
+                "visibleLegendFamilies.map" in app_source and
+                "DISPLAY_FAMILY_REGISTRY.filter" in app_source
+            )
+            or (
+                "visibleLegendTiers.map" in app_source and
+                "HISTORICAL_LAYER_TIER_REGISTRY.filter" in app_source
+            )
+            or (
+                "visibleUnitCategories.map" in app_source and
+                "HISTORICAL_UNIT_CATEGORY_REGISTRY.filter" in app_source
+            )
         ),
         "user_polity_hidden": 'userVisible: false' in registry_source,
         "white_halo_uniform": registry_source.count('halo: "#fffaf0"') == 6,

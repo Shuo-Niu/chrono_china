@@ -19,10 +19,10 @@
     "pack:windows": "npm run build && npm run test:desktop && electron-builder --win --x64",
     "smoke:windows": "node electron/packaged-smoke.cjs"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@playwright/test": "1.62.1",
     "@electron/asar": "3.4.1",
+    "@playwright/test": "1.62.1",
+    "@protomaps/basemaps": "5.7.2",
     "@testing-library/jest-dom": "7.0.0",
     "@testing-library/react": "16.3.2",
     "@testing-library/user-event": "14.6.3",
@@ -34,6 +34,7 @@
     "electron-builder": "^26.15.3",
     "jsdom": "29.1.1",
     "maplibre-gl": "6.2.0",
+    "pmtiles": "4.5.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "typescript": "7.0.2",
@@ -64,7 +65,9 @@
       "target": [
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "signAndEditExecutable": false,
@@ -72,6 +75,9 @@
     },
     "portable": {
       "artifactName": "ChronoChina-Phase1.5-Portable-${version}-${arch}.${ext}"
-    }
+    },
+    "asarUnpack": [
+      "dist/reference/**/*"
+    ]
   }
 }

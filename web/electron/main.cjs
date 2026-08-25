@@ -4,7 +4,6 @@ const {
   app,
   BrowserWindow,
   dialog,
-  net,
   protocol,
   session,
 } = require("electron");
@@ -12,19 +11,19 @@ const {
 const {
   contentTypeFor,
   isAllowedNavigation,
+  parseSingleByteRange,
   resolvePackagedAsset,
   sanitizeLogMessage,
 } = require("./runtime.cjs");
 
 const APP_ORIGIN = "chronochina://app";
-const OPENFREEMAP_TILEJSON_URL = "https://tiles.openfreemap.org/planet";
 const CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://tiles.openfreemap.org",
-  "font-src 'self' data: https://tiles.openfreemap.org",
-  "connect-src 'self' https://tiles.openfreemap.org",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  "connect-src 'self'",
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'none'",
@@ -60,25 +59,42 @@ function assetRoot() {
   return path.join(app.getAppPath(), "dist");
 }
 
-async function currentOpenFreeMapTileTemplate() {
-  try {
-    const response = await net.fetch(OPENFREEMAP_TILEJSON_URL, {
-      signal: AbortSignal.timeout(10_000),
+async function rangedAssetResponse(filePath, request) {
+  const size = (await fs.promises.stat(filePath)).size;
+  const rangeHeader = request.headers.get("range");
+  const headers = {
+    "Accept-Ranges": "bytes",
+    "Content-Type": contentTypeFor(filePath),
+  };
+  if (!rangeHeader) {
+    return new Response(await fs.promises.readFile(filePath), {
+      status: 200,
+      headers: { ...headers, "Content-Length": String(size) },
     });
-    if (!response.ok) throw new Error(`TileJSON HTTP ${response.status}`);
-    const payload = await response.json();
-    const template = Array.isArray(payload.tiles) ? payload.tiles[0] : null;
-    if (typeof template !== "string") throw new Error("TileJSON has no tile URL");
-    const parsed = new URL(template);
-    if (parsed.protocol !== "https:" || parsed.hostname !== "tiles.openfreemap.org" ||
-      !template.includes("{z}") || !template.includes("{x}") || !template.includes("{y}")) {
-      throw new Error("TileJSON returned an unexpected tile template");
-    }
-    return template;
-  } catch (error) {
-    writeLog("reference_tilejson_failed", error);
-    return null;
   }
+  const range = parseSingleByteRange(rangeHeader, size);
+  if (!range) {
+    return new Response(null, {
+      status: 416,
+      headers: { ...headers, "Content-Range": `bytes */${size}` },
+    });
+  }
+  const length = range.end - range.start + 1;
+  const body = Buffer.allocUnsafe(length);
+  const handle = await fs.promises.open(filePath, "r");
+  try {
+    await handle.read(body, 0, length, range.start);
+  } finally {
+    await handle.close();
+  }
+  return new Response(body, {
+    status: 206,
+    headers: {
+      ...headers,
+      "Content-Length": String(length),
+      "Content-Range": `bytes ${range.start}-${range.end}/${size}`,
+    },
+  });
 }
 
 async function createWindow() {
@@ -106,8 +122,6 @@ async function createWindow() {
   });
   const parameters = new URLSearchParams();
   if (process.env.CHRONOCHINA_PACKAGED_SMOKE === "1") parameters.set("qa", "1");
-  const tileTemplate = await currentOpenFreeMapTileTemplate();
-  if (tileTemplate) parameters.set("referenceTiles", tileTemplate);
   const query = parameters.size > 0 ? `?${parameters}` : "";
   void window.loadURL(`${APP_ORIGIN}/index.html${query}`).catch((error) => {
     writeLog("window_load_failed", error);
@@ -128,12 +142,13 @@ app.whenReady().then(async () => {
   protocol.handle("chronochina", async (request) => {
     try {
       const filePath = resolvePackagedAsset(assetRoot(), request.url);
-      const body = await fs.promises.readFile(filePath);
-      const headers = { "Content-Type": contentTypeFor(filePath) };
+      const response = await rangedAssetResponse(filePath, request);
       if (path.extname(filePath).toLowerCase() === ".html") {
-        headers["Content-Security-Policy"] = CSP;
+        const headers = new Headers(response.headers);
+        headers.set("Content-Security-Policy", CSP);
+        return new Response(response.body, { status: response.status, headers });
       }
-      return new Response(body, { status: 200, headers });
+      return response;
     } catch (error) {
       writeLog("asset_request_failed", error);
       return new Response("Not found", { status: 404 });

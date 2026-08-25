@@ -88,6 +88,13 @@ def _between(path: str, start: str, end: str) -> str:
 
 def _reference_non_r2() -> str:
     path = "web/src/map/referenceLayers.ts"
+    source = _text(path)
+    if "export const REFERENCE_MODES" in source:
+        return _between(
+            path,
+            "export const REFERENCE_MODES",
+            "\n\nexport const MODERN_REFERENCE_LAYER_IDS",
+        )
     pieces = [
         _between(path, '  {\n    id: "r0_grid",', '  {\n    id: "r1_physical",'),
         _between(path, '  {\n    id: "r1_physical",', '  {\n    id: "r2_minimal_modern",'),
