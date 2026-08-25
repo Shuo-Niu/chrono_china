@@ -13,7 +13,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run --reporter=default --reporter=junit --outputFile.junit=../artifacts/vitest-results.xml",
-    "test:public": "vitest run --exclude src/display/ranking.real-data.test.ts --exclude src/explore/viewportQuery.test.ts --exclude src/coverage/sourceCoverage.real-data.test.ts",
+    "test:public": "vitest run --exclude src/display/ranking.real-data.test.ts --exclude src/display/sourceHierarchy.real-data.test.ts --exclude src/explore/viewportQuery.test.ts --exclude src/coverage/sourceCoverage.real-data.test.ts",
     "e2e": "playwright test",
     "test:desktop": "node --test electron/runtime.test.cjs electron/packageAllowlist.test.cjs",
     "pack:windows": "npm run build && npm run test:desktop && electron-builder --win --x64",
