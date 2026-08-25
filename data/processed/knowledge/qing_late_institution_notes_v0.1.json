@@ -1,0 +1,284 @@
+{
+  "schema_version": "0.1",
+  "publication_set_id": "qing_late_institution_notes_v0_1",
+  "draft_set_id": "qing_late_institution_notes_v0_1",
+  "generated_at": "2026-08-24",
+  "publication_status": "PUBLISHED",
+  "ui_approval": {
+    "decision": "APPROVE",
+    "reviewer": "Shuo Niu",
+    "reviewed_at": "2026-08-24"
+  },
+  "ui_enabled": true,
+  "matching_policy": "exact raw type and inclusive year range only",
+  "sources": [
+    {
+      "source_id": "fudan_qing_volume",
+      "title": "《中国行政区划通史：清代卷（修订本）》介绍与目录",
+      "authors": "傅林祥、林涓、任玉雪、王卫东",
+      "publisher": "复旦大学",
+      "url": "https://sirpa.fudan.edu.cn/7c/7b/c35096a425083/page.htm",
+      "accessed_at": "2026-08-24",
+      "locator": "上编第二章“省”、第三章“府厅州县”及页面所列资料说明",
+      "supports": "清代省制、府厅州县体系及其区域差异的学术研究基线",
+      "use": "书目信息与事实核验；正文为原创转述"
+    },
+    {
+      "source_id": "qingshigao_116",
+      "title": "《清史稿》卷一百十六·职官三·外官",
+      "authors": "赵尔巽等纂；本卷署金兆丰",
+      "publisher": "维基文库所载公有领域原典",
+      "url": "https://zh.wikisource.org/zh-hans/清史稿/卷116",
+      "accessed_at": "2026-08-24",
+      "locator": "“道”“府”“州”“县”各节",
+      "supports": "清代道员、知府、知州、知县的制度职责及直隶州与属州差异",
+      "use": "公有领域原典核验；不在 User Mode 长篇引用"
+    },
+    {
+      "source_id": "cssn_qing_dao",
+      "title": "关于清代的道和道员",
+      "authors": "朱东安",
+      "publisher": "中国社会科学院近代史研究所网站；原载《近代史研究》",
+      "url": "https://jds.cssn.cn/xscg/xslw/201605/t20160506_5250285.shtml",
+      "accessed_at": "2026-08-24",
+      "locator": "第一节“道的性质和道员的职权”",
+      "supports": "清代道是省级政权派出或办事机构，不宜简单等同于固定一级地方政府",
+      "use": "事实核验与原创转述"
+    },
+    {
+      "source_id": "ruc_qing_local_officials",
+      "title": "清史讲堂：清代州县官的任职资格和官缺分类",
+      "authors": "魏光奇",
+      "publisher": "中国人民大学清史研究所",
+      "url": "https://iqh.ruc.edu.cn/old/qszx/qsjt/d7c410a9521a441db557ea5427f666a5.htm",
+      "accessed_at": "2026-08-24",
+      "locator": "开篇关于内地与边疆地方制度差异及内地政区层次的说明",
+      "supports": "清代内地省、府或直隶州直隶厅、散州散厅县的层次，以及边疆制度差异",
+      "use": "事实核验与原创转述"
+    },
+    {
+      "source_id": "ruc_qing_ting_research",
+      "title": "清代沿海诸厅与海疆管理研究",
+      "authors": "王泉伟",
+      "publisher": "中国人民大学清史研究所；原载《中国边疆史地研究》2022年第3期",
+      "url": "http://iqh.ruc.edu.cn/old/zglsdlyj/lsdl_lzjj/qsdlyj/b7491d67da7c42e8be4b854d4e9affe5.htm",
+      "accessed_at": "2026-08-24",
+      "locator": "一、厅制与沿海诸厅的建立；1. 清代地方行政体制中的厅制",
+      "supports": "分防厅与政区厅、直隶厅与属厅的制度差异",
+      "use": "可直接阅读的全文事实核验与原创转述"
+    },
+    {
+      "source_id": "pku_qing_ting",
+      "title": "清代“直隶厅”与“散厅”的“定制”化及其明代起源",
+      "authors": "真水康树",
+      "publisher": "《北京大学学报（哲学社会科学版）》1996年第3期",
+      "url": "https://ccj.pku.edu.cn/Article/info?aid=271014226",
+      "accessed_at": "2026-08-24",
+      "locator": "摘要及第98—103页书目信息；扫描版无文本层，本轮未作为全文证据",
+      "supports": "清代直隶厅、散厅的制度差异及厅制形成问题",
+      "use": "书目与研究史交叉核对；条目事实另由可直接阅读的独立全文复核"
+    }
+  ],
+  "notes": [
+    {
+      "note_id": "qing_late_system_overview",
+      "note_kind": "ERA_OVERVIEW",
+      "title_zh": "清末地方制度并非整齐的单一层级",
+      "body_zh": "清末内地常见省、府、州、厅、县等建置，但州与厅各有不同层次，道也不宜简单视为全国统一的一层地方政府。边疆、藩部和部分特殊区域另有制度，不能把同一套层级机械套用于全国。",
+      "matching": {
+        "raw_types": [
+          "省",
+          "省级",
+          "道",
+          "府",
+          "直隶州",
+          "州",
+          "厅",
+          "县"
+        ],
+        "year_from": 1901,
+        "year_to": 1911,
+        "spatial_scope": "清末内地的一般制度背景；正文已明确提示特殊区域例外",
+        "auto_match_enabled": true
+      },
+      "source_ids": [
+        "fudan_qing_volume",
+        "ruc_qing_local_officials",
+        "cssn_qing_dao"
+      ],
+      "caveat_zh": "这是总体导读，不表示任一具体地点必然符合所列结构。",
+      "status": "PUBLISHED",
+      "publication_eligible": true,
+      "source_review_verdict": "VERIFIED"
+    },
+    {
+      "note_id": "qing_late_province",
+      "note_kind": "UNIT_TYPE",
+      "title_zh": "清末的省",
+      "body_zh": "清末的省是内地地方治理的重要上层单元，巡抚主持一省政务，部分省份另受总督统辖。晚清又在新疆和东北陆续建省；藩部和其他特殊区域并不都采用同一套省制。",
+      "matching": {
+        "raw_types": [
+          "省",
+          "省级"
+        ],
+        "year_from": 1901,
+        "year_to": 1911,
+        "spatial_scope": "清末实行省制的地区；正文已明确提示非省制区域",
+        "auto_match_enabled": true
+      },
+      "source_ids": [
+        "qingshigao_116",
+        "fudan_qing_volume",
+        "ruc_qing_local_officials"
+      ],
+      "caveat_zh": "“省级”是当前来源类型标签，不自动证明该记录与现代省完全同构。",
+      "status": "PUBLISHED",
+      "publication_eligible": true,
+      "source_review_verdict": "VERIFIED"
+    },
+    {
+      "note_id": "qing_late_dao",
+      "note_kind": "UNIT_TYPE",
+      "title_zh": "清末的道",
+      "body_zh": "清代道员承担分守、分巡，并可兼理河务、粮务、盐务、关务等事务，也监督所辖地方官。更稳妥的理解是：道多为省级政权的派出或办事机构，而非全国统一、固定的一层地方政府。",
+      "matching": {
+        "raw_types": [
+          "道"
+        ],
+        "year_from": 1901,
+        "year_to": 1911,
+        "spatial_scope": "清末设有道员的地区",
+        "auto_match_enabled": true
+      },
+      "source_ids": [
+        "qingshigao_116",
+        "cssn_qing_dao",
+        "fudan_qing_volume"
+      ],
+      "caveat_zh": "各道职能、辖区和存废变化较大，不能仅凭“道”字推定固定行政等级。",
+      "status": "PUBLISHED",
+      "publication_eligible": true,
+      "source_review_verdict": "VERIFIED"
+    },
+    {
+      "note_id": "qing_late_fu",
+      "note_kind": "UNIT_TYPE",
+      "title_zh": "清末的府",
+      "body_zh": "府通常处在省与所属州县之间。知府总领属县、传达政令、处理地方要务，并考察属吏。清代也存在直隶于布政使、将军或道员等不同设置，因此具体上下级仍应以来源记录为准。",
+      "matching": {
+        "raw_types": [
+          "府"
+        ],
+        "year_from": 1901,
+        "year_to": 1911,
+        "spatial_scope": "清末府制适用地区",
+        "auto_match_enabled": true
+      },
+      "source_ids": [
+        "qingshigao_116",
+        "fudan_qing_volume",
+        "ruc_qing_local_officials"
+      ],
+      "caveat_zh": "概述不把任一府自动认作其他地点的前身、后继或同一实体。",
+      "status": "PUBLISHED",
+      "publication_eligible": true,
+      "source_review_verdict": "VERIFIED"
+    },
+    {
+      "note_id": "qing_late_direct_prefecture",
+      "note_kind": "UNIT_TYPE",
+      "title_zh": "清末的直隶州",
+      "body_zh": "清代的州分为直隶州和属州。直隶州不经由普通府级隶属关系，制度地位近似府；《清史稿》概括为“直隶州视府”。它与属州虽然都称州，行政层次并不相同。",
+      "matching": {
+        "raw_types": [
+          "直隶州"
+        ],
+        "year_from": 1901,
+        "year_to": 1911,
+        "spatial_scope": "清末直隶州",
+        "auto_match_enabled": true
+      },
+      "source_ids": [
+        "qingshigao_116",
+        "fudan_qing_volume",
+        "ruc_qing_local_officials"
+      ],
+      "caveat_zh": "这里的“直隶”表示直接隶属关系，不等同于作为省名的直隶省。",
+      "status": "PUBLISHED",
+      "publication_eligible": true,
+      "source_review_verdict": "VERIFIED"
+    },
+    {
+      "note_id": "qing_late_zhou",
+      "note_kind": "UNIT_TYPE",
+      "title_zh": "清末的州",
+      "body_zh": "“州”在清代不是单一层级：直隶州大体与府相当，属州则大体与县相当。若来源类型只写“州”，而没有注明直隶州或属州，就不能只凭名称判断它处在哪一层。",
+      "matching": {
+        "raw_types": [
+          "州"
+        ],
+        "year_from": 1901,
+        "year_to": 1911,
+        "spatial_scope": "清末州制适用地区",
+        "auto_match_enabled": true
+      },
+      "source_ids": [
+        "qingshigao_116",
+        "fudan_qing_volume",
+        "ruc_qing_local_officials"
+      ],
+      "caveat_zh": "显示这条小识不代表系统已判定该记录是直隶州或属州。",
+      "status": "PUBLISHED",
+      "publication_eligible": true,
+      "source_review_verdict": "VERIFIED"
+    },
+    {
+      "note_id": "qing_late_ting",
+      "note_kind": "UNIT_TYPE",
+      "title_zh": "清末的厅",
+      "body_zh": "清代的厅也不是单一层级：直隶厅可与府、直隶州并列，散厅则多处于县级；此外还存在具有派出机构性质的厅。若原始类型只写“厅”，通常需要更多来源才能确定其制度位置。",
+      "matching": {
+        "raw_types": [
+          "厅"
+        ],
+        "year_from": 1901,
+        "year_to": 1911,
+        "spatial_scope": "清末厅制适用地区",
+        "auto_match_enabled": true
+      },
+      "source_ids": [
+        "ruc_qing_ting_research",
+        "ruc_qing_local_officials",
+        "fudan_qing_volume"
+      ],
+      "caveat_zh": "当前 raw type“厅”没有自动拆分为直隶厅、散厅或派出机构。",
+      "status": "PUBLISHED",
+      "publication_eligible": true,
+      "source_review_verdict": "VERIFIED"
+    },
+    {
+      "note_id": "qing_late_county",
+      "note_kind": "UNIT_TYPE",
+      "title_zh": "清末的县",
+      "body_zh": "县是清代基层地方政区的重要基本单位。知县负责一县治理，事务涉及诉讼、农业、赈济、治安和教化等。历史上的县与现代县在范围、机构和职能上都可能不同，不能直接对应。",
+      "matching": {
+        "raw_types": [
+          "县"
+        ],
+        "year_from": 1901,
+        "year_to": 1911,
+        "spatial_scope": "清末县制适用地区",
+        "auto_match_enabled": true
+      },
+      "source_ids": [
+        "qingshigao_116",
+        "fudan_qing_volume",
+        "ruc_qing_local_officials"
+      ],
+      "caveat_zh": "制度概述不建立历史县与现代县之间的实体同一或继承关系。",
+      "status": "PUBLISHED",
+      "publication_eligible": true,
+      "source_review_verdict": "VERIFIED"
+    }
+  ]
+}
