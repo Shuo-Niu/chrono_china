@@ -2,13 +2,17 @@
 
 ChronoChina does not redistribute third-party historical data or generated
 record-level derivatives. The public repository contains directory
-placeholders plus one reviewed, project-authored aggregate artifact:
+placeholders plus explicitly reviewed, project-authored artifacts:
 
-`data/metadata/historical_layer_coverage.json`
+- `data/metadata/historical_layer_coverage.json` contains aggregate source-coverage
+  semantics and counts, without record-level IDs, names, coordinates, or source rows.
+- `data/knowledge/drafts/`, `data/knowledge/reviews/`, and the allowlisted
+  `data/processed/knowledge/` publication contain original institutional
+  explanations, review decisions, citations, and matching rules. They do not
+  contain CHGIS/TGAZ source rows.
 
-This metadata describes source-coverage semantics and aggregate counts. It
-contains no record-level IDs, names, coordinates, or source rows. Its review
-does not permit publishing any record-level input or generated derivative.
+These narrow exceptions do not permit publishing any record-level input or
+generated historical derivative.
 
 The pipeline creates:
 

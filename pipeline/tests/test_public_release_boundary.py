@@ -12,7 +12,7 @@ def _quoted_entries(block_name: str, script: str) -> set[str]:
     return set(re.findall(r'"([^"]+)"', match.group(1)))
 
 
-def test_release_boundary_allows_only_reviewed_aggregate_coverage_metadata() -> None:
+def test_release_boundary_allows_only_explicit_reviewed_project_data() -> None:
     audit = (PROJECT_ROOT / "scripts/release_audit.ps1").read_text(encoding="utf-8-sig")
     allowed = _quoted_entries("AllowedDataFiles", audit)
 
@@ -23,6 +23,9 @@ def test_release_boundary_allows_only_reviewed_aggregate_coverage_metadata() -> 
         "data/processed/.gitkeep",
         "data/qa/.gitkeep",
         "data/metadata/historical_layer_coverage.json",
+        "data/knowledge/drafts/qing_late_institution_notes_v0.1.json",
+        "data/knowledge/reviews/qing_late_institution_notes_source_review_v0.1.json",
+        "data/processed/knowledge/qing_late_institution_notes_v0.1.json",
     }
 
     data_readme = (PROJECT_ROOT / "data/README.md").read_text(encoding="utf-8")
@@ -30,6 +33,8 @@ def test_release_boundary_allows_only_reviewed_aggregate_coverage_metadata() -> 
     for content in (data_readme, policy):
         assert "data/metadata/historical_layer_coverage.json" in content
         assert "record-level" in content
+        assert "institution" in content.lower()
+        assert "CHGIS/TGAZ source rows" in content
 
 
 def test_public_tests_exclude_only_new_real_data_dependencies_from_full_suites() -> None:
