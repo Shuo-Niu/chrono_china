@@ -34,6 +34,10 @@ $AllowedDataFiles = @(
     "data/README.md",
     # Project-authored aggregate coverage semantics only; contains no record IDs, names, coordinates, or source rows.
     "data/metadata/historical_layer_coverage.json",
+    # Project-authored, source-reviewed institutional explanations; these contain no CHGIS/TGAZ source rows.
+    "data/knowledge/drafts/qing_late_institution_notes_v0.1.json",
+    "data/knowledge/reviews/qing_late_institution_notes_source_review_v0.1.json",
+    "data/processed/knowledge/qing_late_institution_notes_v0.1.json",
     "data/raw/.gitkeep",
     "data/intermediate/.gitkeep",
     "data/processed/.gitkeep",
