@@ -20,7 +20,7 @@
     "smoke:windows": "node electron/packaged-smoke.cjs"
   },
   "devDependencies": {
-    "@electron/asar": "3.4.1",
+    "@electron/asar": "4.3.0",
     "@playwright/test": "1.62.1",
     "@protomaps/basemaps": "5.7.2",
     "@testing-library/jest-dom": "7.0.0",
