@@ -33,7 +33,7 @@
     "electron": "^43.4.1",
     "electron-builder": "^26.15.3",
     "jsdom": "29.1.1",
-    "maplibre-gl": "6.2.0",
+    "maplibre-gl": "6.6.0",
     "pmtiles": "4.5.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
