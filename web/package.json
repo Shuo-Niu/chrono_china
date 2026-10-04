@@ -30,7 +30,7 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "@vitejs/plugin-react": "6.0.5",
-    "electron": "^43.5.0",
+    "electron": "^44.5.1",
     "electron-builder": "^26.15.3",
     "jsdom": "29.1.1",
     "maplibre-gl": "6.6.0",
@@ -38,8 +38,8 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "typescript": "7.0.2",
-    "vite": "8.2.2",
-    "vitest": "4.1.11"
+    "vite": "8.3.2",
+    "vitest": "5.0.3"
   },
   "build": {
     "appId": "org.chronochina.usability",
