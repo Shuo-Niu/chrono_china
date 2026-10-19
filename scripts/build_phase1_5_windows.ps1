@@ -16,6 +16,13 @@ if (-not (Test-Path $VenvPython -PathType Leaf)) {
 if (-not (Test-Path $OfflineMap -PathType Leaf) -or -not (Test-Path $OfflineAssets -PathType Container)) {
     throw "Missing packaged offline map. Run scripts/download_offline_basemap.ps1 first."
 }
+foreach ($Font in @("Noto Sans Regular", "Noto Sans Medium", "Noto Sans Italic", "Noto Sans Devanagari Regular v1")) {
+    foreach ($Range in @("0-255", "63488-63743")) {
+        if (-not (Test-Path -LiteralPath (Join-Path $OfflineAssets "fonts\$Font\$Range.pbf") -PathType Leaf)) {
+            throw "Missing offline font $Font/$Range. Run scripts/download_offline_basemap.ps1 -AssetsOnly first."
+        }
+    }
+}
 
 $ResolvedProject = [IO.Path]::GetFullPath($ProjectRoot)
 $ResolvedRelease = [IO.Path]::GetFullPath($ReleaseRoot)
@@ -36,7 +43,9 @@ finally {
 }
 
 Copy-Item -LiteralPath (Join-Path $WebRoot "electron\README_FIRST.txt") -Destination $ReleaseRoot
-Get-ChildItem -LiteralPath $ReleaseRoot -File -Filter "*.yml" | Remove-Item -Force
+Get-ChildItem -LiteralPath $ReleaseRoot -File | Where-Object {
+    $_.Extension -in @(".yml", ".yaml")
+} | Remove-Item -Force
 
 & node `
     (Join-Path $WebRoot "electron\verify-package.cjs") `

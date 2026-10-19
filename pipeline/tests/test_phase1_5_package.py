@@ -35,6 +35,8 @@ def test_manifest_accepts_only_declared_runtime_data_and_distribution_files(
     _write(staging / "knowledge" / "qing_late_institution_notes_v0.1.json", b"{}")
     _write(staging / "reference" / "assets" / "fonts" / "OFL.txt", b"ofl")
     _write(staging / "reference" / "assets" / "fonts" / "Noto Sans Regular" / "0-255.pbf")
+    _write(staging / "reference" / "assets" / "fonts" / "Noto Sans Italic" / "0-255.pbf")
+    _write(staging / "reference" / "assets" / "fonts" / "Noto Sans Devanagari Regular v1" / "63488-63743.pbf")
     _write(staging / "reference" / "assets" / "sprites" / "v4" / "light.png")
 
     manifest = build_package_manifest(release, staging)
@@ -50,6 +52,8 @@ def test_manifest_accepts_only_declared_runtime_data_and_distribution_files(
         "reference/china_z9.pmtiles",
         "reference/assets/fonts/OFL.txt",
         "reference/assets/fonts/Noto Sans Regular/0-255.pbf",
+        "reference/assets/fonts/Noto Sans Italic/0-255.pbf",
+        "reference/assets/fonts/Noto Sans Devanagari Regular v1/63488-63743.pbf",
         "reference/assets/sprites/v4/light.png",
     }
     assert all(len(item["sha256"]) == 64 for item in manifest["packaged_files"])

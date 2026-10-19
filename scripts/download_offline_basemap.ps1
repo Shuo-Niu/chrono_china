@@ -2,7 +2,8 @@
 param(
     [string]$BuildDate = "20260823",
     [ValidateRange(0, 10)]
-    [int]$MaxZoom = 9
+    [int]$MaxZoom = 9,
+    [switch]$AssetsOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -39,24 +40,29 @@ Assert-ChildPath $AssetsExtract $ToolRoot "the extracted asset cache"
 
 New-Item -ItemType Directory -Force -Path $ToolRoot, $ReferenceRoot, $QaRoot | Out-Null
 
-if (-not (Test-Path $PmtilesExe -PathType Leaf)) {
-    if (-not (Test-Path $PmtilesZip -PathType Leaf)) {
-        Invoke-WebRequest -UseBasicParsing `
-            "https://github.com/protomaps/go-pmtiles/releases/download/v$PmtilesVersion/go-pmtiles_$($PmtilesVersion)_Windows_x86_64.zip" `
-            -OutFile $PmtilesZip
+if ($AssetsOnly -and -not (Test-Path $ArchivePath -PathType Leaf)) {
+    throw "AssetsOnly requires an existing offline map archive: $ArchivePath"
+}
+if (-not $AssetsOnly) {
+    if (-not (Test-Path $PmtilesExe -PathType Leaf)) {
+        if (-not (Test-Path $PmtilesZip -PathType Leaf)) {
+            Invoke-WebRequest -UseBasicParsing `
+                "https://github.com/protomaps/go-pmtiles/releases/download/v$PmtilesVersion/go-pmtiles_$($PmtilesVersion)_Windows_x86_64.zip" `
+                -OutFile $PmtilesZip
+        }
+        Expand-Archive -LiteralPath $PmtilesZip -DestinationPath $ToolRoot -Force
     }
-    Expand-Archive -LiteralPath $PmtilesZip -DestinationPath $ToolRoot -Force
-}
 
-$ArchiveTemp = "$ArchivePath.partial"
-if (Test-Path $ArchiveTemp -PathType Leaf) {
-    Remove-Item -Force -LiteralPath $ArchiveTemp
+    $ArchiveTemp = "$ArchivePath.partial"
+    if (Test-Path $ArchiveTemp -PathType Leaf) {
+        Remove-Item -Force -LiteralPath $ArchiveTemp
+    }
+    & $PmtilesExe extract $ArchiveUrl $ArchiveTemp --bbox=$Bbox --maxzoom=$MaxZoom --download-threads=8
+    if ($LASTEXITCODE -ne 0) { throw "PMTiles regional extract failed." }
+    & $PmtilesExe verify $ArchiveTemp
+    if ($LASTEXITCODE -ne 0) { throw "PMTiles archive verification failed." }
+    Move-Item -Force -LiteralPath $ArchiveTemp -Destination $ArchivePath
 }
-& $PmtilesExe extract $ArchiveUrl $ArchiveTemp --bbox=$Bbox --maxzoom=$MaxZoom --download-threads=8
-if ($LASTEXITCODE -ne 0) { throw "PMTiles regional extract failed." }
-& $PmtilesExe verify $ArchiveTemp
-if ($LASTEXITCODE -ne 0) { throw "PMTiles archive verification failed." }
-Move-Item -Force -LiteralPath $ArchiveTemp -Destination $ArchivePath
 
 if (-not (Test-Path $AssetsZip -PathType Leaf)) {
     Invoke-WebRequest -UseBasicParsing `
@@ -76,10 +82,17 @@ if (Test-Path $AssetsDestination) {
 New-Item -ItemType Directory -Force -Path `
     (Join-Path $AssetsDestination "fonts"), `
     (Join-Path $AssetsDestination "sprites\v4") | Out-Null
-Copy-Item -Recurse -LiteralPath (Join-Path $AssetsSource "fonts\Noto Sans Regular") `
-    -Destination (Join-Path $AssetsDestination "fonts")
-Copy-Item -Recurse -LiteralPath (Join-Path $AssetsSource "fonts\Noto Sans Medium") `
-    -Destination (Join-Path $AssetsDestination "fonts")
+$FontStacks = @("Noto Sans Regular", "Noto Sans Medium", "Noto Sans Italic", "Noto Sans Devanagari Regular v1")
+foreach ($FontStack in $FontStacks) {
+    Copy-Item -Recurse -LiteralPath (Join-Path $AssetsSource "fonts\$FontStack") `
+        -Destination (Join-Path $AssetsDestination "fonts")
+    for ($Start = 0; $Start -lt 65536; $Start += 256) {
+        $RangePath = Join-Path $AssetsDestination "fonts\$FontStack\$Start-$($Start + 255).pbf"
+        if (-not (Test-Path -LiteralPath $RangePath -PathType Leaf)) {
+            throw "Missing offline glyph range: $RangePath"
+        }
+    }
+}
 Copy-Item -LiteralPath (Join-Path $AssetsSource "fonts\OFL.txt") `
     -Destination (Join-Path $AssetsDestination "fonts\OFL.txt")
 Copy-Item -Path (Join-Path $AssetsSource "sprites\v4\light*") `
@@ -111,6 +124,7 @@ $Metadata = [ordered]@{
         file_count = $AssetFiles.Count
         size_bytes = ($AssetFiles | Measure-Object Length -Sum).Sum
         fonts_license = "SIL Open Font License"
+        font_stacks = $FontStacks
         sprites_origin = "Protomaps basemaps-assets"
     }
 }

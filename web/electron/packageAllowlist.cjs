@@ -8,12 +8,14 @@ const REQUIRED = new Set([
   "/dist/reference/china_z9.pmtiles",
   "/dist/knowledge/qing_late_institution_notes_v0.1.json",
   "/dist/reference/assets/fonts/OFL.txt",
+  "/dist/reference/assets/fonts/Noto Sans Italic/0-255.pbf",
+  "/dist/reference/assets/fonts/Noto Sans Devanagari Regular v1/63488-63743.pbf",
 ]);
 
 const COMPILED_ASSET = /^\/dist\/assets\/[A-Za-z0-9_-]+\.(?:css|js|mjs)$/;
 const REFERENCE_ASSET = new RegExp(
   "^/dist/reference/assets/(?:" +
-    "fonts/(?:Noto Sans Regular|Noto Sans Medium)/[0-9]+-[0-9]+\\.pbf|" +
+    "fonts/(?:Noto Sans Regular|Noto Sans Medium|Noto Sans Italic|Noto Sans Devanagari Regular v1)/[0-9]+-[0-9]+\\.pbf|" +
     "sprites/v4/light(?:@2x)?\\.(?:json|png)" +
   ")$",
 );
@@ -25,7 +27,7 @@ const DIRECTORIES = new Set([
   "/electron",
   "/dist/knowledge",
 ]);
-const REFERENCE_DIRECTORY = /^\/dist\/reference(?:\/assets(?:\/fonts(?:\/(?:Noto Sans Regular|Noto Sans Medium))?|\/sprites(?:\/v4)?)?)?$/;
+const REFERENCE_DIRECTORY = /^\/dist\/reference(?:\/assets(?:\/fonts(?:\/(?:Noto Sans Regular|Noto Sans Medium|Noto Sans Italic|Noto Sans Devanagari Regular v1))?|\/sprites(?:\/v4)?)?)?$/;
 
 function validateAsarEntries(entries) {
   const normalized = entries.map((entry) => entry.replaceAll("\\", "/"));

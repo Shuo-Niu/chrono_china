@@ -25,6 +25,15 @@ async function setYear(page: Page, year: number) {
 test("display controls are orthogonal and timeline updates retain keyed markers", async ({ page }) => {
   test.setTimeout(180_000);
   const pageErrors: string[] = [];
+  const glyphErrors: string[] = [];
+  page.on("response", (response) => {
+    if (response.status() >= 400 && response.url().includes("/reference/assets/fonts/")) {
+      glyphErrors.push(`${response.status()} ${response.url()}`);
+    }
+  });
+  page.on("console", (message) => {
+    if (message.text().includes("Unable to load glyph")) glyphErrors.push(message.text());
+  });
   page.on("pageerror", (error) => pageErrors.push(String(error)));
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
@@ -173,6 +182,9 @@ test("display controls are orthogonal and timeline updates retain keyed markers"
   expect(metrics.stale_commit_count).toBe(0);
   expect(metrics.final_input_to_map_latency_ms).toBeLessThan(100);
   expect(metrics.page_errors).toEqual([]);
+  await expect.poll(() => page.evaluate(() => window.__CHRONOCHINA_QA_MAP__!.areTilesLoaded()))
+    .toBe(true);
+  expect(glyphErrors).toEqual([]);
 
   await mkdir(path.resolve("../artifacts/phase1_3_1g"), { recursive: true });
   await page.screenshot({ path: path.resolve("../artifacts/phase1_3_1g/user_controls.png"), fullPage: true });

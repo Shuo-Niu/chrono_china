@@ -17,7 +17,7 @@ OFFLINE_REFERENCE_ASSET = re.compile(
     r"reference/(?:"
     r"china_z9\.pmtiles|"
     r"assets/fonts/OFL\.txt|"
-    r"assets/fonts/(?:Noto Sans Regular|Noto Sans Medium)/[0-9]+-[0-9]+\.pbf|"
+    r"assets/fonts/(?:Noto Sans Regular|Noto Sans Medium|Noto Sans Italic|Noto Sans Devanagari Regular v1)/[0-9]+-[0-9]+\.pbf|"
     r"assets/sprites/v4/light(?:@2x)?\.(?:json|png)"
     r")"
 )
