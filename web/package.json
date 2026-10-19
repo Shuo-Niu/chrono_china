@@ -2,7 +2,7 @@
   "name": "chronochina-web",
   "productName": "ChronoChina",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ChronoChina Windows usability-test application",
   "author": "Shuo Niu",
   "license": "Apache-2.0",

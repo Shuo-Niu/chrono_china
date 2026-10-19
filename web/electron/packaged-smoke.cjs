@@ -7,11 +7,12 @@ const { createServer } = require("node:net");
 const { setTimeout: delay } = require("node:timers/promises");
 const { _electron: electron, chromium } = require("playwright");
 const expectedElectronVersion = require("electron/package.json").version;
+const expectedApplicationVersion = require("../package.json").version;
 
 const projectRoot = path.resolve(__dirname, "..", "..");
 const sourceApp = path.join(projectRoot, "artifacts", "phase1_5", "windows", "win-unpacked");
 const portableMode = process.argv.includes("--portable");
-const portableName = "ChronoChina-Phase1.5-Portable-0.1.0-x64.exe";
+const portableName = `ChronoChina-Phase1.5-Portable-${expectedApplicationVersion}-x64.exe`;
 const smokeRoot = path.join(os.tmpdir(), "ChronoChina User Smoke Test");
 const copiedApp = path.join(smokeRoot, "Application Files");
 const workingDirectory = path.join(smokeRoot, "Working Directory With Spaces");
@@ -103,6 +104,9 @@ async function launchAndVerify(reopen = false) {
       ? await page.evaluate(() => navigator.userAgent.match(/Electron\/([\d.]+)/)?.[1])
       : await application.evaluate(() => process.versions.electron);
     assert.equal(runtimeVersion, expectedElectronVersion);
+    if (!portableMode) {
+      assert.equal(await application.evaluate(({ app }) => app.getVersion()), expectedApplicationVersion);
+    }
     const requests = [];
     page.on("request", (request) => requests.push(request.url()));
     const failedRequests = [];
@@ -359,12 +363,14 @@ async function main() {
   assert.equal(fs.existsSync(logFile), true, "packaged application must create a support log");
   const log = fs.readFileSync(logFile, "utf8");
   assert.match(log, /application_start/);
+  assert.ok(log.includes(`application_start ${expectedApplicationVersion}\n`), "expected application version must appear in the startup log");
   assert.doesNotMatch(log, /D:\\VibeCoding|C:\\Users\\shuon/i);
 
   const result = {
     status: "PASS",
     package_kind: portableMode ? "portable_executable" : "unpacked_directory",
     electron_version: expectedElectronVersion,
+    application_version: expectedApplicationVersion,
     executable,
     copied_path: copiedApp,
     working_directory: workingDirectory,
