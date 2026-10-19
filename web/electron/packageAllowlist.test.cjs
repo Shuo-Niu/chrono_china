@@ -16,11 +16,22 @@ const minimal = [
   "/dist/reference/china_z9.pmtiles",
   "/dist/reference/assets/fonts/OFL.txt",
   "/dist/reference/assets/fonts/Noto Sans Regular/0-255.pbf",
+  "/dist/reference/assets/fonts/Noto Sans Italic/0-255.pbf",
+  "/dist/reference/assets/fonts/Noto Sans Devanagari Regular v1/63488-63743.pbf",
   "/dist/reference/assets/sprites/v4/light.png",
 ];
 
 test("asar allowlist accepts only the minimum desktop runtime", () => {
-  assert.deepEqual(validateAsarEntries(minimal), { status: "PASS", fileCount: 14 });
+  assert.deepEqual(validateAsarEntries(minimal), { status: "PASS", fileCount: 16 });
+});
+
+test("asar allowlist rejects packages missing the previously absent glyphs", () => {
+  for (const font of ["Noto Sans Italic", "Noto Sans Devanagari Regular v1"]) {
+    assert.throws(
+      () => validateAsarEntries(minimal.filter((entry) => !entry.includes(font))),
+      /required asar file is missing/,
+    );
+  }
 });
 
 test("asar allowlist rejects dependencies, docs, fixtures, and extra data", () => {

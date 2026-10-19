@@ -2,14 +2,72 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { _electron: electron } = require("playwright");
+const { spawn } = require("node:child_process");
+const { createServer } = require("node:net");
+const { setTimeout: delay } = require("node:timers/promises");
+const { _electron: electron, chromium } = require("playwright");
+const expectedElectronVersion = require("electron/package.json").version;
 
 const projectRoot = path.resolve(__dirname, "..", "..");
 const sourceApp = path.join(projectRoot, "artifacts", "phase1_5", "windows", "win-unpacked");
+const portableMode = process.argv.includes("--portable");
+const portableName = "ChronoChina-Phase1.5-Portable-0.1.0-x64.exe";
 const smokeRoot = path.join(os.tmpdir(), "ChronoChina User Smoke Test");
 const copiedApp = path.join(smokeRoot, "Application Files");
 const workingDirectory = path.join(smokeRoot, "Working Directory With Spaces");
-const executable = path.join(copiedApp, "ChronoChina.exe");
+const executable = path.join(copiedApp, portableMode ? portableName : "ChronoChina.exe");
+
+async function launchPortable() {
+  const server = createServer();
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  const port = server.address().port;
+  await new Promise((resolve) => server.close(resolve));
+  const child = spawn(executable, [`--remote-debugging-port=${port}`, "--remote-debugging-address=127.0.0.1"], {
+    cwd: workingDirectory,
+    env: { ...process.env, CHRONOCHINA_PACKAGED_SMOKE: "1" },
+    windowsHide: true,
+    stdio: "ignore",
+  });
+  let launchError;
+  child.on("error", (error) => { launchError = error; });
+  const exited = new Promise((resolve) => child.once("exit", resolve));
+  let browser;
+  try {
+    const deadline = Date.now() + 120_000;
+    let endpoint;
+    while (Date.now() < deadline) {
+      if (launchError) throw launchError;
+      if (child.exitCode !== null) throw new Error(`portable exited before startup: ${child.exitCode}`);
+      try {
+        const response = await fetch(`http://127.0.0.1:${port}/json/version`, { signal: AbortSignal.timeout(1000) });
+        if (response.ok) endpoint = (await response.json()).webSocketDebuggerUrl;
+      } catch { /* The portable launcher is still extracting or starting Electron. */ }
+      if (endpoint) break;
+      await delay(250);
+    }
+    if (!endpoint) throw new Error("portable debugging endpoint did not become ready within 120 seconds");
+    browser = await chromium.connectOverCDP(endpoint);
+    const context = browser.contexts()[0];
+    return {
+      firstWindow: async () => context.pages()[0] ?? await context.waitForEvent("page", { timeout: 60_000 }),
+      close: async () => {
+        for (const page of context.pages()) await page.close();
+        await browser.close();
+        await Promise.race([exited, delay(15_000).then(() => { throw new Error("portable did not exit after closing its window"); })]);
+      },
+    };
+  } catch (error) {
+    if (browser) {
+      for (const context of browser.contexts()) for (const page of context.pages()) await page.close().catch(() => {});
+      await browser.close().catch(() => {});
+    }
+    if (child.exitCode === null) child.kill();
+    throw error;
+  }
+}
 
 function yearToOrdinal(year) {
   if (year === 0) throw new Error("year zero is unsupported");
@@ -33,7 +91,7 @@ async function setYear(page, year) {
 }
 
 async function launchAndVerify(reopen = false) {
-  const application = await electron.launch({
+  const application = portableMode ? await launchPortable() : await electron.launch({
     executablePath: executable,
     cwd: workingDirectory,
     env: { ...process.env, CHRONOCHINA_PACKAGED_SMOKE: "1" },
@@ -41,6 +99,10 @@ async function launchAndVerify(reopen = false) {
   });
   try {
     const page = await application.firstWindow({ timeout: 60_000 });
+    const runtimeVersion = portableMode
+      ? await page.evaluate(() => navigator.userAgent.match(/Electron\/([\d.]+)/)?.[1])
+      : await application.evaluate(() => process.versions.electron);
+    assert.equal(runtimeVersion, expectedElectronVersion);
     const requests = [];
     page.on("request", (request) => requests.push(request.url()));
     const failedRequests = [];
@@ -212,6 +274,30 @@ async function launchAndVerify(reopen = false) {
         ),
       }, historicalStateBeforeBasemapSwitch);
 
+      const glyphChecks = await page.evaluate(async () => {
+        const fonts = new Set();
+        const visit = (value) => {
+          if (typeof value === "string" && value.startsWith("Noto Sans")) fonts.add(value);
+          if (Array.isArray(value)) value.forEach(visit);
+          else if (value && typeof value === "object") Object.values(value).forEach(visit);
+        };
+        const map = window.__CHRONOCHINA_QA_MAP__;
+        for (const layer of map.getStyle().layers) visit(layer.layout);
+        return Promise.all([...fonts].flatMap((font) => ["0-255", "63488-63743"].map(async (range) => {
+          const url = map.getStyle().glyphs
+            .replace("{fontstack}", encodeURIComponent(font)).replace("{range}", range);
+          const response = await fetch(url);
+          return { font, range, status: response.status, bytes: (await response.arrayBuffer()).byteLength };
+        })));
+      });
+      assert.ok(glyphChecks.some((check) => check.font === "Noto Sans Italic"));
+      assert.ok(glyphChecks.some((check) => check.font === "Noto Sans Devanagari Regular v1"));
+      for (const check of glyphChecks) {
+        assert.equal(check.status, 200, JSON.stringify(check));
+        assert.ok(check.bytes > 0, JSON.stringify(check));
+      }
+      await page.waitForFunction(() => window.__CHRONOCHINA_QA_MAP__.areTilesLoaded(), null, { timeout: 30_000 });
+
       const previousSequence = Number(
         await page.getByTestId("map").getAttribute("data-explore-query-sequence"),
       );
@@ -237,22 +323,35 @@ async function launchAndVerify(reopen = false) {
       assert.match(await institutionNote.innerText(), /清末的省/);
       assert.doesNotMatch(await institutionNote.innerText(), /清末地方制度并非整齐的单一层级/);
       assert.deepEqual(errors, []);
+      assert.deepEqual(errorResponses.filter((error) => error.includes("/reference/assets/fonts/")), []);
+      assert.deepEqual(failedRequests.filter((error) => error.includes("/reference/assets/fonts/")), []);
+      assert.deepEqual(consoleMessages.filter((message) => message.includes("Unable to load glyph")), []);
+      assert.equal(requests.some((url) => /^https?:/.test(url)), false);
     }
 
-    return await application.evaluate(({ app }) => app.getPath("logs"));
+    return portableMode
+      ? path.join(process.env.APPDATA, "ChronoChina", "logs")
+      : await application.evaluate(({ app }) => app.getPath("logs"));
   } finally {
     await application.close();
   }
 }
 
 async function main() {
-  const sourceExecutable = path.join(sourceApp, "ChronoChina.exe");
+  const sourceExecutable = portableMode
+    ? path.join(path.dirname(sourceApp), portableName)
+    : path.join(sourceApp, "ChronoChina.exe");
   if (!fs.existsSync(sourceExecutable)) {
     throw new Error(`missing packaged executable: ${sourceExecutable}`);
   }
   fs.rmSync(smokeRoot, { recursive: true, force: true });
   fs.mkdirSync(workingDirectory, { recursive: true });
-  fs.cpSync(sourceApp, copiedApp, { recursive: true });
+  if (portableMode) {
+    fs.mkdirSync(copiedApp, { recursive: true });
+    fs.copyFileSync(sourceExecutable, executable);
+  } else {
+    fs.cpSync(sourceApp, copiedApp, { recursive: true });
+  }
 
   const logDirectory = await launchAndVerify(false);
   await launchAndVerify(true);
@@ -262,16 +361,24 @@ async function main() {
   assert.match(log, /application_start/);
   assert.doesNotMatch(log, /D:\\VibeCoding|C:\\Users\\shuon/i);
 
-  process.stdout.write(`${JSON.stringify({
+  const result = {
     status: "PASS",
+    package_kind: portableMode ? "portable_executable" : "unpacked_directory",
+    electron_version: expectedElectronVersion,
     executable,
     copied_path: copiedApp,
     working_directory: workingDirectory,
     close_reopen: "PASS",
     dev_server_dependency: false,
     bundled_basemap_requires_network: false,
+    offline_font_requests: "PASS",
     log_file_created: true,
-  }, null, 2)}\n`);
+  };
+  const evidence = JSON.stringify(result, null, 2) + "\n";
+  fs.writeFileSync(path.join(
+    projectRoot, "artifacts", "phase1_5", portableMode ? "portable-smoke.json" : "unpacked-smoke.json",
+  ), evidence);
+  process.stdout.write(evidence);
 }
 
 main().catch((error) => {

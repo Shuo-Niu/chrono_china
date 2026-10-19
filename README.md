@@ -9,7 +9,7 @@ ChronoChina is an open-source research prototype for exploring Chinese historica
 ## What it does
 
 - Queries historical places by exact year in the current viewport.
-- Lets users explicitly control source-relative historical hierarchy tiers instead of changing them automatically with zoom.
+- Lets users explicitly control historical unit categories based on source types, independently of zoom.
 - Switches between Point + Label and Point Only display modes.
 - Shows co-located records, validity periods, source-recorded hierarchy, and current-year subordinate context; technical provenance stays in Developer Mode.
 - Switches bundled offline modern-reference basemaps without changing historical state.
@@ -41,7 +41,7 @@ docs/       Public engineering and data-governance documentation
 
 ## Start from a clean checkout
 
-Prerequisites: Git, Windows PowerShell, Python 3.11+, and Node.js `^20.19.0` or `>=22.12.0`.
+Prerequisites: Git, Windows PowerShell, Python 3.11+, and Node.js `^22.12.0`, `^24.0.0`, or `>=26.0.0` (Node 24 recommended).
 
 ```powershell
 git clone https://github.com/Shuo-Niu/chrono_china.git
@@ -67,6 +67,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_phase1_3_1c.ps1
 # Reproducible offline modern-reference extract for Web/portable builds
 powershell -ExecutionPolicy Bypass -File .\scripts\download_offline_basemap.ps1
 ```
+
+To refresh only bundled fonts and sprites while retaining the existing map archive, append `-AssetsOnly`. All four font stacks used by the pinned basemap style are included.
 
 The pipeline writes source files to `data/raw/`, normalized data to `data/intermediate/`, Web datasets to `data/processed/`, and QA evidence to `data/qa/`. Generated contents in those directories are excluded from Git. See [data/README.md](data/README.md).
 
@@ -103,7 +105,7 @@ After generating the authorized local processed data, a maintainer can build the
 powershell -ExecutionPolicy Bypass -File .\scripts\build_phase1_5_windows.ps1
 ```
 
-Artifacts are written under `artifacts/phase1_5/windows/` and are intentionally excluded from Git. The build validates the allowlisted runtime data and bundles a China-bounded Protomaps PMTiles extract (zoom 0–9), fonts, and sprites. It does not require Internet access, Vite, Node, or Python at runtime; zooming beyond the bundled maximum cannot reveal additional modern-map detail. Run the packaged-binary smoke test with `Set-Location web; npm.cmd run smoke:windows`.
+Artifacts are written under `artifacts/phase1_5/windows/` and are intentionally excluded from Git. The build validates the allowlisted runtime data and bundles a China-bounded Protomaps PMTiles extract (zoom 0–9), fonts, and sprites. It does not require Internet access, Vite, Node, or Python at runtime; zooming beyond the bundled maximum cannot reveal additional modern-map detail. Run the single-file portable smoke test with `Set-Location web; npm.cmd run smoke:windows -- --portable`. Omit `-- --portable` to test the unpacked directory instead. Local smoke evidence is saved under `artifacts/phase1_5/`.
 
 This command creates a technical testing candidate, not distribution permission. Do not send or publicly host a package containing CHGIS/TGAZ-derived records until the applicable redistribution rights have been confirmed in writing. The candidate is unsigned, so SmartScreen may warn.
 

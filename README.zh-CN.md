@@ -9,7 +9,7 @@ ChronoChina（中国历史地理时间地图）是一个开源的历史地理研
 ## 能做什么
 
 - 在当前视口中按精确年份查询历史地点；
-- 由用户明确开关按来源父链划分的历史层级，不随 zoom 自动切换；
+- 由用户明确开关按来源类型归类的历史单位类别，不随 zoom 自动切换；
 - 在“点 + 标签”和“仅点”之间切换；
 - 查看同坐标记录、有效年代、来源所记层级链及当前年直属下级；技术 provenance 留在开发者模式；
 - 切换程序内置的离线现代参考底图，且不改变历史图层状态；
@@ -41,7 +41,7 @@ docs/       公开工程与数据治理文档
 
 ## 从干净检出开始
 
-环境要求：Git、Windows PowerShell、Python 3.11+，以及 Node.js `^20.19.0` 或 `>=22.12.0`。
+环境要求：Git、Windows PowerShell、Python 3.11+，以及 Node.js `^22.12.0`、`^24.0.0` 或 `>=26.0.0`（推荐 Node 24）。
 
 ```powershell
 git clone https://github.com/Shuo-Niu/chrono_china.git
@@ -68,6 +68,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_phase1_3_1c.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\download_offline_basemap.ps1
 ```
 
+已有地图档案时，可追加 `-AssetsOnly` 仅更新字体与精灵。资源包含固定底图样式所需的全部四种字体。
+
 原始文件写入 `data/raw/`，标准化数据写入 `data/intermediate/`，Web 数据写入 `data/processed/`，QA 证据写入 `data/qa/`。这些目录中的生成内容不进入 Git。详见 [data/README.md](data/README.md)。
 
 ## 运行 Web App
@@ -92,6 +94,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build_phase1_5_windows.ps1
 产物位于 `artifacts/phase1_5/windows/`，只生成 Windows 10/11 x64 portable，不生成 installer。包内包含中国范围、zoom 0–9 的 Protomaps PMTiles 摘要及字体/精灵；运行时不需要联网、Vite、Node 或 Python。超过内置最大 zoom 后不会出现更细的现代地图内容。
 
 该命令只生成技术测试候选，不代表 CHGIS/TGAZ 历史记录已经取得公开再分发许可。候选未签名，Windows SmartScreen 可能提示风险。
+
+成品单文件验证：在 `web/` 运行 `npm.cmd run smoke:windows -- --portable`，会只复制 EXE 到含空格的临时目录，验证离线地图、字体、历史点详情和关闭重开。省略 `-- --portable` 则测试目录产物。验证证据保存在 `artifacts/phase1_5/`，不进入 Git。
 
 ## 测试
 

@@ -1,9 +1,9 @@
 # 清末制度小识第一批审核稿
 
-状态：`DRAFT_ONLY`  
+状态：`APPROVED_AND_PUBLISHED`
 年份范围：1901—1911  
 目标界面：User Mode 历史点详情  
-注意：本稿尚未接入 UI。
+本稿保留逐条人工审核记录；8 条内容与来源已获批准，UI 于 2026-08-24 批准并接入。正式发布文件为 `data/processed/knowledge/qing_late_institution_notes_v0.1.json`，1901—1911 年精确类型匹配规则不变。
 
 ## 1. 清末地方制度并非整齐的单一层级
 
