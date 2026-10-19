@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chronochina"
-version = "0.1.0"
+version = "0.1.1"
 description = "Reproducible Phase 0/1 data POC for the ChronoChina historical map"
 readme = "README.md"
 license = { text = "Apache-2.0" }
