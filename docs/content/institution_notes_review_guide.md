@@ -12,6 +12,8 @@
 
 `docs/content/qing_late_institution_notes_review.md`
 
+本批已完成内容、来源与 UI 审核，于 2026-08-24 发布。上述草案保留为审核输入，正式 UI 读取 `data/processed/knowledge/qing_late_institution_notes_v0.1.json`；后续批次继续遵循以下审核流程。
+
 ## 三种审核结论
 
 - `APPROVE`：事实、措辞、适用范围均可接受，可以进入来源复核与发布准备。
@@ -66,12 +68,12 @@ qing_late_zhou: HOLD — 我还不确定是否要向普通用户解释两种州
 - raw type 或制度位置不明确时不显示，而不是选择最相近的条目。
 - 多个候选条目冲突时不显示。
 - 条目正文必须是原创转述，不复制现代研究著作的段落。
-- 本轮所有条目的 `auto_match_enabled` 和 `publication_eligible` 均为 `false`。
+- 草案中的 `auto_match_enabled` 和 `publication_eligible` 保留为 `false`；批准后由发布管道生成独立发布版，不能直接将草案当作运行时内容。
 
 ## 当前已知限制
 
 - 本批仅处理 1901—1911 年的清末制度背景。
 - 当前没有建立全国统一的 region → regime 映射。
 - raw type `州` 和 `厅` 不能单独证明具体层级。
-- “厅”条目在正式发布前仍需复核北京大学学报论文全文。
+- “厅”条目已用王泉伟论文全文及机构资料完成复核；北大扫描论文仅作书目参考，不作为全文已读证据，详见来源复核记录。
 - 本批不解释具体地点的设立、迁治、改名或继承关系。

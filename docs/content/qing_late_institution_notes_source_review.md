@@ -2,7 +2,7 @@
 
 日期：2026-08-24  
 对象：`qing_late_institution_notes_v0.1.json`  
-结论：8 条人工批准内容均有可直接阅读的来源支持，可进入 UI 设计审核候选；尚未发布到 User Mode。
+结论：8 条人工批准内容均有可直接阅读的来源支持。后续 UI 于 2026-08-24 获批并接入 User Mode，正式发布文件为 `data/processed/knowledge/qing_late_institution_notes_v0.1.json`。本页保留原始来源复核过程。
 
 ## 复核原则
 

@@ -1,7 +1,7 @@
 # 制度小识 UI 接入审核稿
 
 状态：`APPROVED_AND_IMPLEMENTED`  
-数据候选：`qing_late_institution_notes_v0.1.candidate.json`  
+发布数据：`data/processed/knowledge/qing_late_institution_notes_v0.1.json`
 批准记录：Shuo Niu 于 2026-08-24 批准；发布数据为 `ui_enabled=true`。
 
 ## 推荐位置
